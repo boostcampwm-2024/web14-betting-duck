@@ -2,7 +2,9 @@
 아직 주제 미정 상태입니다. 계속 업데이트 할테니 많이 놀러와주세요😚
 ## 👯 팀 소개
 ### 프로젝트 위키
-프로젝트에 관한 자세한 글은 [🔗 프로젝트 위키](https://github.com/boostcampwm-2024/web14-boostproject.wiki.git)를 참고해주세요.
+![image](https://github.com/user-attachments/assets/216357e5-e62c-4251-9234-6191ba9352f1)
+
+프로젝트에 관한 자세한 글은 [🔗 프로젝트 위키](https://github.com/boostcampwm-2024/web14-boostproject/wiki)를 참고해주세요.
 
 ### 팀원 소개
 안녕하세요! 저희는 FE 2명, BE 2명으로 최적의 밸런스를 자랑하는 팀입니다!
