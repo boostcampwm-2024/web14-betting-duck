@@ -1,0 +1,12 @@
+# 프론트엔드 빌드 출력
+/node_modules/
+dist/
+build/
+
+# 정적 분석 도구 출력
+.eslintcache
+
+# 캐시 및 환경 설정
+package-lock.json
+.pnpm-debug.log*
+.vscode/

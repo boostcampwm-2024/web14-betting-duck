@@ -1,0 +1,30 @@
+# Node.js 관련
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.pnpm-debug.log*
+.vscode/
+
+# 환경 변수 및 설정
+.env
+.env.local
+.env.*.local
+
+# 빌드 파일
+dist/
+build/
+out/
+coverage/
+
+# 운영체제 파일
+.DS_Store
+Thumbs.db
+
+# IDE 및 편집기 설정
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
