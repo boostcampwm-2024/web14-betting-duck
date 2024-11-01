@@ -1,7 +1,9 @@
 # 🐤 베팅덕
+
 베팅덕(betting duck)은 오리(토큰)를 가지고 베팅해서 승부 예측을 할 수 있고, 토큰을 모아 나만의 연못을 꾸밀 수 있는 신개념 베팅 서비스입니다.
 
 ## 목차
+
 - [서비스 소개](#서비스-소개)
 - [팀 소개](#팀-소개)
 
@@ -10,7 +12,6 @@
 ### 베팅 덕(Betting-duck)
 
 ![betting-duck-logo-large](https://github.com/user-attachments/assets/c12efddf-8a30-4308-8377-81046fdee45e)
-
 
 `베팅 덕(Betting duck)` 은 귀엽게 즐길 수 있는 승부 예측 베팅 서비스입니다. 유저는 승부를 예측하고 승산이 높은 팀에 오리를 걸어, 경기 결과에 따라 포인트를 얻거나 잃게 됩니다.
 
@@ -38,18 +39,21 @@
 - **마이페이지 연못**: 사용자는 획득한 오리(코인)로 일정 금액을 지불해 마이페이지에 있는 연못에 오리를 추가할 수 있습니다.
 
 ## 팀 소개
+
 ### 프로젝트 위키
+
 ![image](https://github.com/user-attachments/assets/216357e5-e62c-4251-9234-6191ba9352f1)
 
 프로젝트에 관한 자세한 글은 [🔗 프로젝트 위키](https://github.com/boostcampwm-2024/web14-boostproject/wiki)를 참고해주세요.
 
 ### 팀원 소개
+
 안녕하세요! 저희는 FE 2명, BE 2명으로 최적의 밸런스를 자랑하는 팀입니다!
 저희 팀원들을 소개합니다.
 <img src="https://github.com/user-attachments/assets/53314e4f-19ce-44a4-ab16-97f11c6d0aa7" width="100" height="100" style="border-radius: 50%;" alt="이석호">|<img src="https://github.com/user-attachments/assets/177efdb0-c65f-495f-9ab2-bdfab7c5ca94" width="100" height="100" style="border-radius: 50%;" alt="정동교">|<img src="https://github.com/user-attachments/assets/e10e662d-63d9-4530-8b9a-6cb72132aba5" width="100" height="100" style="border-radius: 50%;" alt="정지호">|<img src="https://github.com/user-attachments/assets/31a2d926-f044-4796-a1ac-2a9f7da0e809" width="100" height="100" style="border-radius: 50%;" alt="최정민">
 |-- | -- | -- | --
 [[BE] J184 이석호](https://github.com/LLagoon3) | [[BE] J221 정동교](https://github.com/dngyj) | [[FE] J230 정지호](https://github.com/stop0ho) | [[FE] J262 최정민](https://github.com/sunub)
 
-
 ### 작고 소중한 그라운드 룰
+
 ![image](https://github.com/user-attachments/assets/24ecdf17-9505-4398-bb1e-838ba6f464c7)
