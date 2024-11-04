@@ -1,12 +1,24 @@
-# 프론트엔드 빌드 출력
-/node_modules/
-dist/
-build/
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# 정적 분석 도구 출력
-.eslintcache
+node_modules
+dist
+dist-ssr
+*.local
 
-# 캐시 및 환경 설정
-package-lock.json
-.pnpm-debug.log*
-.vscode/
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
