@@ -1,0 +1,3 @@
+#!/bin/sh
+
+node .husky/commit-msg.js "$1"
