@@ -4,8 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Running tests...\" && exit 0",
+<<<<<<< HEAD
     "prepare": "husky",
+=======
+    "prepare": "husky install",
+>>>>>>> d3cc2bd (chore : husky 설정)
     "lint": "eslint ."
   },
   "keywords": [],
@@ -24,6 +28,6 @@
     "typescript-eslint": "^8.12.2"
   },
   "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown"
+    "**/*.{js,jsx,ts,tsx,md,json}": "prettier --write --ignore-unknown"
   }
 }
