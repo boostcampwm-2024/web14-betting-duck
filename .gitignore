@@ -28,3 +28,6 @@ Thumbs.db
 *.swp
 *.swo
 *.swn
+
+# Husky
+.husky/_/
