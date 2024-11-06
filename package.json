@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Running tests...\" && exit 0",
     "prepare": "husky",
     "lint": "eslint frontend/src"
   },
