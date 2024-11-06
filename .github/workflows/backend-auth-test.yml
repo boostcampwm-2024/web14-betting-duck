@@ -1,0 +1,31 @@
+name: Auth Service  Test
+
+on:
+  push:
+    paths:
+      - "backend/auth-service/**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: ${{ vars.AUTH_SERVICE_PATH }}
+
+      - name: Run tests
+        run: pnpm test
+        working-directory: ${{ vars.AUTH_SERVICE_PATH }}
+# 리포지토리 Settings > Secrets and variables > Actions > Variables
+# AUTH_SERVICE_PATH: ./backend/auth-service
