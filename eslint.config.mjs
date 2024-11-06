@@ -1,44 +1,66 @@
-import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
+import globals from "globals";
+
 export default [
-  {
-    files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
-  },
-  {
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.node,  // Node.js 전역변수 추가
-        process: 'readonly'  // process를 전역변수로 명시적 선언
-      }
-    },
-  },
-  {
-    rules: {
-      'no-process-env': 'off',  // process.env 사용 허용
-      'no-process-exit': 'off'  // process.exit() 사용 허용
-    }
-  },
-  // Electron 메인 프로세스와 렌더러 프로세스 파일 구분
-  {
-    files: ["main.js", "electron/**/*"],
-    languageOptions: {
-      globals: {
-        ...globals.node
-      }
-    }
-  },
-  {
-    files: ["src/**/*"],
-    languageOptions: {
-      globals: {
-        ...globals.browser
-      }
-    }
-  },
-  pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
-  prettier,
+	{
+		files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
+		ignores: [
+			"**/node_modules/**",
+			"**/dist/**",
+			"**/build/**",
+			"coverage/**",
+			"**/.next/**",
+			".husky/**/*.js",
+			// frontend/dist 관련 모든 파일을 명확하게 무시
+			"frontend/dist/**",
+			"**/frontend/dist/**/*.*",
+			// dist 디렉토리 아래의 모든 것을 재귀적으로 무시
+			"dist/**/*",
+			// assets 디렉토리도 명시적으로 무시
+			"**/assets/**",
+		],
+	},
+	{
+		languageOptions: {
+			globals: {
+				...globals.browser,
+				...globals.node,
+				process: "readonly",
+			},
+		},
+	},
+	{
+		files: [".husky/**/*.js"],
+		rules: {
+			"@typescript-eslint/no-require-imports": "off",
+			"@typescript-eslint/no-var-requires": "off",
+		},
+	},
+	{
+		rules: {
+			"no-process-env": "off",
+			"no-process-exit": "off",
+		},
+	},
+	{
+		files: ["main.js", "electron/**/*"],
+		languageOptions: {
+			globals: {
+				...globals.node,
+			},
+		},
+	},
+	{
+		files: ["src/**/*"],
+		languageOptions: {
+			globals: {
+				...globals.browser,
+			},
+		},
+	},
+	pluginJs.configs.recommended,
+	...tseslint.configs.recommended,
+	prettier,
 ];
