@@ -1,0 +1,110 @@
+version: '3.8'
+
+networks:
+  auth-network:
+  chat-network:
+  bet-network:
+  kafka-network:
+  auth_db_network:
+
+services:
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-server
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - auth-network
+      - chat-network
+      - bet-network
+      - kafka-network
+
+  auth-service:
+    image: node:22.11.0-alpine
+    container_name: auth-service
+    working_dir: /app
+    volumes:
+      - ./auth-service:/app
+    ports:
+      - "${AUTH_SERVICE_PORT}:3000"
+    command: >
+      sh -c "
+      npm install -g pnpm && 
+      pnpm install &&
+      pnpm run start
+      "
+    environment:
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      KAFKA_CONSUMER_GROUP_ID: ${KAFKA_CONSUMER_GROUP_ID}
+      AUTH_POSTGRES_HOSTNAME: ${AUTH_POSTGRES_HOSTNAME}
+      AUTH_DATABASE_PORT: ${AUTH_DATABASE_PORT}
+      AUTH_POSTGRES_DB_NAME: ${AUTH_POSTGRES_DB_NAME}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      - auth-db
+      - kafka
+    networks:
+      - auth-network
+
+  zookeeper:
+    image: wurstmeister/zookeeper:latest
+    container_name: zookeeper
+    # platform: linux/amd64
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka-network
+
+  kafka:
+    image: wurstmeister/kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9092,OUTSIDE://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - kafka-network
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    container_name: kafdrop
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9092
+      JVM_OPTS: "-Xms320M -Xmx640M -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+      SERVER_PORT: 9000
+      MANAGEMENT_SERVER_PORT: 9000
+    depends_on:
+      - kafka
+    networks:
+      - kafka-network
+
+  auth-db:
+    image: postgres:15
+    container_name: auth-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${AUTH_POSTGRES_DB_NAME}
+    ports:
+      - "${AUTH_DATABASE_PORT}:5432"
+    volumes:
+      - auth_postgres_data:/var/lib/postgresql/data
+      - ./auth-db-init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - auth_db_network
+
+volumes:
+  auth_postgres_data:
