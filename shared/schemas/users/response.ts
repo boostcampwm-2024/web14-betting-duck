@@ -1,9 +1,6 @@
 import { z } from "zod";
-import { STATUS_CODE, STATUS_MESSAGE } from "../../vars/status";
 import { USER_ROLE } from "../../vars/user";
-
-export const StatusCodeSchema = z.enum(STATUS_CODE);
-export const StatusMessageSchema = z.enum(STATUS_MESSAGE);
+import { StatusCodeSchema, StatusMessageSchema } from "../../vars/status";
 
 const commonUserSchema = z.object({
 	status: StatusCodeSchema,
@@ -22,3 +19,10 @@ export const responseLoginSchema = commonUserSchema.extend({
 });
 
 export const responseGuestLoginSchema = responseLoginSchema;
+
+export const responseUsersSchema = commonUserSchema.extend({
+	nickename: z.string().min(2, "닉네임은 2자 이상이어야 합니다."),
+	duck: z.number(),
+});
+
+export const rejectResponseSchema = commonUserSchema;
