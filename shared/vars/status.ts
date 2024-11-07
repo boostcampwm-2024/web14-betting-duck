@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export const STATUS_CODE = ["200", "204", "400", "401", "409", "500"] as const;
 export const STATUS_MESSAGE = [
 	"OK",
@@ -19,3 +21,6 @@ export const STATUS_MAP = STATUS_CODE.reduce(
 export type StatusCode = typeof STATUS_CODE;
 export type StatusMessage = typeof STATUS_MESSAGE;
 export type StatusMap = typeof STATUS_MAP;
+
+export const StatusCodeSchema = z.enum(STATUS_CODE);
+export const StatusMessageSchema = z.enum(STATUS_MESSAGE);
