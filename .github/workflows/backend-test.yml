@@ -1,9 +1,9 @@
-name: Auth Service  Test
+name: Backend Test
 
 on:
   push:
     paths:
-      - "backend/auth-service/**"
+      - "backend/**"
 
 jobs:
   test:
@@ -22,10 +22,11 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-        working-directory: ${{ vars.AUTH_SERVICE_PATH }}
+        working-directory: ${{ vars.BACK_SERVICE_PATH }}
 
       - name: Run tests
         run: pnpm test
-        working-directory: ${{ vars.AUTH_SERVICE_PATH }}
+        working-directory: ${{ vars.BACK_SERVICE_PATH }}
 # 리포지토리 Settings > Secrets and variables > Actions > Variables
 # AUTH_SERVICE_PATH: ./backend/auth-service
+# BACK_SERVICE_PATH: ./backend
