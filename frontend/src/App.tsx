@@ -3,6 +3,7 @@ import "./App.css";
 
 function App() {
 	const [count, setCount] = useState(0);
+	const [isToggle, setIsToggle] = useState(false);
 
 	return (
 		<>
@@ -14,6 +15,9 @@ function App() {
 			<div className="card">
 				<button onClick={() => setCount((count) => count + 1)}>
 					count is {count}
+				</button>
+				<button onClick={() => setIsToggle((prev) => !prev)}>
+					count is {isToggle}
 				</button>
 				<p>내용수정테스트</p>
 			</div>
