@@ -44,22 +44,6 @@ export default [
 			"no-process-exit": "off",
 		},
 	},
-	{
-		files: ["main.js", "electron/**/*"],
-		languageOptions: {
-			globals: {
-				...globals.node,
-			},
-		},
-	},
-	{
-		files: ["src/**/*"],
-		languageOptions: {
-			globals: {
-				...globals.browser,
-			},
-		},
-	},
 	pluginJs.configs.recommended,
 	...tseslint.configs.recommended,
 	prettier,

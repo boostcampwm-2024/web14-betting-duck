@@ -1,5 +1,5 @@
 {
-  "name": "betting-duck",
+  "name": "@betting-duck/front-end",
   "private": true,
   "version": "0.0.0",
   "main": "main.js",
@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "@betting-duck/shared": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

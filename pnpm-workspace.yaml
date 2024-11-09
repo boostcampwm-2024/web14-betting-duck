@@ -1,0 +1,12 @@
+packages:
+  - "frontend"
+  - "backend"
+  - "shared/*"
+
+  - "!**/dist"
+  - "!**/build"
+  - "!**/node_modules"
+  - "!**/coverage"
+  - "!**/test"
+  - "!**/tests"
+  - "!**/docs"
