@@ -4,6 +4,7 @@ import "./App.css";
 function App() {
 	const [count, setCount] = useState(0);
 	const [isToggle, setIsToggle] = useState(false);
+	const [isToggle2, setIsToggle2] = useState(false);
 
 	return (
 		<>
@@ -18,6 +19,9 @@ function App() {
 				</button>
 				<button onClick={() => setIsToggle((prev) => !prev)}>
 					count is {isToggle}
+				</button>
+				<button onClick={() => setIsToggle2((prev) => !prev)}>
+					count is {isToggle2}
 				</button>
 				<p>내용수정테스트</p>
 			</div>
