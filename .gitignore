@@ -31,3 +31,12 @@ Thumbs.db
 
 # huksy
 .husky/_
+
+#pnpm
+.pnpm-store/
+
+#db
+db-init.sql/
+
+#nginx
+nginx.conf/

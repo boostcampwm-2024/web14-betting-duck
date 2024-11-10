@@ -1,11 +1,9 @@
 version: '3.8'
 
 networks:
-  auth-network:
-  chat-network:
-  bet-network:
-  kafka-network:
-  auth_db_network:
+  betting_duck_network:
+    driver: bridge
+
 
 services:
 
@@ -15,96 +13,51 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ../nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - betting_duck_app
     networks:
-      - auth-network
-      - chat-network
-      - bet-network
-      - kafka-network
+      - betting_duck_network
 
-  auth-service:
+  betting_duck_app:
     image: node:22.11.0-alpine
-    container_name: auth-service
-    working_dir: /app
+    container_name: betting_duck_app
+    working_dir: /app/backend
     volumes:
-      - ./auth-service:/app
+      - ../:/app
     ports:
-      - "${AUTH_SERVICE_PORT}:3000"
+      - "${APP_PORT}:3000"
+    # 테스트용
     command: >
-      sh -c "
-      npm install -g pnpm && 
-      pnpm install &&
-      pnpm run start
-      "
+      sh -c " npm install -g pnpm &&  pnpm install && tail -f /dev/null "
+    # command: >
+    #   sh -c " npm install -g pnpm &&  pnpm install && pnpm run start "
     environment:
-      KAFKA_BROKER: ${KAFKA_BROKER}
-      KAFKA_CONSUMER_GROUP_ID: ${KAFKA_CONSUMER_GROUP_ID}
-      AUTH_POSTGRES_HOSTNAME: ${AUTH_POSTGRES_HOSTNAME}
-      AUTH_DATABASE_PORT: ${AUTH_DATABASE_PORT}
-      AUTH_POSTGRES_DB_NAME: ${AUTH_POSTGRES_DB_NAME}
+      POSTGRES_HOSTNAME: ${POSTGRES_HOSTNAME}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
       POSTGRES_USERNAME: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB_NAME_DB_SYNCHRONIZE: ${POSTGRES_DB_NAME_DB_SYNCHRONIZE}
     depends_on:
-      - auth-db
-      - kafka
+      - postgres_db
     networks:
-      - auth-network
+      - betting_duck_network
 
-  zookeeper:
-    image: wurstmeister/zookeeper:latest
-    container_name: zookeeper
-    # platform: linux/amd64
-    ports:
-      - "2181:2181"
-    networks:
-      - kafka-network
-
-  kafka:
-    image: wurstmeister/kafka:latest
-    container_name: kafka
-    ports:
-      - "9092:9092"
-      - "9093:9093"
-    environment:
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9092,OUTSIDE://kafka:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
-      KAFKA_LISTENERS: INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:9093
-      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - kafka-network
-
-  kafdrop:
-    image: obsidiandynamics/kafdrop:latest
-    container_name: kafdrop
-    ports:
-      - "9000:9000"
-    environment:
-      KAFKA_BROKERCONNECT: kafka:9092
-      JVM_OPTS: "-Xms320M -Xmx640M -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
-      SERVER_PORT: 9000
-      MANAGEMENT_SERVER_PORT: 9000
-    depends_on:
-      - kafka
-    networks:
-      - kafka-network
-
-  auth-db:
+  postgres_db:
     image: postgres:15
-    container_name: auth-db
+    container_name: postgres_db
     environment:
       POSTGRES_USER: ${POSTGRES_USERNAME}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${AUTH_POSTGRES_DB_NAME}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
     ports:
-      - "${AUTH_DATABASE_PORT}:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
-      - auth_postgres_data:/var/lib/postgresql/data
-      - ./auth-db-init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+      # - ./db-init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - auth_db_network
+      - betting_duck_network
 
 volumes:
-  auth_postgres_data:
+  postgres_data:
