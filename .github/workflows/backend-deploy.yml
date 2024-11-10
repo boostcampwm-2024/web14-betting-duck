@@ -36,7 +36,6 @@ jobs:
         run: |
           echo "${{ secrets.SSH_PEM_KEY }}" >> /tmp/deploy_key.pem && \
           chmod 400 /tmp/deploy_key.pem && \
-          cat /tmp/deploy_key.pem && \
           eval "$(ssh-agent -s)" && \
           ssh-add /tmp/deploy_key.pem
 
