@@ -34,19 +34,22 @@ jobs:
 
       - name: Setup SSH
         run: |
-          echo "${{ secrets.SSH_PEM_KEY }}" > /tmp/deploy_key.pem
-          chmod 400 /tmp/deploy_key.pem
-          eval "$(ssh-agent -s)"
+          echo "${{ secrets.SSH_PEM_KEY }}" >> /tmp/deploy_key.pem && \
+          chmod 400 /tmp/deploy_key.pem && \
+          eval "$(ssh-agent -s)" && \
           ssh-add /tmp/deploy_key.pem
 
       - name: Deploy to server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP_V2 }} \
-          "cd /app && git pull origin dev && \
-          cd /app/backend && \
-          docker stop $(docker ps -aq) && \
-          docker rm $(docker ps -aq) && \
-          docker compose up -d"
+          ssh -i /tmp/deploy_key.pem -o StrictHostKeyChecking=no root@223.130.128.166 << EOF
+            echo "Connected to the server"
+            cd /app/web14-betting-duck
+            git pull origin dev
+            cd /app/web14-betting-duck/backend
+            docker stop $(docker ps -aq)
+            docker rm $(docker ps -aq)
+            docker compose up -d
+          EOF
 
       - name: Notify deployment status
         if: success()
