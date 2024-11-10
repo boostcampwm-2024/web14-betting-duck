@@ -11,13 +11,13 @@ import { Bet } from "src/bet/bet.entity";
 import { BetRoom } from "src/bet-room/bet-room.entity";
 
 @Entity()
-@Unique(["nickname"])
+@Unique(["email"])
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn("increment")
   id: number;
 
   @Column()
-  username: string;
+  email: string;
 
   @Column()
   nickname: string;
