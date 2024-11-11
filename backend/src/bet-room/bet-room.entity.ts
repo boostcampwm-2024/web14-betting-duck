@@ -10,7 +10,7 @@ import {
 } from "typeorm";
 import { User } from "src/auth/user.entity";
 import { Bet } from "../bet/bet.entity";
-import { BetResult } from "../bet-room/bet-result.entity";
+import { BetResult } from "../bet-result/bet-result.entity";
 
 @Entity("bet_rooms")
 export class BetRoom extends BaseEntity {
