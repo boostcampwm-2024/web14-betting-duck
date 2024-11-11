@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: "NanumSquare";
+  src: url("src/assets/fonts/NanumSquareRound.woff2") format("woff2");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "NanumSquare";
+  src: url("src/assets/fonts/NanumSquareRoundB.woff2") format("woff2");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "NanumSquare";
+  src: url("src/assets/fonts/NanumSquareRoundEB.woff2") format("woff2");
+  font-weight: 800;
+}
+
+@layer base {
+  body {
+    @apply font-sans;
+    font-family: "NanumSquare", sans-serif;
+  }
+}
