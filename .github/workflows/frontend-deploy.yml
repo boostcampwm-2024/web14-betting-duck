@@ -1,11 +1,11 @@
-name: Backend Deploy
+name: Frontend Deploy
 
 on:
   push:
     branches:
       - dev
     paths:
-      - "backend/**"
+      - "frontend/**"
 
 jobs:
   deploy:
@@ -14,23 +14,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      # NestJS 빌드 과정
-
-      # - name: Set up Node.js
-      #   uses: actions/setup-node@v2
-      #   with:
-      #     node-version-file: ".nvmrc"
-
-      # - name: Install pnpm
-      #   run: npm install -g pnpm
-
-      # - name: Install dependencies
-      #   run: pnpm install
-      #   working-directory: ${{ vars.BACK_SERVICE_PATH }}
-
-      # - name: Build the project
-      #   run: pnpm run build
 
       - name: Setup SSH
         run: |
@@ -45,10 +28,11 @@ jobs:
             echo "Connected to the server"
             cd /app/web14-betting-duck
             git pull origin dev
-            cd /app/web14-betting-duck/backend
-            docker stop $(docker ps -aq)
-            docker rm $(docker ps -aq)
-            docker compose up -d
+            cd /app/web14-betting-duck/frontend
+            echo "Install dependencies"
+            pnpm install
+            echo "Build the project"
+            pnpm run build
           EOF
 
       - name: Notify deployment status
