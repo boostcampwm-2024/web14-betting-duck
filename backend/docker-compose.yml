@@ -1,0 +1,63 @@
+version: '3.8'
+
+networks:
+  betting_duck_network:
+    driver: bridge
+
+
+services:
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-server
+    ports:
+      - "80:80"
+    volumes:
+      - ../nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - betting_duck_app
+    networks:
+      - betting_duck_network
+
+  betting_duck_app:
+    image: node:22.11.0-alpine
+    container_name: betting_duck_app
+    working_dir: /app/backend
+    volumes:
+      - ../:/app
+    ports:
+      - "${APP_PORT}:3000"
+    # 테스트용
+    command: >
+      sh -c " npm install -g pnpm &&  pnpm install && tail -f /dev/null "
+    # command: >
+    #   sh -c " npm install -g pnpm &&  pnpm install && pnpm run start "
+    environment:
+      POSTGRES_HOSTNAME: ${POSTGRES_HOSTNAME}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB_NAME_DB_SYNCHRONIZE: ${POSTGRES_DB_NAME_DB_SYNCHRONIZE}
+    depends_on:
+      - postgres_db
+    networks:
+      - betting_duck_network
+
+  postgres_db:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # - ./db-init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - betting_duck_network
+
+volumes:
+  postgres_data:

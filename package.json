@@ -41,5 +41,8 @@
     ".husky/**/*.js": [
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
   }
 }
