@@ -22,8 +22,9 @@ interface Channel {
   status: "waiting" | "active" | "finished";
 }
 
-interface RoomUsers {
-  [roomId: string]: string[];
+interface RoomUser {
+  nickname: string;
+  clientId: string;
 }
 
 @WebSocketGateway({ namespace: "/betting", cors: true })
@@ -44,7 +45,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     },
   ];
 
-  private rooms: RoomUsers = {};
+  private rooms: { [roomId: string]: RoomUser[] } = {};
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
@@ -52,29 +53,48 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-  }
+    for (const roomId in this.rooms) {
+      if (this.rooms[roomId]) {
+        this.rooms[roomId] = this.rooms[roomId].filter(
+          (user) => user.clientId !== client.id,
+        );
 
-  @SubscribeMessage("joinRoom")
-  handleJoinRoom(client: Socket, room: string) {
-    client.join(room);
-    if (!this.rooms[room]) {
-      this.rooms[room] = [];
+        const nicknames =
+          this.rooms[roomId]?.map((user) => user.nickname) || [];
+        this.server.to(`waiting-${roomId}`).emit("fetchRoomUsers", nicknames);
+      }
     }
-    this.rooms[room].push(client.id);
-    this.server.to(room).emit("fetchRoomUsers", this.rooms[room]);
-
-    console.log("joinRoom " + this.rooms[room]);
   }
 
-  @SubscribeMessage("leaveRoom")
-  handleLeaveRoom(client: Socket, room: string) {
-    client.leave(room);
-    if (this.rooms[room]) {
-      this.rooms[room] = this.rooms[room].filter(
-        (userId) => userId !== client.id,
+  @SubscribeMessage("joinBettingRoom")
+  handleJoinRoom(
+    client: Socket,
+    payload: { roomId: string; nickname: string },
+  ) {
+    const { roomId, nickname } = payload;
+    client.join(roomId);
+    if (!this.rooms[roomId]) {
+      this.rooms[roomId] = [];
+    }
+    this.rooms[roomId].push({ nickname, clientId: client.id });
+    const nicknames = this.rooms[roomId].map((user) => user.nickname) || [];
+    this.server.to(`waiting-${roomId}`).emit("fetchRoomUsers", nicknames);
+  }
+
+  @SubscribeMessage("leaveBettingRoom")
+  handleLeaveRoom(client: Socket, roomId: string) {
+    client.leave(roomId);
+    if (this.rooms[roomId]) {
+      this.rooms[roomId] = this.rooms[roomId].filter(
+        (user) => user.clientId !== client.id,
       );
     }
-    this.server.to(room).emit("fetchRoomUsers", this.rooms[room]);
+
+    let nicknames = [];
+    if (this.rooms[roomId]) {
+      nicknames = this.rooms[roomId].map((user) => user.nickname);
+    }
+    this.server.to(`waiting-${roomId}`).emit("fetchRoomUsers", nicknames);
   }
 
   @SubscribeMessage("fetchBetRoomInfo")
@@ -109,8 +129,6 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.server.to(channel.id).emit("fetchBetRoomInfo", {
           channel: targetChannel,
         });
-
-        console.log("joinBet " + targetChannel);
         //TODO: DB에 배팅 내역 저장 로직 추가
       } else {
         client.emit("joinBet", { error: "해당하는 옵션이 존재하지 않습니다." });
@@ -118,5 +136,15 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } else {
       client.emit("joinBet", { error: "해당하는 채널이 존재하지 않습니다." });
     }
+  }
+
+  @SubscribeMessage("joinWaitingRoom")
+  handleJoinWaitingRoom(client: Socket, roomId: string) {
+    client.join(`waiting-${roomId}`);
+  }
+
+  @SubscribeMessage("leaveWaitingRoom")
+  handleLeaveWaitingRoom(client: Socket, roomId: string) {
+    client.leave(`waiting-${roomId}`);
   }
 }
