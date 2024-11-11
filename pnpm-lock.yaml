@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      typescript:
-        specifier: ^5.6.3
-        version: 5.6.3
       zod:
         specifier: ^3.23.8
         version: 3.23.8
@@ -42,6 +39,9 @@ importers:
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
+      typescript:
+        specifier: ^5.6.3
+        version: 5.6.3
       typescript-eslint:
         specifier: ^8.12.2
         version: 8.13.0(eslint@9.14.0)(typescript@5.6.3)
