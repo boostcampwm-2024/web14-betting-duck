@@ -7,10 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      typescript:
-        specifier: ^5.6.3
-        version: 5.6.3
     devDependencies:
       '@eslint/js':
         specifier: ^9.13.0
@@ -39,6 +35,9 @@ importers:
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
+      typescript:
+        specifier: ^5.6.3
+        version: 5.6.3
       typescript-eslint:
         specifier: ^8.12.2
         version: 8.13.0(eslint@9.14.0)(typescript@5.6.3)

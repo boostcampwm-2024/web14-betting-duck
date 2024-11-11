@@ -6,10 +6,11 @@ export default defineConfig({
 	base: "./",
 	plugins: [react()],
 	server: {
-		port: 5173,
-		strictPort: true,
-		watch: {
-			usePolling: true,
-		},
+		port: 3000
 	},
+	resolve: {
+		alias: {
+			"@": "/src"
+		}
+	}
 });
