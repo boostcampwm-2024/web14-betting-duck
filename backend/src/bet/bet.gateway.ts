@@ -58,15 +58,14 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.rooms[roomId] = this.rooms[roomId].filter(
           (user) => user.clientId !== client.id,
         );
-
         const nicknames =
           this.rooms[roomId]?.map((user) => user.nickname) || [];
-        this.server.to(`waiting-${roomId}`).emit("fetchRoomUsers", nicknames);
+        this.server.to(roomId).emit("fetchRoomUsers", nicknames);
       }
     }
   }
 
-  @SubscribeMessage("joinBettingRoom")
+  @SubscribeMessage("joinRoom")
   handleJoinRoom(
     client: Socket,
     payload: { roomId: string; nickname: string },
@@ -78,10 +77,10 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     this.rooms[roomId].push({ nickname, clientId: client.id });
     const nicknames = this.rooms[roomId].map((user) => user.nickname) || [];
-    this.server.to(`waiting-${roomId}`).emit("fetchRoomUsers", nicknames);
+    this.server.to(roomId).emit("fetchRoomUsers", nicknames);
   }
 
-  @SubscribeMessage("leaveBettingRoom")
+  @SubscribeMessage("leaveRoom")
   handleLeaveRoom(client: Socket, roomId: string) {
     client.leave(roomId);
     if (this.rooms[roomId]) {
@@ -94,7 +93,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (this.rooms[roomId]) {
       nicknames = this.rooms[roomId].map((user) => user.nickname);
     }
-    this.server.to(`waiting-${roomId}`).emit("fetchRoomUsers", nicknames);
+    this.server.to(roomId).emit("fetchRoomUsers", nicknames);
   }
 
   @SubscribeMessage("fetchBetRoomInfo")
@@ -136,15 +135,5 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } else {
       client.emit("joinBet", { error: "해당하는 채널이 존재하지 않습니다." });
     }
-  }
-
-  @SubscribeMessage("joinWaitingRoom")
-  handleJoinWaitingRoom(client: Socket, roomId: string) {
-    client.join(`waiting-${roomId}`);
-  }
-
-  @SubscribeMessage("leaveWaitingRoom")
-  handleLeaveWaitingRoom(client: Socket, roomId: string) {
-    client.leave(`waiting-${roomId}`);
   }
 }
