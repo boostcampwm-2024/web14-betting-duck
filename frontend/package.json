@@ -1,5 +1,5 @@
 {
-  "name": "betting-duck",
+  "name": "@betting-duck/frontend",
   "private": true,
   "version": "0.0.0",
   "main": "main.js",
@@ -13,11 +13,19 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@betting-duck/shared": "workspace:*",
+    "@radix-ui/react-slot": "^1.1.0",
+    "@tanstack/react-router": "^1.81.1",
+    "clsx": "^2.1.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
+    "@tanstack/router-devtools": "^1.81.1",
+    "@tanstack/router-plugin": "^1.79.0",
+    "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
