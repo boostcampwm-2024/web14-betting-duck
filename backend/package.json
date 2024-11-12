@@ -27,6 +27,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-socket.io": "^10.4.7",
     "@nestjs/typeorm": "^10.0.2",
+    "ioredis": "^5.4.1",
     "@nestjs/websockets": "^10.4.7",
     "bcryptjs": "^2.4.3",
     "pg": "^8.13.1",
