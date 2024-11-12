@@ -1,42 +1,26 @@
-// <Dialog>
-//   <DialogTrigger asChild>
-//     <Button variant="outline">Edit Profile</Button>
-//   </DialogTrigger>
-//   <DialogContent className="sm:max-w-[425px]">
-//     <DialogHeader>
-//       <DialogTitle>Edit profile</DialogTitle>
-//       <DialogDescription>
-//         Make changes to your profile here. Click save when you're done.
-//       </DialogDescription>
-//     </DialogHeader>
-//     <div className="grid gap-4 py-4">
-//       <div className="grid grid-cols-4 items-center gap-4">
-//         <Label htmlFor="name" className="text-right">
-//           Name
-//         </Label>
-//         <Input id="name" value="Pedro Duarte" className="col-span-3" />
-//       </div>
-//       <div className="grid grid-cols-4 items-center gap-4">
-//         <Label htmlFor="username" className="text-right">
-//           Username
-//         </Label>
-//         <Input id="username" value="@peduarte" className="col-span-3" />
-//       </div>
-//     </div>
-//     <DialogFooter>
-//       <Button type="submit">Save changes</Button>
-//     </DialogFooter>
-//   </DialogContent>
-// </Dialog>
 import React from "react";
-import { FocusLock } from "./focus-lock";
+import { DialogContent } from "./content";
+import { DialogTrigger } from "./trigger";
+import useToggle from "../../shared/hooks/use-trigger";
+
+type DialogContextType = {
+  isOpen: boolean;
+  toggleOpen: () => void;
+};
+
+const DialogContext = React.createContext<DialogContextType>({
+  isOpen: false,
+  toggleOpen: () => {},
+});
 
 function Dialog({ children }: { children: React.ReactNode }) {
-	return (
-		<div className={` bg-black text-white fixed-center`}>
-			<FocusLock>{children}</FocusLock>
-		</div>
-	);
+  const [isOpen, toggleOpen] = useToggle();
+
+  return (
+    <DialogContext.Provider value={{ isOpen, toggleOpen }}>
+      {children}
+    </DialogContext.Provider>
+  );
 }
 
-export { Dialog };
+export { Dialog, DialogContent, DialogTrigger, DialogContext };
