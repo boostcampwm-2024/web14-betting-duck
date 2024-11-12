@@ -22,6 +22,11 @@ interface Channel {
   status: "waiting" | "active" | "finished";
 }
 
+interface UserInfo {
+  nickname: string;
+  role: string;
+}
+
 interface RoomUser {
   nickname: string;
   clientId: string;
@@ -68,9 +73,10 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage("joinRoom")
   handleJoinRoom(
     client: Socket,
-    payload: { roomId: string; nickname: string },
+    payload: { sender: UserInfo; channel: { roomId: string } },
   ) {
-    const { roomId, nickname } = payload;
+    const { nickname } = payload.sender;
+    const { roomId } = payload.channel;
     client.join(roomId);
     if (!this.rooms[roomId]) {
       this.rooms[roomId] = [];
