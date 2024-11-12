@@ -4,10 +4,10 @@ import Sidebar from "../Sidebar";
 
 function DefaultLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex justify-center">
-      <div className="w-[530px] bg-[#E6EDF8]">
+    <div className="bg-layout-background flex h-screen items-center justify-center p-4">
+      <div className="max-h-layout max-w-layout shadow-far box-border h-[780px] w-[520px] rounded-lg">
         <Header />
-        <div role="main" className="flex w-full">
+        <div role="main" className="flex h-full w-full">
           <Sidebar />
           {children || <MainContent />}
         </div>

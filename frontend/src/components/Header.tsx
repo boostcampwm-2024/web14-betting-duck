@@ -1,10 +1,13 @@
+import duckIcon from "/src/assets/icons/header_logo_duck.svg";
+
 function Header() {
   return (
     <header
       role="banner"
       aria-label="Main Header"
-      className="font-bold p-3 ml-10"
+      className="bg-layout-sidebar text-default flex gap-2 p-4 text-lg font-extrabold"
     >
+      <img src={duckIcon} alt="headerIcon" className="ml-20" />
       Betting Duck
     </header>
   );

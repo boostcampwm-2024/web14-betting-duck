@@ -1,5 +1,5 @@
 function Sidebar() {
-  return <div className="w-1/5">Sidebar</div>;
+  return <div className="bg-layout-sidebar w-1/5 p-4">Sidebar</div>;
 }
 
 export default Sidebar;
