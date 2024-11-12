@@ -41,7 +41,7 @@ jobs:
 
       - name: Deploy to server
         run: |
-          ssh -i /tmp/deploy_key.pem -o StrictHostKeyChecking=no root@223.130.128.166 << EOF
+          ssh -i /tmp/deploy_key.pem -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << EOF
             echo "Connected to the server"
             cd /app/web14-betting-duck
             git pull origin dev
