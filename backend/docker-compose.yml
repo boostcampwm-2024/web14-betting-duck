@@ -30,7 +30,10 @@ services:
       - "${SERVER_PORT}:3000"
     # 테스트용
     command: >
-      sh -c " npm install -g pnpm &&  pnpm install && tail -f /dev/null "
+      sh -c " npm install -g pnpm && \
+      cd ../shared && pnpm install && \
+      cd ../backend && pnpm install && \
+      tail -f /dev/null "
     # command: >
     #   sh -c " npm install -g pnpm &&  pnpm install && pnpm run start "
     environment:
