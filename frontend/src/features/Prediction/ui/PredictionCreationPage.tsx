@@ -8,7 +8,8 @@ import {
 import { usePredictionStore } from "../model/store";
 
 function PredictionCreationPage() {
-  const { formState, handleInputChange, isFormVaild } = usePredictionStore();
+  const { formState, handleInputChange, isFormVaild, submitPrediction } =
+    usePredictionStore();
 
   const handleCancelClick = () => {
     // TODO: 라우터 연결된 후에 메인페이지로 돌아가도록 기능 추가 해야함
@@ -119,6 +120,7 @@ function PredictionCreationPage() {
         <button
           className="bg-primary hover:bg-primary-hover disabled:bg-primary-disabled shadow-middle w-1/2 rounded-lg px-8 py-4 font-semibold text-white"
           disabled={!isFormVaild}
+          onClick={submitPrediction}
         >
           생성
         </button>
