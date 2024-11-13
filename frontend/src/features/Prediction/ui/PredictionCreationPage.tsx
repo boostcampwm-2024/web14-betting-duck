@@ -7,6 +7,11 @@ import {
 } from "@/shared/icons";
 
 function PredictionCreationPage() {
+  const handleCancelClick = () => {
+    // TODO: 라우터 연결된 후에 메인페이지로 돌아가도록 기능 추가 해야함
+    console.log("뒤로 가기");
+  };
+
   return (
     <div className="bg-layout-main flex w-full flex-col items-center gap-4 p-9">
       <h1 className="text-default my-8 text-xl font-extrabold">
@@ -91,9 +96,18 @@ function PredictionCreationPage() {
         </div>
       </div>
 
-      <button className="bg-primary hover:bg-primary-hover disabled:bg-primary-disabled shadow-middle w-full rounded-lg px-8 py-4 font-semibold text-white">
-        생성하기
-      </button>
+      {/* 취소 및 투표 생성 버튼 */}
+      <div className="flex w-full gap-2">
+        <button
+          className="bg-secondary hover:bg-secondary-hover shadow-middle text-default w-1/2 rounded-lg px-8 py-4 font-semibold hover:text-white"
+          onClick={handleCancelClick}
+        >
+          취소
+        </button>
+        <button className="bg-primary hover:bg-primary-hover disabled:bg-primary-disabled shadow-middle w-1/2 rounded-lg px-8 py-4 font-semibold text-white">
+          생성
+        </button>
+      </div>
     </div>
   );
 }
