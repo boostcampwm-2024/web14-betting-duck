@@ -5,8 +5,11 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
 } from "@/shared/icons";
+import { usePredictionStore } from "../model/store";
 
 function PredictionCreationPage() {
+  const { formState, handleInputChange, isFormVaild } = usePredictionStore();
+
   const handleCancelClick = () => {
     // TODO: 라우터 연결된 후에 메인페이지로 돌아가도록 기능 추가 해야함
     console.log("뒤로 가기");
@@ -27,6 +30,9 @@ function PredictionCreationPage() {
             type="text"
             placeholder="승부를 예측할 제목을 입력해 주세요."
             className="text-md w-full border-none bg-transparent text-gray-700 outline-none"
+            value={formState.title}
+            onChange={handleInputChange}
+            name="title"
           />
         </div>
       </div>
@@ -40,6 +46,9 @@ function PredictionCreationPage() {
             type="text"
             placeholder="승리에 해당하는 예측 케이스를 적어주세요."
             className="text-bettingBlue placeholder-bettingBlue text-md w-full border-none bg-transparent outline-none"
+            value={formState.winCase}
+            onChange={handleInputChange}
+            name="winCase"
           />
         </div>
         <div className="border-border border-t"></div>
@@ -51,6 +60,9 @@ function PredictionCreationPage() {
             type="text"
             placeholder="패배에 해당하는 예측 케이스를 적어주세요."
             className="text-bettingPink placeholder-bettingPink text-md w-full border-none bg-transparent outline-none"
+            value={formState.loseCase}
+            onChange={handleInputChange}
+            name="loseCase"
           />
         </div>
       </div>
@@ -104,7 +116,10 @@ function PredictionCreationPage() {
         >
           취소
         </button>
-        <button className="bg-primary hover:bg-primary-hover disabled:bg-primary-disabled shadow-middle w-1/2 rounded-lg px-8 py-4 font-semibold text-white">
+        <button
+          className="bg-primary hover:bg-primary-hover disabled:bg-primary-disabled shadow-middle w-1/2 rounded-lg px-8 py-4 font-semibold text-white"
+          disabled={!isFormVaild}
+        >
           생성
         </button>
       </div>
