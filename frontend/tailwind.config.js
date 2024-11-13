@@ -31,6 +31,7 @@ export default {
           "0 4px 4px -4px rgba(12, 12, 13, 0.05), 0 16px 16px -8px rgba(12, 12, 13, 0.1)",
         close:
           "0 4px 4px -4px rgba(12, 12, 13, 0.05), 0 16px 32px -4px rgba(12, 12, 13, 0.1)",
+        inner: "0px 4px 4px 0px rgba(0, 0, 0, 0.25) inset",
       },
       colors: {
         layout: {
