@@ -3,7 +3,7 @@ function MainContent() {
     <main
       tabIndex={-1}
       aria-label="Main Content Area"
-      className="flex-1 bg-[#F0F4FA] rounded-s"
+      className="bg-layout-main flex-1 p-4"
     >
       MainContent
     </main>

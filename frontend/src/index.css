@@ -26,3 +26,38 @@
     font-family: "NanumSquare", sans-serif;
   }
 }
+
+.layout {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "sidebar main";
+  grid-template-rows: 54px 1fr; /* 첫 번째 행은 54px, 두 번째 행은 남은 공간 */
+  grid-template-columns: 60px 1fr; /* 첫 번째 열은 60px, 두 번째 열은 남은 공간 */
+  height: 100vh; /* viewport 높이의 100%를 차지하도록 설정 */
+  box-shadow: var(--shadow-elevation-high);
+  border-radius: 8px;
+}
+
+/* 각 영역에 대한 grid-area 설정 */
+.header {
+  grid-area: header;
+  background: #e6edf8;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+
+  font-family: Bold, sans-serif;
+  font-size: 1rem;
+}
+
+.sidebar {
+  grid-area: sidebar;
+  background: #e6edf8;
+  border-bottom-left-radius: 8px;
+}
+
+.main {
+  grid-area: main;
+  background: #f0f4fa;
+  border-bottom-right-radius: 8px;
+}

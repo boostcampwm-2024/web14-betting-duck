@@ -1,8 +1,7 @@
-import "./App.css";
-import DefaultLayout from "./components/layouts/DefaultLayout";
+import DefaultLayout from "./shared/components/layouts/DefaultLayout";
 
 function App() {
-	return <DefaultLayout></DefaultLayout>;
+  return <DefaultLayout children="" />;
 }
 
 export default App;
