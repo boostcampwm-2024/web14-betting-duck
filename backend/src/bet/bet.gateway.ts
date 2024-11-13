@@ -41,8 +41,10 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       role: "user",
       joinAt: new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString(),
     });
+
     await this.redisManager.addUserToRoom(roomId, nickname);
-    const users = await this.redisManager.getRoomUsers(roomId);
+
+    const users = await this.getUsersWithJoinAt(roomId);
     this.server.to(roomId).emit("fetchRoomUsers", users);
   }
 
@@ -51,7 +53,8 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.leave(roomId);
 
     await this.redisManager.removeUserFromRoom(roomId, client.id);
-    const users = await this.redisManager.getRoomUsers(roomId);
+
+    const users = await this.getUsersWithJoinAt(roomId);
     this.server.to(roomId).emit("fetchRoomUsers", users);
   }
 
@@ -110,5 +113,16 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       await this.redisManager.client.del(key);
       await this.redisManager.client.rpush(key, ...updatedUsers);
     }
+  }
+
+  private async getUsersWithJoinAt(roomId: string) {
+    const userNicknames = await this.redisManager.getRoomUsers(roomId);
+    const users = await Promise.all(
+      userNicknames.map(async (nickname) => {
+        const userInfo = await this.redisManager.getUser(nickname);
+        return { nickname: userInfo.nickname, joinAt: userInfo.joinAt };
+      }),
+    );
+    return users;
   }
 }
