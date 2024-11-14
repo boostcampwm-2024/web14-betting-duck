@@ -8,7 +8,7 @@ import {
 import { Server, Socket } from "socket.io";
 import { RedisManager } from "src/utils/redis.manager";
 
-@WebSocketGateway({ namespace: "/betting", cors: true })
+@WebSocketGateway({ namespace: "api/betting", cors: true })
 export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
