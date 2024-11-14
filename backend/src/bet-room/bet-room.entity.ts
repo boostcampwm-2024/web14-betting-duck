@@ -2,7 +2,7 @@ import {
   BaseEntity,
   Column,
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   OneToMany,
   ManyToOne,
   CreateDateColumn,
@@ -14,8 +14,8 @@ import { BetResult } from "../bet-result/bet-result.entity";
 
 @Entity("bet_rooms")
 export class BetRoom extends BaseEntity {
-  @PrimaryGeneratedColumn("increment")
-  id: number;
+  @PrimaryColumn("uuid")
+  id: string;
 
   @ManyToOne(() => User, (user) => user.managedBetRooms)
   manager: User;
@@ -38,8 +38,8 @@ export class BetRoom extends BaseEntity {
   @Column({ type: "timestamp", nullable: true })
   endTime: Date;
 
-  @Column({ type: "enum", enum: ["open", "closed", "pending"] })
-  status: "open" | "closed" | "pending";
+  @Column({ type: "enum", enum: ["waiting", "active", "finished"] })
+  status: "waiting" | "active" | "finished";
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
@@ -50,8 +50,8 @@ export class BetRoom extends BaseEntity {
   @Column({ length: 200 })
   joinUrl: string;
 
-  @Column({ type: "timestamp", nullable: true })
-  timer: Date;
+  @Column()
+  timer: number;
 
   @OneToMany(() => Bet, (bet) => bet.betRoom)
   bets: Bet[];
