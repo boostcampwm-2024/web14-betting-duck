@@ -10,7 +10,13 @@ export class UserService {
   async signUp(userCredentialsDto: UserCredentialsDto) {
     const { email, nickname, password } = userCredentialsDto;
     const hashedPassword = await this.hashPassword(password);
-    return this.userRepository.createUser(email, nickname, hashedPassword);
+    const user = {
+      email,
+      nickname,
+      password: hashedPassword,
+      duck: 300,
+    };
+    return this.userRepository.createUser(user);
   }
 
   private async hashPassword(password: string): Promise<string> {
