@@ -1,140 +1,100 @@
 // src/mocks/handlers.ts
 import { http, HttpResponse, delay, ws } from "msw";
 
-// Types
 interface ChatMessage {
-	id: string;
-	nickname: string;
-	content: string;
-	timestamp: number;
+  sender: {
+    nickname: string;
+    role: "user" | "operator";
+  };
+  message: string;
+}
+// Types
+interface User {
+  id: string;
+  nickname: string;
+  status: "online" | "offline";
 }
 
-interface User {
-	id: string;
-	nickname: string;
-	status: "online" | "offline";
-}
+const isValidMessage = (message: ChatMessage): boolean => {
+  return !!(
+    message.sender &&
+    typeof message.sender.nickname === "string" &&
+    ["user", "operator"].includes(message.sender.role) &&
+    typeof message.message === "string"
+  );
+};
 
 // Mock Data Store
 const messages: ChatMessage[] = [];
 const users: User[] = [];
 // WebSocket Server Setup
 const setupWebSocketServer = () => {
-	const wss = ws.link("ws://localhost:8080");
+  const wss = ws.link("ws://localhost:8080");
 
-	wss.addEventListener("connection", (websocket) => {
-		console.log("New WebSocket connection");
+  wss.addEventListener("connection", (websocket) => {
+    websocket.client.send("New WebSocket connection");
 
-		websocket.client.addEventListener("message", (event) => {
-			const data = event.data.toString();
-			const message = JSON.parse(data);
+    websocket.server.addEventListener("message", (event) => {
+      event.preventDefault();
 
-			switch (message.type) {
-				case "user.join": {
-					const newUser: User = {
-						id: message.payload.id,
-						nickname: message.payload.nickname,
-						status: "online",
-					};
-					users.push(newUser);
+      try {
+        const receivedMessage: ChatMessage = JSON.parse(event.data.toString());
 
-					wss.clients.forEach((client) => {
-						client.send(
-							JSON.stringify({
-								type: "user.joined",
-								payload: {
-									user: newUser,
-									timestamp: Date.now(),
-								},
-							}),
-						);
-					});
-					break;
-				}
+        if (isValidMessage(receivedMessage)) {
+          websocket.client.send(
+            JSON.stringify({
+              error: "Invalid message format",
+            }),
+          );
+        }
 
-				case "chat.message": {
-					const newMessage: ChatMessage = {
-						id: crypto.randomUUID(),
-						...message.payload,
-						timestamp: Date.now(),
-					};
-					messages.push(newMessage);
+        const responseMessage = {
+          sender: {
+            nickname: receivedMessage.sender.nickname,
+            role: receivedMessage.sender.role,
+          },
+          message: receivedMessage.message,
+        };
 
-					wss.clients.forEach((client) => {
-						client.send(
-							JSON.stringify({
-								type: "chat.message",
-								payload: newMessage,
-							}),
-						);
-					});
-					break;
-				}
-			}
-		});
+        websocket.server.send(JSON.stringify(responseMessage));
+      } catch (error) {
+        console.error(`Error processing message:`, error);
+        websocket.client.send(
+          JSON.stringify({
+            error: "Invalid message format",
+          }),
+        );
+      }
+    });
 
-		websocket.client.addEventListener("close", () => {
-			console.log("Client disconnected");
-		});
-	});
+    websocket.client.addEventListener("close", () => {
+      console.log("Client disconnected");
+    });
+  });
 };
 
 // HTTP Handlers
 export const handlers = [
-	http.get("/api/chat/messages", async ({ request }) => {
-		const url = new URL(request.url);
-		const limit = Number(url.searchParams.get("limit")) || 50;
-		const offset = Number(url.searchParams.get("offset")) || 0;
+  http.get("/api/chat/messages", async ({ request }) => {
+    const url = new URL(request.url);
+    const limit = Number(url.searchParams.get("limit")) || 50;
+    const offset = Number(url.searchParams.get("offset")) || 0;
 
-		await delay(100);
+    await delay(100);
 
-		return HttpResponse.json({
-			messages: messages.slice(offset, offset + limit),
-			total: messages.length,
-		});
-	}),
+    return HttpResponse.json({
+      messages: messages.slice(offset, offset + limit),
+      total: messages.length,
+    });
+  }),
 
-	http.get("/api/chat/users", async () => {
-		await delay(100);
+  http.get("/api/chat/users", async () => {
+    await delay(100);
 
-		return HttpResponse.json({
-			users: users.filter((user) => user.status === "online"),
-		});
-	}),
-
-	http.post("/api/chat/messages", async ({ request }) => {
-		const { content, nickname } = (await request.json()) as ChatMessage;
-
-		const newMessage: ChatMessage = {
-			id: crypto.randomUUID(),
-			nickname,
-			content,
-			timestamp: Date.now(),
-		};
-
-		messages.push(newMessage);
-
-		await delay(100);
-
-		return HttpResponse.json(newMessage, { status: 201 });
-	}),
-
-	http.post("/api/chat/join", async ({ request }) => {
-		const { id, nickname } = (await request.json()) as ChatMessage;
-
-		const user: User = {
-			id,
-			nickname,
-			status: "online",
-		};
-
-		users.push(user);
-
-		return HttpResponse.json({
-			user,
-			token: `mock-token-${crypto.randomUUID()}`,
-		});
-	}),
+    return HttpResponse.json({
+      users: users.filter((user) => user.status === "online"),
+    });
+  }),
 ];
 
 export { setupWebSocketServer };
