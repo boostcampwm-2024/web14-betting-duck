@@ -1,8 +1,7 @@
-import { z } from 'zod';
-import { senderSchema, roomIdSchema, messageSchema } from '../../shared';
+import { z } from "zod";
+import { senderSchema, messageSchema } from "../../shared";
 
 export const messageResponseSchema = z.object({
-    sender: senderSchema,
-    channel: roomIdSchema,
-    message: messageSchema
+  sender: senderSchema,
+  message: messageSchema,
 });
