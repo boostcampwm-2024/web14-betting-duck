@@ -12,7 +12,7 @@ interface UserInfo {
   role: string;
 }
 
-@WebSocketGateway({ namespace: "/chat", cors: true })
+@WebSocketGateway({ namespace: "api/chat", cors: true })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
