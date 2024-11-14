@@ -1,7 +1,6 @@
 import React from "react";
 import { DialogContext } from ".";
-import { cn } from "../../shared/misc";
-import { cn } from "../../misc";
+import { cn } from "@shared/misc";
 import { createPortal } from "react-dom";
 import { FocusLock } from "./focus-lock";
 
