@@ -6,14 +6,15 @@ import {
   ArrowUpIcon,
 } from "@/shared/icons";
 import { usePredictionStore } from "../model/store";
+import { useNavigate } from "@tanstack/react-router";
 
 function CreateVotePage() {
   const { formState, handleInputChange, isFormVaild, submitPrediction } =
     usePredictionStore();
+  const navigate = useNavigate();
 
   const handleCancelClick = () => {
-    // TODO: 라우터 연결된 후에 메인페이지로 돌아가도록 기능 추가 해야함
-    console.log("뒤로 가기");
+    navigate({ to: "/login" });
   };
 
   return (
