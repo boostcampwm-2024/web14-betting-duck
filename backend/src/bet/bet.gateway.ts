@@ -7,6 +7,18 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import { RedisManager } from "src/utils/redis.manager";
+import {
+  joinRoomRequestSchema,
+  joinRoomRequestType,
+  leaveRoomRequestSchema,
+  leaveRoomRequestType,
+} from "@shared/schemas/shared";
+import {
+  fetchBetRoomInfoRequestSchema,
+  fetchBetRoomInfoRequestType,
+  joinBetRoomRequestSchema,
+  joinBetRoomRequestType,
+} from "@shared/schemas/bet/socket/request";
 
 @WebSocketGateway({ namespace: "api/betting", cors: true })
 export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -25,12 +37,10 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage("joinRoom")
-  async handleJoinRoom(
-    client: Socket,
-    payload: { sender: { nickname: string }; channel: { roomId: string } },
-  ) {
-    const { nickname } = payload.sender;
-    const { roomId } = payload.channel;
+  async handleJoinRoom(client: Socket, payload: joinRoomRequestType) {
+    const { sender, channel } = joinRoomRequestSchema.parse(payload);
+    const { nickname } = sender;
+    const { roomId } = channel;
     client.join(roomId);
     const ipAddress = client.handshake.address;
 
@@ -49,7 +59,8 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage("leaveRoom")
-  async handleLeaveRoom(client: Socket, roomId: string) {
+  async handleLeaveRoom(client: Socket, payload: leaveRoomRequestType) {
+    const { roomId } = leaveRoomRequestSchema.parse(payload);
     client.leave(roomId);
 
     await this.redisManager.removeUserFromRoom(roomId, client.id);
@@ -59,7 +70,11 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage("fetchBetRoomInfo")
-  async handleFetchBetRoomInfo(client: Socket, roomId: string) {
+  async handleFetchBetRoomInfo(
+    client: Socket,
+    payload: fetchBetRoomInfoRequestType,
+  ) {
+    const { roomId } = fetchBetRoomInfoRequestSchema.parse(payload);
     const channel = await this.redisManager.client.hgetall(`room:${roomId}`);
     if (channel) {
       client.emit("fetchBetRoomInfo", { channel });
@@ -71,29 +86,23 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage("joinBet")
-  async handleJoinBet(
-    client: Socket,
-    payload: {
-      sender: { nickname: string; betAmount: number; selectOption: string };
-      channel: { id: string };
-    },
-  ) {
-    const { sender, channel } = payload;
+  async handleJoinBet(client: Socket, payload: joinBetRoomRequestType) {
+    const { sender, channel } = joinBetRoomRequestSchema.parse(payload);
 
     //TODO: 베팅방 생성 API 에서 redis에 channel 데이터 초기화
     const targetChannel = await this.redisManager.client.hgetall(
-      `room:${channel.id}`,
+      `room:${channel.roomId}`,
     );
 
     if (targetChannel && targetChannel.status === "active") {
       const option = targetChannel.options[sender.selectOption];
       if (option) {
         await this.redisManager.updateBetOption(
-          channel.id,
+          channel.roomId,
           sender.selectOption,
           sender.betAmount,
         );
-        this.server.to(channel.id).emit("fetchBetRoomInfo", {
+        this.server.to(channel.roomId).emit("fetchBetRoomInfo", {
           channel: targetChannel,
         });
         //TODO: RDB에 배팅 내역 저장 로직 추가
