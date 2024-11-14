@@ -2,8 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-<<<<<<< HEAD
-=======
 *,
 *::before,
 *::after {
@@ -14,6 +12,13 @@
   margin: 0px;
   line-height: calc(1em + 0.8rem);
   -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  display: flex;
+  height: 100dvh;
+  align-items: center;
+  background: #d9e3f3;
 }
 
 :root {
@@ -43,7 +48,6 @@
   --color-thumb: #bacaf0;
   --color-thumb-background: #dbe2f3;
 }
->>>>>>> 97d528744acdc84eb9e66ed5a4ce0c4606cef20d
 @font-face {
   font-family: "NanumSquare";
   src: url("src/assets/fonts/NanumSquareRound.woff2") format("woff2");

@@ -6,13 +6,18 @@ import {
   WebSocketServer,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
+import {
+  sendMessageRequestSchema,
+  sendMessageRequestType,
+} from "@shared/schemas/chat/socket/request";
+import {
+  joinRoomRequestSchema,
+  joinRoomRequestType,
+  leaveRoomRequestSchema,
+  leaveRoomRequestType,
+} from "@shared/schemas/shared";
 
-interface UserInfo {
-  nickname: string;
-  role: string;
-}
-
-@WebSocketGateway({ namespace: "/chat", cors: true })
+@WebSocketGateway({ namespace: "api/chat", cors: true })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
@@ -26,26 +31,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage("joinRoom")
-  handleJoinRoom(
-    client: Socket,
-    payload: { sender: UserInfo; channel: { roomId: string } },
-  ) {
-    const { channel } = payload;
+  handleJoinRoom(client: Socket, payload: joinRoomRequestType) {
+    const { channel } = joinRoomRequestSchema.parse(payload);
     const roomId = channel.roomId;
     client.join(roomId);
   }
 
   @SubscribeMessage("leaveRoom")
-  handleLeaveRoom(client: Socket, roomId: string) {
+  handleLeaveRoom(client: Socket, payload: leaveRoomRequestType) {
+    const { roomId } = leaveRoomRequestSchema.parse(payload);
     client.leave(roomId);
   }
 
   @SubscribeMessage("sendMessage")
-  handleMessage(
-    client: Socket,
-    payload: { sender: UserInfo; message: string; channel: { roomId: string } },
-  ) {
-    const { sender, message, channel } = payload;
+  handleMessage(client: Socket, payload: sendMessageRequestType) {
+    const { sender, message, channel } =
+      sendMessageRequestSchema.parse(payload);
     const roomId = channel.roomId;
     this.server.to(roomId).emit("message", {
       sender,

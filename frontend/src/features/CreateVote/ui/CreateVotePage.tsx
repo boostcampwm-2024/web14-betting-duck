@@ -7,7 +7,7 @@ import {
 } from "@/shared/icons";
 import { usePredictionStore } from "../model/store";
 
-function PredictionCreationPage() {
+function CreateVotePage() {
   const { formState, handleInputChange, isFormVaild, submitPrediction } =
     usePredictionStore();
 
@@ -129,4 +129,4 @@ function PredictionCreationPage() {
   );
 }
 
-export { PredictionCreationPage };
+export { CreateVotePage };
