@@ -1,0 +1,56 @@
+.vote-page-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.tooltip {
+  position: absolute;
+  white-space: nowrap;
+  pointer-events: none;
+
+  top: -49px;
+  left: -33px;
+  padding: 4px 8px;
+  padding-bottom: 12px;
+  border-radius: 4px;
+
+  opacity: 0;
+  visibility: hidden;
+  background: #354357;
+  color: #e6edf8;
+
+  clip-path: polygon(
+    0% 0%,
+    100% 0%,
+    100% calc(100% - 10px),
+    calc(50% + 10px) calc(100% - 10px),
+    50% 100%,
+    calc(50% - 10px) calc(100% - 10px),
+    0% calc(100% - 10px)
+  );
+
+  transition:
+    opacity 200ms ease-in-out,
+    visibility 200ms ease-in-out;
+  z-index: 1;
+}
+
+.vote-page-button:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.vote-page {
+  left: -35px;
+}
+
+.input-placeholder {
+  display: flex;
+
+  position: absolute;
+  top: calc(50% - 0.75rem);
+
+  flex-direction: row;
+  font-size: 0.75rem;
+}

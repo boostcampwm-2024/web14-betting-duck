@@ -33,6 +33,9 @@ importers:
       '@eslint/js':
         specifier: ^9.13.0
         version: 9.14.0
+      '@tanstack/router-cli':
+        specifier: ^1.79.0
+        version: 1.79.0
       '@tanstack/router-devtools':
         specifier: ^1.81.1
         version: 1.81.1(@tanstack/react-router@1.81.1(@tanstack/router-generator@1.79.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(csstype@3.1.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -736,6 +739,11 @@ packages:
     peerDependencies:
       react: ^17.0.0 || ^18.0.0
       react-dom: ^17.0.0 || ^18.0.0
+
+  '@tanstack/router-cli@1.79.0':
+    resolution: {integrity: sha512-si+0tkvvW+QqggKsZkXd9OYNZzfyHuJuwN3fak8U1hiJEUwAo/HmRVKSp3xjBlPUf4MLwROXn/GwOOiRF40N0g==}
+    engines: {node: '>=12'}
+    hasBin: true
 
   '@tanstack/router-devtools@1.81.1':
     resolution: {integrity: sha512-gSAqQ6/+fycHxj1Yfsfg5OPZ8KMDlcXh5rb/tHzlOpC+zGtvxQAR6KSes4kmIQ2HD0C094tW9+Nkrfl7/uYmlQ==}
@@ -2467,6 +2475,12 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       use-sync-external-store: 1.2.2(react@18.3.1)
+
+  '@tanstack/router-cli@1.79.0':
+    dependencies:
+      '@tanstack/router-generator': 1.79.0
+      chokidar: 3.6.0
+      yargs: 17.7.2
 
   '@tanstack/router-devtools@1.81.1(@tanstack/react-router@1.81.1(@tanstack/router-generator@1.79.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(csstype@3.1.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:

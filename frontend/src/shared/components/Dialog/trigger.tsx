@@ -11,6 +11,7 @@ function DialogTrigger({ asChild, ...props }: DialogTriggerProps) {
   const Comp = asChild ? Slot : "button";
 
   return <Comp onClick={toggleOpen} {...props} />;
+  return <Comp className="h-fit w-fit" onClick={toggleOpen} {...props} />;
 }
 
 export { DialogTrigger };
