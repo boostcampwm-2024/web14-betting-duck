@@ -1,6 +1,7 @@
 import {
   ConflictException,
   InternalServerErrorException,
+  NotFoundException,
   Injectable,
 } from "@nestjs/common";
 import { Repository } from "typeorm";
@@ -13,25 +14,26 @@ export class UserRepository {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
-  async createUser(
-    email: string,
-    nickname: string,
-    hashedPassword: string,
-  ): Promise<void> {
-    const user = this.userRepository.create({
-      email,
-      nickname,
-      password: hashedPassword,
-      duck: 300,
-    });
+
+  async createUser(user: Partial<User>): Promise<void> {
+    const newUser = this.userRepository.create(user);
+
     try {
-      await this.userRepository.save(user);
+      await this.userRepository.save(newUser);
     } catch (error) {
       if (error.code === "23505") {
         throw new ConflictException("이미 등록된 이메일입니다.");
       } else {
         throw new InternalServerErrorException();
       }
+    }
+  }
+
+  async findOne(id: number): Promise<User | undefined> {
+    try {
+      return await this.userRepository.findOne({ where: { id } });
+    } catch {
+      throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
     }
   }
 }

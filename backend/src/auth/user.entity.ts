@@ -11,7 +11,7 @@ import { Bet } from "src/bet/bet.entity";
 import { BetRoom } from "src/bet-room/bet-room.entity";
 
 @Entity()
-@Unique(["email"])
+@Unique(["email", "nickname"])
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn("increment")
   id: number;

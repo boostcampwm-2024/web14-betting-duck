@@ -60,12 +60,23 @@ export class RedisManager {
 
   async updateBetOption(roomId: string, option: string, betAmount: number) {
     await Promise.all([
-      this.client.hincrby(
-        `room:${roomId}:option:${option}`,
-        "currentBets",
-        betAmount,
-      ),
-      this.client.hincrby(`room:${roomId}:option:${option}`, "participants", 1),
+      this.client.hincrby(`room:${roomId}:${option}`, "currentBets", betAmount),
+      this.client.hincrby(`room:${roomId}:${option}`, "participants", 1),
+    ]);
+  }
+
+  async initializeBetRoom(roomUUID: string, creator: string) {
+    await Promise.all([
+      this.client.hmset(`room:${roomUUID}:option1`, {
+        participants: 0,
+        currentBets: 0,
+      }),
+      this.client.hmset(`room:${roomUUID}:option2`, {
+        participants: 0,
+        currentBets: 0,
+      }),
+      this.client.set(`room:${roomUUID}:creator`, creator),
+      this.client.set(`room:${roomUUID}:status`, "waiting"),
     ]);
   }
 }
