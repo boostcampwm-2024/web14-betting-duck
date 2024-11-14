@@ -27,11 +27,11 @@ function usePredictionStore() {
     );
   }, [formState]);
 
-  const submitPrediction = async () => {
+  const submitPrediction = async (formData: FormData) => {
     //TODO: API 요청 함수 호출해야함. API 요청 함수는 api.ts에 입력할 것
     try {
       // API 요청 함수 호출
-      const result = await createPrediction(formState);
+      const result = await createPrediction(formData);
       setFormState({
         title: "",
         winCase: "",

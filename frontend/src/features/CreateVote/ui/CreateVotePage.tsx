@@ -17,8 +17,25 @@ function CreateVotePage() {
     navigate({ to: "/my-page" });
   };
 
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    submitPrediction(formData);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+    }
+  };
+
   return (
-    <div className="bg-layout-main flex w-full flex-col items-center gap-4 p-9">
+    <form
+      className="bg-layout-main flex w-full flex-col items-center gap-4 p-9"
+      onSubmit={handleSubmit}
+      onKeyDown={handleKeyDown}
+    >
       <h1 className="text-default my-8 text-xl font-extrabold">
         승부 예측 생성하기
       </h1>
@@ -119,14 +136,14 @@ function CreateVotePage() {
           취소
         </button>
         <button
+          type="submit"
           className="bg-primary hover:bg-primary-hover disabled:bg-primary-disabled shadow-middle w-1/2 rounded-lg px-8 py-4 font-semibold text-white"
           disabled={!isFormVaild}
-          onClick={submitPrediction}
         >
           생성
         </button>
       </div>
-    </div>
+    </form>
   );
 }
 

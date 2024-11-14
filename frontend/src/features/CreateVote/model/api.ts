@@ -1,8 +1,6 @@
-import { PredictionData } from "./types";
-
-async function createPrediction(data: PredictionData) {
+async function createPrediction(formData: FormData) {
   console.log("API 요청");
-  console.log("data:", data);
+  console.log("data:", formData);
 }
 
 export { createPrediction };
