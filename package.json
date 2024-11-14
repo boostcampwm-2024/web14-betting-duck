@@ -7,8 +7,6 @@
   "scripts": {
     "prepare": "husky",
     "lint": "eslint frontend/src",
-    "frontend": "pnpm -F @betting-duck/frontend dev",
-    "backend": "pnpm -F @betting-duck/backend dev",
     "dev": "pnpm -r dev"
   },
   "keywords": [],
