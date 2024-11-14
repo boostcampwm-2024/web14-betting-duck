@@ -1,3 +1,4 @@
+import { CreateVotePage } from "@/features/CreateVote";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/create-vote")({
@@ -5,5 +6,5 @@ export const Route = createFileRoute("/create-vote")({
 });
 
 function RouteComponent() {
-  return "Hello /create-vote!";
+  return <CreateVotePage />;
 }
