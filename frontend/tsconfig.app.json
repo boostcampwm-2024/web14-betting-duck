@@ -1,9 +1,5 @@
 {
   "compilerOptions": {
-<<<<<<< HEAD
-=======
-    "baseUrl": ".",
->>>>>>> 97d528744acdc84eb9e66ed5a4ce0c4606cef20d
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -32,12 +28,8 @@
       "@routes/*": ["./src/routes/*"],
       "@widgets/*": ["./src/widgets/*"],
       "@shared/*": ["./src/shared/*"],
-<<<<<<< HEAD
       "@app/*": ["./src/app/*"],
       "@assets/*": ["./src/assets/*"]
-=======
-      "@app/*": ["./src/app/*"]
->>>>>>> 97d528744acdc84eb9e66ed5a4ce0c4606cef20d
     }
   },
   "include": ["src", "main.js"]

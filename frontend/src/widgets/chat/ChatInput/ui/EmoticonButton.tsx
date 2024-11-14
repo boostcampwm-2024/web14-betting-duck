@@ -16,7 +16,6 @@ function EmoticomButton() {
       <div className={styles.tooltip}>
         <div>emoticon</div>
       </div>{" "}
-      제외
     </div>
   );
 }
