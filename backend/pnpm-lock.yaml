@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@liaoliaots/nestjs-redis':
+        specifier: ^10.0.0
+        version: 10.0.0(@nestjs/common@10.4.7(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.4.7)(ioredis@5.4.1)
       '@nestjs/common':
         specifier: ^10.0.0
         version: 10.4.7(reflect-metadata@0.2.2)(rxjs@7.8.1)
@@ -472,6 +475,14 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
+
+  '@liaoliaots/nestjs-redis@10.0.0':
+    resolution: {integrity: sha512-uCTmlzM4q+UYADwsJEQph0mbf4u0MrktFhByi50M5fNy/+fJoWlhSqrgvjtVKjHnqydxy1gyuU6vHJEOBp9cjg==}
+    engines: {node: '>=16.13.0'}
+    peerDependencies:
+      '@nestjs/common': ^10.0.0
+      '@nestjs/core': ^10.0.0
+      ioredis: ^5.0.0
 
   '@ljharb/through@2.3.13':
     resolution: {integrity: sha512-/gKJun8NNiWGZJkGzI/Ragc53cOdcLNdzjLaIa+GEjguQs0ulsurx8WN0jijdK9yPqDvziX995sMRLyLt1uZMQ==}
@@ -3598,6 +3609,13 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  '@liaoliaots/nestjs-redis@10.0.0(@nestjs/common@10.4.7(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.4.7)(ioredis@5.4.1)':
+    dependencies:
+      '@nestjs/common': 10.4.7(reflect-metadata@0.2.2)(rxjs@7.8.1)
+      '@nestjs/core': 10.4.7(@nestjs/common@10.4.7(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/microservices@10.4.7)(@nestjs/platform-express@10.4.7)(@nestjs/websockets@10.4.7)(reflect-metadata@0.2.2)(rxjs@7.8.1)
+      ioredis: 5.4.1
+      tslib: 2.7.0
 
   '@ljharb/through@2.3.13':
     dependencies:

@@ -1,7 +1,14 @@
-import Redis from "ioredis";
+import { ConfigService } from "@nestjs/config";
+import { RedisModuleOptions } from "@liaoliaots/nestjs-redis";
 
-export const redisClient = new Redis({
-  host: process.env.REDIS_HOSTNAME || "localhost",
-  port: parseInt(process.env.REDIS_PORT) || 6379,
-  //   password: '',
-});
+export const redisConfig = async (
+  configService: ConfigService,
+): Promise<RedisModuleOptions> => {
+  return {
+    config: {
+      host: configService.get<string>("REDIS_HOSTNAME") || "localhost",
+      port: configService.get<number>("REDIS_PORT") || 6379,
+      // password: configService.get<string>('REDIS_PASSWORD') || '',
+    },
+  };
+};
