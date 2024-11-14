@@ -10,14 +10,14 @@ function ArrowUpIcon() {
       <path
         d="M4 6.33332V1.66666"
         stroke="#E2D0FF"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M1.66675 3.99999L4.00008 1.66666L6.33341 3.99999"
         stroke="#E2D0FF"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
