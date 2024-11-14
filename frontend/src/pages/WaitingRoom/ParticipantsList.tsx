@@ -1,4 +1,5 @@
 import { cn } from "@/shared/misc";
+import waitingUserImage from "@assets/images/waiting-user.png";
 
 function ParticipantsList() {
   return (
@@ -7,7 +8,7 @@ function ParticipantsList() {
       <ul className="font-nanum-b max flex w-full max-w-[366px] flex-row gap-4 overflow-x-scroll">
         <li className="flex h-fit w-fit flex-col items-center justify-center gap-2">
           <img
-            src="/src/assets/waiting-user.png"
+            src={waitingUserImage}
             width={20}
             height={15}
             alt="대기 중인 사용자 이미지"

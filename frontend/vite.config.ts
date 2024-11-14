@@ -1,8 +1,7 @@
-import path from 'path';
+import path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
-import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -11,6 +10,7 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  publicDir: "public",
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -21,6 +21,30 @@ export default defineConfig({
       "@shared": path.resolve(__dirname, "./src/shared"),
       "@app": path.resolve(__dirname, "./src/app"),
       "@assets": path.resolve(__dirname, "./src/assets"),
+    },
+  },
+  build: {
+    assetsDir: "assets",
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, "index.html"),
+      },
+      output: {
+        assetFileNames: (assetInfo) => {
+          const fileName = assetInfo.name || "unknown";
+          const extType = fileName.split(".").pop()?.toLowerCase() || "";
+
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
+            return `assets/images/[name]-[hash][extname]`;
+          }
+
+          if (/woff2?|ttf|eot|otf/i.test(extType)) {
+            return `assets/fonts/[name]-[hash][extname]`;
+          }
+
+          return `assets/[name]-[hash][extname]`;
+        },
+      },
     },
   },
 });

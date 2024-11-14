@@ -46,7 +46,7 @@ export default {
           disabled: "#D3B7FF",
         },
         secondary: {
-          DEFAULT: "#E4E9F5",
+          DEFAULT: "#E6EDF8",
           hover: "#4A5D78",
           disabled: "#939BA5",
         },

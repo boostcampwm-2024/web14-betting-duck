@@ -1,4 +1,5 @@
 import styles from "./style.module.css";
+import emoticonImage from "@assets/images/emoticon.png";
 
 function EmoticomButton() {
   return (
@@ -8,7 +9,7 @@ function EmoticomButton() {
           alt="이모티콘 입력 버튼"
           loading="lazy"
           decoding="async"
-          src={"/src/assets/emoticon.png"}
+          src={emoticonImage}
           width={24}
           height={24}
         />
