@@ -14,7 +14,7 @@ function CreateVotePage() {
   const navigate = useNavigate();
 
   const handleCancelClick = () => {
-    navigate({ to: "/login" });
+    navigate({ to: "/my-page" });
   };
 
   return (
