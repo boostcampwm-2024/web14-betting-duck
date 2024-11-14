@@ -60,7 +60,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage("fetchBetRoomInfo")
   async handleFetchBetRoomInfo(client: Socket, roomId: string) {
-    const channel = await this.redisManager.client.hgetall(`room:${roomId}`);
+    const channel = await this.getChannelData(roomId);
     if (channel) {
       client.emit("fetchBetRoomInfo", { channel });
     } else {
@@ -79,29 +79,44 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     },
   ) {
     const { sender, channel } = payload;
-
-    //TODO: 베팅방 생성 API 에서 redis에 channel 데이터 초기화
-    const targetChannel = await this.redisManager.client.hgetall(
-      `room:${channel.id}`,
-    );
+    const targetChannel = await this.getChannelData(channel.id);
 
     if (targetChannel && targetChannel.status === "active") {
-      const option = targetChannel.options[sender.selectOption];
-      if (option) {
+      const selectedOption =
+        sender.selectOption === "option1"
+          ? targetChannel.option1
+          : targetChannel.option2;
+
+      if (selectedOption) {
         await this.redisManager.updateBetOption(
           channel.id,
           sender.selectOption,
           sender.betAmount,
         );
+
+        const [updatedOption1, updatedOption2] = await Promise.all([
+          this.redisManager.client.hgetall(`room:${channel.id}:option1`),
+          this.redisManager.client.hgetall(`room:${channel.id}:option2`),
+        ]);
+
+        const updatedChannel = {
+          creator: targetChannel.creator,
+          status: targetChannel.status,
+          option1: updatedOption1,
+          option2: updatedOption2,
+        };
+
         this.server.to(channel.id).emit("fetchBetRoomInfo", {
-          channel: targetChannel,
+          channel: updatedChannel,
         });
         //TODO: RDB에 배팅 내역 저장 로직 추가
       } else {
         client.emit("joinBet", { error: "해당하는 옵션이 존재하지 않습니다." });
       }
     } else {
-      client.emit("joinBet", { error: "해당하는 채널이 존재하지 않습니다." });
+      client.emit("joinBet", {
+        error: "해당하는 채널이 존재하지 않거나 활성 상태가 아닙니다.",
+      });
     }
   }
 
@@ -124,5 +139,25 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }),
     );
     return users;
+  }
+
+  private async getChannelData(roomId: string) {
+    const [creator, status, option1, option2] = await Promise.all([
+      this.redisManager.client.get(`room:${roomId}:creator`),
+      this.redisManager.client.get(`room:${roomId}:status`),
+      this.redisManager.client.hgetall(`room:${roomId}:option1`),
+      this.redisManager.client.hgetall(`room:${roomId}:option2`),
+    ]);
+
+    if (creator && status && option1 && option2) {
+      return {
+        creator,
+        status,
+        option1,
+        option2,
+      };
+    } else {
+      return null;
+    }
   }
 }
