@@ -1,5 +1,5 @@
 {
-  "name": "backend-service",
+  "name": "@betting-duck/backend",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@betting-duck/shared": "workspace:*",
     "@liaoliaots/nestjs-redis": "^10.0.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.3.0",
