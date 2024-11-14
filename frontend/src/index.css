@@ -2,28 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --shadow-color: 217deg 20% 62%;
-  --shadow-elevation-low: 0px 0.5px 0.5px hsl(var(--shadow-color) / 0.42),
-    0px 0.7px 0.7px -1.9px hsl(var(--shadow-color) / 0.33),
-    0px 1.8px 1.7px -3.7px hsl(var(--shadow-color) / 0.23);
-  --shadow-elevation-medium: 0px 0.5px 0.5px hsl(var(--shadow-color) / 0.35),
-    0px 0.9px 0.8px -0.9px hsl(var(--shadow-color) / 0.31),
-    0px 2px 1.9px -1.9px hsl(var(--shadow-color) / 0.26),
-    -0.1px 4.4px 4.1px -2.8px hsl(var(--shadow-color) / 0.21),
-    -0.1px 9.1px 8.5px -3.7px hsl(var(--shadow-color) / 0.16);
-  --shadow-elevation-high: 0px 0.5px 0.5px hsl(var(--shadow-color) / 0.33),
-    0px 1.3px 1.2px -0.4px hsl(var(--shadow-color) / 0.31),
-    0px 2.3px 2.2px -0.8px hsl(var(--shadow-color) / 0.28),
-    -0.1px 3.7px 3.5px -1.2px hsl(var(--shadow-color) / 0.26),
-    -0.1px 5.9px 5.5px -1.7px hsl(var(--shadow-color) / 0.24),
-    -0.1px 9.3px 8.7px -2.1px hsl(var(--shadow-color) / 0.22),
-    -0.2px 14.2px 13.3px -2.5px hsl(var(--shadow-color) / 0.2),
-    -0.3px 20.9px 19.6px -2.9px hsl(var(--shadow-color) / 0.17),
-    -0.4px 29.7px 27.8px -3.3px hsl(var(--shadow-color) / 0.15),
-    -0.6px 41px 38.4px -3.7px hsl(var(--shadow-color) / 0.13);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
+* {
+  margin: 0px;
+  line-height: calc(1em + 0.8rem);
+  -webkit-font-smoothing: antialiased;
+}
+
+:root {
+  --shadow-color: 217deg 20% 62%;
+  --shadow-elevation-low: 0px 0.5px 0.5px hsl(217deg 20% 62% / 0.42),
+    0px 0.7px 0.7px -1.9px hsl(217deg 20% 62% / 0.33),
+    0px 1.8px 1.7px -3.7px hsl(217deg 20% 62% / 0.23);
+  --shadow-elevation-medium: 0px 0.5px 0.5px hsl(217deg 20% 62% / 0.35),
+    0px 0.9px 0.8px -0.9px hsl(217deg 20% 62% / 0.31),
+    0px 2px 1.9px -1.9px hsl(217deg 20% 62% / 0.26),
+    -0.1px 4.4px 4.1px -2.8px hsl(217deg 20% 62% / 0.21),
+    -0.1px 9.1px 8.5px -3.7px hsl(217deg 20% 62% / 0.16);
+  --shadow-elevation-high: 0px 0.5px 0.5px hsl(217deg 20% 62% / 0.33),
+    0px 1.3px 1.2px -0.4px hsl(217deg 20% 62% / 0.31),
+    0px 2.3px 2.2px -0.8px hsl(217deg 20% 62% / 0.28),
+    -0.1px 3.7px 3.5px -1.2px hsl(217deg 20% 62% / 0.26),
+    -0.1px 5.9px 5.5px -1.7px hsl(217deg 20% 62% / 0.24),
+    -0.1px 9.3px 8.7px -2.1px hsl(217deg 20% 62% / 0.22),
+    -0.2px 14.2px 13.3px -2.5px hsl(217deg 20% 62% / 0.2),
+    -0.3px 20.9px 19.6px -2.9px hsl(217deg 20% 62% / 0.17),
+    -0.4px 29.7px 27.8px -3.3px hsl(217deg 20% 62% / 0.15),
+    -0.6px 41px 38.4px -3.7px hsl(217deg 20% 62% / 0.13);
+
+  --navigator-position: 0;
+  --scrollbar-width: 12px;
+  --scrollbar-height: 4px;
+  --color-thumb: #bacaf0;
+  --color-thumb-background: #dbe2f3;
+}
 @font-face {
   font-family: "ExtraBold";
   src: url("/fonts/NanumSquareRoundEB.woff2") format("woff2");
@@ -52,19 +69,35 @@
   background: #d9e3f3;
 }
 
+#navigation-sidebar nav a label input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+#navigation-sidebar nav a label input[type="radio"]:checked ~ svg,
+#navigation-sidebar nav a label input[type="radio"]:checked ~ span {
+  color: #6e29da;
+}
+
+.primary-container {
+  gap: 1rem;
+  box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  background: #e3e8f4;
+}
+
 .layout {
   display: grid;
   grid-template-areas:
     "header header"
     "sidebar main";
-  grid-template-rows: 54px 1fr; /* 첫 번째 행은 54px, 두 번째 행은 남은 공간 */
-  grid-template-columns: 60px 1fr; /* 첫 번째 열은 60px, 두 번째 열은 남은 공간 */
-  height: 100vh; /* viewport 높이의 100%를 차지하도록 설정 */
+  grid-template-rows: 54px 1fr;
+  grid-template-columns: 60px 1fr;
+  height: 100vh;
   box-shadow: var(--shadow-elevation-high);
   border-radius: 8px;
 }
-
-/* 각 영역에 대한 grid-area 설정 */
 .header {
   grid-area: header;
   background: #e6edf8;
@@ -85,4 +118,39 @@
   grid-area: main;
   background: #f0f4fa;
   border-bottom-right-radius: 8px;
+}
+
+.tooltip {
+  clip-path: polygon(
+    0% 0%,
+    100% 0%,
+    100% calc(100% - 10px),
+    calc(50% + 10px) calc(100% - 10px),
+    50% 100%,
+    calc(50% - 10px) calc(100% - 10px),
+    0% calc(100% - 10px)
+  );
+  font-size: 0;
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-width, 12px);
+  height: var(--scrollbar-height, 12px);
+  background-color: #dbe2f3;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  border: 2px solid
+    color-mix(in oklch, oklch(83.94% 0.0561 267.19), transparent);
+  background-color: color-mix(
+    in oklch,
+    oklch(83.94% 0.0561 267.19) 10%,
+    transparent
+  );
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 8px;
+  background: #dbe2f3;
 }
