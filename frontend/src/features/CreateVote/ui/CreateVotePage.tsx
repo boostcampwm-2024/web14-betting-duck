@@ -7,6 +7,43 @@ import {
 } from "@/shared/icons";
 import { usePredictionStore } from "../model/store";
 import { useNavigate } from "@tanstack/react-router";
+import { cn } from "@/shared/misc";
+
+interface InputFieldProps {
+  icon: React.ReactNode;
+  placeholder: string;
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  name: string;
+  inputClass?: string;
+}
+
+function InputField({
+  icon,
+  placeholder,
+  value,
+  onChange,
+  name,
+  inputClass = "text-gray-700",
+}: InputFieldProps) {
+  return (
+    <div className="bg-layout-sidebar flex items-center gap-3 rounded-lg p-4 shadow-inner">
+      {icon}
+      <div className="border-border h-3 border-l"></div>
+      <input
+        type="text"
+        placeholder={placeholder}
+        className={cn(
+          "text-md w-full border-none bg-transparent outline-none",
+          inputClass,
+        )}
+        value={value}
+        onChange={onChange}
+        name={name}
+      />
+    </div>
+  );
+}
 
 function CreateVotePage() {
   const { formState, handleInputChange, isFormVaild, submitPrediction } =
@@ -42,48 +79,36 @@ function CreateVotePage() {
 
       {/* 예측 제목 입력 */}
       <div className="w-full">
-        <div className="bg-layout-sidebar flex items-center gap-3 rounded-lg p-4 shadow-inner">
-          <TextIcon />
-          <div className="border-border h-3 border-l"></div>
-          <input
-            type="text"
-            placeholder="승부를 예측할 제목을 입력해 주세요."
-            className="text-md w-full border-none bg-transparent text-gray-700 outline-none"
-            value={formState.title}
-            onChange={handleInputChange}
-            name="title"
-          />
-        </div>
+        <InputField
+          icon={<TextIcon />}
+          placeholder="승부를 예측할 제목을 입력해 주세요."
+          value={formState.title}
+          onChange={handleInputChange}
+          name="title"
+        />
       </div>
 
       <div className="bg-layout-sidebar w-full rounded-lg shadow-inner">
         {/* 승리 예측 케이스 입력 */}
-        <div className="flex items-center gap-3 border-b border-gray-200 p-4">
-          <DuckIcon color="#4C79F8" />
-          <div className="border-bettingBlue h-3 border-l"></div>
-          <input
-            type="text"
-            placeholder="승리에 해당하는 예측 케이스를 적어주세요."
-            className="text-bettingBlue placeholder-bettingBlue text-md w-full border-none bg-transparent outline-none"
-            value={formState.winCase}
-            onChange={handleInputChange}
-            name="winCase"
-          />
-        </div>
+        <InputField
+          icon={<DuckIcon color="#4C79F8" />}
+          placeholder="승리에 해당하는 예측 케이스를 적어주세요."
+          value={formState.winCase}
+          onChange={handleInputChange}
+          name="winCase"
+          inputClass="text-bettingBlue placeholder-bettingBlue"
+        />
+        {/* 구분선 */}
         <div className="border-border border-t"></div>
         {/* 패배 예측 케이스 입력 */}
-        <div className="flex items-center gap-3 p-4">
-          <DuckIcon color="#DF3491" />
-          <div className="border-bettingPink h-3 border-l"></div>
-          <input
-            type="text"
-            placeholder="패배에 해당하는 예측 케이스를 적어주세요."
-            className="text-bettingPink placeholder-bettingPink text-md w-full border-none bg-transparent outline-none"
-            value={formState.loseCase}
-            onChange={handleInputChange}
-            name="loseCase"
-          />
-        </div>
+        <InputField
+          icon={<DuckIcon color="#DF3491" />}
+          placeholder="패배에 해당하는 예측 케이스를 적어주세요."
+          value={formState.loseCase}
+          onChange={handleInputChange}
+          name="loseCase"
+          inputClass="text-bettingPink placeholder-bettingPink"
+        />
       </div>
 
       {/* 타이머 및 최소 금액 설정 */}
