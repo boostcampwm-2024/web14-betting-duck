@@ -50,20 +50,23 @@
 }
 @font-face {
   font-family: "NanumSquare";
-  src: url("src/assets/fonts/NanumSquareRound.woff2") format("woff2");
+  src: url("/src/assets/fonts/NanumSquareRound.woff2") format("woff2");
   font-weight: 400;
+  font-display: swap;
 }
 
 @font-face {
   font-family: "NanumSquare";
-  src: url("src/assets/fonts/NanumSquareRoundB.woff2") format("woff2");
+  src: url("/src/assets/fonts/NanumSquareRoundB.woff2") format("woff2");
   font-weight: 700;
+  font-display: swap;
 }
 
 @font-face {
   font-family: "NanumSquare";
-  src: url("src/assets/fonts/NanumSquareRoundEB.woff2") format("woff2");
+  src: url("/src/assets/fonts/NanumSquareRoundEB.woff2") format("woff2");
   font-weight: 800;
+  font-display: swap;
 }
 
 @layer base {
@@ -145,21 +148,21 @@
 ::-webkit-scrollbar {
   width: var(--scrollbar-width, 12px);
   height: var(--scrollbar-height, 12px);
-  background-color: #dbe2f3;
+  background-color: #e6edf8;
 }
 
 ::-webkit-scrollbar-thumb {
   border-radius: 8px;
   border: 2px solid
-    color-mix(in oklch, oklch(83.94% 0.0561 267.19), transparent);
+    color-mix(in oklch, oklch(83.94% 0.0561 267.19) 20%, transparent);
   background-color: color-mix(
     in oklch,
-    oklch(83.94% 0.0561 267.19) 10%,
+    oklch(83.94% 0.0561 267.19) 15%,
     transparent
   );
 }
 
 ::-webkit-scrollbar-track {
   border-radius: 8px;
-  background: #dbe2f3;
+  background: #e6edf8;
 }
