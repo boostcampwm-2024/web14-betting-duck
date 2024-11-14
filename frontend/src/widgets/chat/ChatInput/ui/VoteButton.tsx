@@ -1,4 +1,5 @@
 import styles from "./style.module.css";
+import votePageImage from "@assets/images/vote-page.png";
 
 function VoteButton() {
   return (
@@ -8,7 +9,7 @@ function VoteButton() {
           alt="투표 페이지로 이동"
           loading="lazy"
           decoding="async"
-          src="/src/assets/vote-page.png"
+          src={votePageImage}
           width={24}
           height={24}
         />

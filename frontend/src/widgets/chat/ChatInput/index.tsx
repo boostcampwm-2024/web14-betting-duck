@@ -4,7 +4,7 @@ import { VoteButton } from "./ui/VoteButton";
 
 function ChatInput() {
   return (
-    <div className="bg-secondary-container flex h-full max-h-[60px] w-full flex-row items-center justify-between gap-4 py-3 pl-2 pr-4">
+    <div className="bg-secondary flex h-full max-h-[60px] w-full flex-row items-center justify-between gap-4 py-3 pl-2 pr-4">
       <EmoticomButton />
       <InputBar />
       <VoteButton />

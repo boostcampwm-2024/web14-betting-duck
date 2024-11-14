@@ -4,7 +4,7 @@ function PredictButton() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <button className="text-default-default text-w rounded-lg bg-slate-100 px-3 py-1">
+        <button className="text-default bg-secondary shadow-far rounded-lg px-3 py-1 font-extrabold">
           예측 하기
         </button>
       </DialogTrigger>
