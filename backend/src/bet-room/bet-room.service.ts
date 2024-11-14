@@ -3,12 +3,14 @@ import { BetRoomRepository } from "./bet-room.repository";
 import { UserRepository } from "src/auth/user.repository";
 import { CreateBetRoomDto } from "./dto/create-bet-room.dto";
 import { v4 as uuidv4 } from "uuid";
+import { RedisManager } from "src/utils/redis.manager";
 
 @Injectable()
 export class BetRoomService {
   constructor(
     private betRoomRepository: BetRoomRepository,
     private userRepository: UserRepository,
+    private redisManager: RedisManager,
   ) {}
 
   async createBetRoom(createBetRoomDto: CreateBetRoomDto) {
@@ -31,6 +33,9 @@ export class BetRoomService {
       joinUrl,
       status: "waiting" as "waiting" | "active" | "finished",
     };
-    return await this.betRoomRepository.createBetRoom(betRoomData);
+    const createdRoom = await this.betRoomRepository.createBetRoom(betRoomData);
+    await this.redisManager.initializeBetRoom(roomUUID, manager.nickname);
+
+    return createdRoom;
   }
 }
