@@ -18,6 +18,7 @@ export default {
         "2xl": "32px",
         xl: "24px",
         lg: "16px",
+        md: "12px",
         sm: "8px",
       },
       fontWeight: {
@@ -31,6 +32,7 @@ export default {
           "0 4px 4px -4px rgba(12, 12, 13, 0.05), 0 16px 16px -8px rgba(12, 12, 13, 0.1)",
         close:
           "0 4px 4px -4px rgba(12, 12, 13, 0.05), 0 16px 32px -4px rgba(12, 12, 13, 0.1)",
+        inner: "0px 4px 4px 0px rgba(0, 0, 0, 0.25) inset",
       },
       colors: {
         layout: {
@@ -60,6 +62,9 @@ export default {
         bettingPink: {
           DEFAULT: "#DF3491",
           disabled: "#EAB2D6",
+        },
+        border: {
+          DEFAULT: "#34425633",
         },
       },
     },
