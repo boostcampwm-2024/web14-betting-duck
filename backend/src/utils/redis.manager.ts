@@ -51,7 +51,6 @@ export class RedisManager {
   }
 
   async setRoomStatus(roomId: string, status: string) {
-    console.log(`Updating Redis key: room:${roomId}, status: ${status}`);
     await this.client.hset(`room:${roomId}`, "status", status);
   }
 
