@@ -81,8 +81,7 @@
   opacity: 0;
 }
 
-#navigation-sidebar nav a label input[type="radio"]:checked ~ svg,
-#navigation-sidebar nav a label input[type="radio"]:checked ~ span {
+#navigation-sidebar label:has(input[type="radio"]:checked) {
   color: #6e29da;
 }
 
