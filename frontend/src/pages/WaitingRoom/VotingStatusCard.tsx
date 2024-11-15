@@ -43,7 +43,7 @@ function InfoIcon() {
 
 function VotingStatusCard() {
   return (
-    <div className="bg- bg-primary-default text-secondary-default flex flex-col gap-2 rounded-lg p-3 shadow-md">
+    <div className="bg-primary text-secondary-default text-secondary flex flex-col gap-2 rounded-lg p-3 shadow-md">
       <div className="flex flex-row items-center justify-between">
         <div className="flex flex-row items-center gap-2">
           <InfoIcon />
