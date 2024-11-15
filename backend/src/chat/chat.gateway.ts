@@ -26,7 +26,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  @UseGuards(AuthenticatedGuard)
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
   }
@@ -35,6 +34,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Client disconnected: ${client.id}`);
   }
 
+  @UseGuards(AuthenticatedGuard)
   @SubscribeMessage("joinRoom")
   handleJoinRoom(client: Socket, payload: joinRoomRequestType) {
     const { channel } = joinRoomRequestSchema.parse(payload);

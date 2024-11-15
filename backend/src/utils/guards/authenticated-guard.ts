@@ -6,7 +6,10 @@ import { Socket } from "socket.io";
 export class AuthenticatedGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const client: Socket = context.switchToWs().getClient<Socket>();
-    console.log("client connect : ", client.handshake.headers["x-real-ip"]);
+    console.log(
+      "AuthenticatedGuard(테스트용 로그, client IP) : ",
+      client.handshake.headers["x-real-ip"],
+    );
     /*
     client.handshake 구조
 
