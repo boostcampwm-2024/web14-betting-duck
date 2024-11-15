@@ -2,6 +2,10 @@
 
 베팅덕(betting duck)은 오리(토큰)를 가지고 베팅해서 승부 예측을 할 수 있고, 토큰을 모아 나만의 연못을 꾸밀 수 있는 신개념 베팅 서비스입니다.
 
+## 링크
+- [노션 링크](https://billowy-shroud-1d0.notion.site/Betting-duck-12a90baa60ef80de842cdc679124f5cf?pvs=4)
+- [프로젝트 위키](https://github.com/boostcampwm-2024/web14-boostproject/wiki)
+
 ## 목차
 
 - [서비스 소개](#서비스-소개)
@@ -40,12 +44,6 @@
 
 ## 팀 소개
 
-### 프로젝트 위키
-
-![image](https://github.com/user-attachments/assets/216357e5-e62c-4251-9234-6191ba9352f1)
-
-프로젝트에 관한 자세한 글은 [🔗 프로젝트 위키](https://github.com/boostcampwm-2024/web14-boostproject/wiki)를 참고해주세요.
-
 ### 팀원 소개
 
 안녕하세요! 저희는 FE 2명, BE 2명으로 최적의 밸런스를 자랑하는 팀입니다!
@@ -54,6 +52,3 @@
 |-- | -- | -- | --
 [[BE] J184 이석호](https://github.com/LLagoon3) | [[BE] J221 정동교](https://github.com/dngyj) | [[FE] J230 정지호](https://github.com/stop0ho) | [[FE] J262 최정민](https://github.com/sunub)
 
-### 작고 소중한 그라운드 룰
-
-![image](https://github.com/user-attachments/assets/24ecdf17-9505-4398-bb1e-838ba6f464c7)
