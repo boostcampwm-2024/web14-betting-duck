@@ -51,6 +51,7 @@ export class RedisManager {
   }
 
   async setRoomStatus(roomId: string, status: string) {
+    console.log(`Updating Redis key: room:${roomId}, status: ${status}`);
     await this.client.hset(`room:${roomId}`, "status", status);
   }
 
@@ -75,8 +76,8 @@ export class RedisManager {
         participants: 0,
         currentBets: 0,
       }),
-      this.client.set(`room:${roomUUID}:creator`, creator),
-      this.client.set(`room:${roomUUID}:status`, "waiting"),
+      this.client.hset(`room:${roomUUID}:creator`, creator),
+      this.client.hset(`room:${roomUUID}:status`, "waiting"),
     ]);
   }
 }
