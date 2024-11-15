@@ -18,4 +18,25 @@ export class BetRoomRepository {
       throw new InternalServerErrorException("베팅 방 생성에 실패했습니다.");
     }
   }
+
+  async findOneById(betRoomId: string): Promise<BetRoom | null> {
+    try {
+      return await this.betRoomRepository.findOne({
+        where: { id: betRoomId },
+        relations: ["manager"],
+      });
+    } catch {
+      throw new InternalServerErrorException("베팅 방 조회에 실패했습니다.");
+    }
+  }
+
+  async update(id: string, partialEntity: Partial<BetRoom>) {
+    try {
+      return await this.betRoomRepository.update(id, partialEntity);
+    } catch {
+      throw new InternalServerErrorException(
+        "베팅 방 업데이트에 실패했습니다.",
+      );
+    }
+  }
 }
