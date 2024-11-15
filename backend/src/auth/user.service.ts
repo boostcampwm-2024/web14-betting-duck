@@ -1,14 +1,24 @@
-import { Injectable } from "@nestjs/common";
-import { UserCredentialsDto } from "./user-credential.dto";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { UserRepository } from "./user.repository";
 import * as bcrypt from "bcryptjs";
+import { JwtService } from "@nestjs/jwt";
+import {
+  requestSignUpSchema,
+  requestSignUpType,
+  requestSignInSchema,
+  requestSignInType,
+} from "@shared/schemas/users/request";
 
 @Injectable()
 export class UserService {
-  constructor(private userRepository: UserRepository) {}
+  constructor(
+    private userRepository: UserRepository,
+    private jwtService: JwtService,
+  ) {}
 
-  async signUp(userCredentialsDto: UserCredentialsDto) {
-    const { email, nickname, password } = userCredentialsDto;
+  async signUp(requestSignUp: requestSignUpType) {
+    const { email, nickname, password } =
+      requestSignUpSchema.parse(requestSignUp);
     const hashedPassword = await this.hashPassword(password);
     const user = {
       email,
@@ -17,6 +27,22 @@ export class UserService {
       duck: 300,
     };
     return this.userRepository.createUser(user);
+  }
+
+  async signIn(
+    requestsignIn: requestSignInType,
+  ): Promise<{ accessToken: string }> {
+    const { nickname, password } = requestSignInSchema.parse(requestsignIn);
+    const user = await this.userRepository.findOneByNickname(nickname);
+
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const payload = { nickname };
+      const accessToken = await this.jwtService.sign(payload);
+
+      return { accessToken };
+    } else {
+      throw new UnauthorizedException("login failed");
+    }
   }
 
   private async hashPassword(password: string): Promise<string> {

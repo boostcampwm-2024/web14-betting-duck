@@ -29,9 +29,19 @@ export class UserRepository {
     }
   }
 
+  // 아이디로 유저 찾기
   async findOne(id: number): Promise<User | undefined> {
     try {
       return await this.userRepository.findOne({ where: { id } });
+    } catch {
+      throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
+    }
+  }
+
+  // 닉네임으로 유저 찾기
+  async findOneByNickname(nickname: string): Promise<User | undefined> {
+    try {
+      return await this.userRepository.findOne({ where: { nickname } });
     } catch {
       throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
     }
