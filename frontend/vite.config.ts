@@ -5,7 +5,7 @@ import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "./",
+  base: "/",
   plugins: [react(), TanStackRouterVite()],
   server: {
     port: 3000,
@@ -24,12 +24,20 @@ export default defineConfig({
     },
   },
   build: {
+    target: "esnext",
+    sourcemap: true,
+    modulePreload: {
+      polyfill: true,
+    },
+    chunkSizeWarningLimit: 1000,
     assetsDir: "assets",
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, "index.html"),
       },
       output: {
+        chunkFileNames: "assets/js/[name]-[hash].js",
+        entryFileNames: "assets/js/[name]-[hash].js",
         assetFileNames: (assetInfo) => {
           const fileName = assetInfo.name || "unknown";
           const extType = fileName.split(".").pop()?.toLowerCase() || "";
@@ -44,7 +52,16 @@ export default defineConfig({
 
           return `assets/[name]-[hash][extname]`;
         },
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            return "vendor";
+          }
+        },
       },
     },
+  },
+  optimizeDeps: {
+    include: ["react", "react-dom"],
+    exclude: ["@tanstack/router"],
   },
 });
