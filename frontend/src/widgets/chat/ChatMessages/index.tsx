@@ -15,7 +15,7 @@ function ChatMessages() {
           className={`rounded-lg p-3 ${
             msg.user === "User A"
               ? "ml-auto max-w-[80%] rounded-r-lg rounded-t-lg bg-purple-100"
-              : "mr-auto max-w-[80%] bg-gray-100"
+              : "mr-auto max-w-[80%] bg-blue-200"
           }`}
         >
           <div className="text-sm font-semibold">{msg.user}</div>
