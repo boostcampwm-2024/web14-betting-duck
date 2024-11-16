@@ -8,7 +8,7 @@ export class CreateBetRoomDto {
     settings: {
       duration: number;
       defaultBetAmount: number;
-      maxParticipants: number;
+      // maxParticipants: number;
     };
   };
 }
