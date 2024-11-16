@@ -10,6 +10,7 @@ import {
 import { BetRoomService } from "./bet-room.service";
 import { Response } from "express";
 import { CreateBetRoomDto } from "./dto/create-bet-room.dto";
+import { UpdateBetRoomDto } from "./dto/update-bet-room.dto";
 
 @Controller("/api/betrooms")
 export class BetRoomController {
@@ -51,6 +52,29 @@ export class BetRoomController {
         status: HttpStatus.OK,
         data: {
           message: "배팅이 시작되었습니다.",
+          betRoomId: betRoomId,
+        },
+      });
+    } catch (error) {
+      return res.status(error.status || HttpStatus.INTERNAL_SERVER_ERROR).json({
+        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        data: { message: error.message },
+      });
+    }
+  }
+
+  @Patch("/:betRoomId")
+  async updateBetRoom(
+    @Param("betRoomId") betRoomId: string,
+    @Body() updateBetRoomDto: UpdateBetRoomDto,
+    @Res() res: Response,
+  ) {
+    try {
+      await this.betRoomService.updateBetRoom(betRoomId, updateBetRoomDto);
+      return res.status(HttpStatus.OK).json({
+        status: HttpStatus.OK,
+        data: {
+          message: "OK",
           betRoomId: betRoomId,
         },
       });
