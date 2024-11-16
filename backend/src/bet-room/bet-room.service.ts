@@ -6,8 +6,10 @@ import {
 import { BetRoomRepository } from "./bet-room.repository";
 import { UserRepository } from "src/auth/user.repository";
 import { CreateBetRoomDto } from "./dto/create-bet-room.dto";
+import { UpdateBetRoomDto } from "./dto/update-bet-room.dto";
 import { v4 as uuidv4 } from "uuid";
 import { RedisManager } from "src/utils/redis.manager";
+import { BetRoom } from "./bet-room.entity";
 
 @Injectable()
 export class BetRoomService {
@@ -44,7 +46,6 @@ export class BetRoomService {
   }
 
   async startBetRoom(betRoomId: string) {
-    console.log("betRoomId : " + betRoomId);
     const betRoom = await this.betRoomRepository.findOneById(betRoomId);
     //TODO: JWT 토큰에서 추출
     const userId = 8;
@@ -61,5 +62,30 @@ export class BetRoomService {
 
     await this.redisManager.setRoomStatus(betRoomId, "active");
     return updateResult;
+  }
+
+  async updateBetRoom(
+    betRoomId: string,
+    updateBetRoomDto: UpdateBetRoomDto,
+  ): Promise<void> {
+    const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+    if (!betRoom) {
+      throw new NotFoundException("베팅 방을 찾을 수 없습니다.");
+    }
+    const updatedFields: Partial<BetRoom> = {};
+
+    if (updateBetRoomDto.channel?.title) {
+      updatedFields.title = updateBetRoomDto.channel.title;
+    }
+    if (updateBetRoomDto.channel?.options) {
+      updatedFields.option1 = updateBetRoomDto.channel.options.option1;
+      updatedFields.option2 = updateBetRoomDto.channel.options.option2;
+    }
+    if (updateBetRoomDto.channel?.settings) {
+      updatedFields.timer = updateBetRoomDto.channel.settings.duration;
+      updatedFields.defaultBetAmount =
+        updateBetRoomDto.channel.settings.defaultBetAmount;
+    }
+    await this.betRoomRepository.update(betRoomId, updatedFields);
   }
 }
