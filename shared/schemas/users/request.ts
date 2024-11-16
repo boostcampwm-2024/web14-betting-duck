@@ -9,10 +9,9 @@ const passwordStrength = (password: string) => {
 };
 
 const userCommonSchema = z.object({
-	email: z
+	nickname: z
 		.string()
-		.email("올바른 이메일 형식이 아닙니다.")
-		.min(6, "이메일은 6자 이상이어야 합니다."),
+		.min(1, "닉네임은 1자 이상이어야 합니다."),
 	password: z
 		.string()
 		.refine(
@@ -21,15 +20,16 @@ const userCommonSchema = z.object({
 		),
 });
 
-export const requestSignupSchema = userCommonSchema.extend({
-	nickname: z.string().min(2, "닉네임은 2자 이상이어야 합니다."),
+export const requestSignUpSchema = userCommonSchema.extend({
+	email: z.string().email('이메일 형식이여야 합니다.').min(6, '이메일은 6자 이상이어야 합니다.'),
 });
 
-export const requestLoginSchema = userCommonSchema.extend({
-	role: z.enum(USER_ROLE),
-});
+export type requestSignUpType = z.infer<typeof requestSignUpSchema>;
+
+export const requestSignInSchema = userCommonSchema;
+
+export type requestSignInType = z.infer<typeof requestSignInSchema>;
 
 export const requestGuestLoginSchema = z.object({
-	nickname: z.string().min(2, "닉네임은 2자 이상이어야 합니다."),
 	role: z.enum(USER_ROLE),
 });
