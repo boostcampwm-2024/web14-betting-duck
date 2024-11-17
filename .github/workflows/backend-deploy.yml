@@ -46,9 +46,7 @@ jobs:
             cd /app/web14-betting-duck
             git pull origin dev
             cd /app/web14-betting-duck/backend
-            docker stop $(docker ps -aq)
-            docker rm $(docker ps -aq)
-            docker compose up -d
+            docker restart betting_duck_app
           EOF
 
       - name: Notify deployment status
