@@ -4,7 +4,7 @@ import { Response } from "express";
 import { SignUpUserDto } from "./dto/sign-up-user.dto";
 import { SignInUserDto } from "./dto/sign-in-user.dto";
 
-@Controller("/users")
+@Controller("/api/users")
 export class UserController {
   constructor(private userService: UserService) {}
 
