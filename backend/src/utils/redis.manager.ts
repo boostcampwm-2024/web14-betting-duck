@@ -51,11 +51,11 @@ export class RedisManager {
   }
 
   async setRoomStatus(roomId: string, status: string) {
-    await this.client.hset(`room:${roomId}`, "status", status);
+    await this.client.set(`room:${roomId}:status`, `${status}`);
   }
 
   async getRoomStatus(roomId: string) {
-    return await this.client.hget(`room:${roomId}`, "status");
+    return await this.client.get(`room:${roomId}:status`);
   }
 
   async updateBetOption(roomId: string, option: string, betAmount: number) {
@@ -75,8 +75,45 @@ export class RedisManager {
         participants: 0,
         currentBets: 0,
       }),
-      this.client.hset(`room:${roomUUID}:creator`, creator),
-      this.client.hset(`room:${roomUUID}:status`, "waiting"),
+      this.client.set(`room:${roomUUID}:creator`, creator),
+      this.client.set(`room:${roomUUID}:status`, "waiting"),
     ]);
+  }
+
+  async getChannelData(roomId: string) {
+    const [creator, status, option1, option2] = await Promise.all([
+      this.client.get(`room:${roomId}:creator`),
+      this.client.get(`room:${roomId}:status`),
+      this.client.hgetall(`room:${roomId}:option1`),
+      this.client.hgetall(`room:${roomId}:option2`),
+    ]);
+
+    if (creator && status && option1 && option2) {
+      return {
+        creator,
+        status,
+        option1,
+        option2,
+      };
+    } else {
+      return null;
+    }
+  }
+
+  async deleteChannelData(roomId: string) {
+    let cursor = "0";
+    do {
+      const [nextCursor, keys] = await this.client.scan(
+        cursor,
+        "MATCH",
+        `room:${roomId}:*`,
+        "COUNT",
+        10,
+      );
+      cursor = nextCursor;
+      if (keys.length > 0) {
+        await this.client.unlink(...keys);
+      }
+    } while (cursor !== "0");
   }
 }

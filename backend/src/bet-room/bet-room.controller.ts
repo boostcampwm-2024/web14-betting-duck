@@ -41,6 +41,29 @@ export class BetRoomController {
     }
   }
 
+  @Patch("/:betRoomId")
+  async updateBetRoom(
+    @Param("betRoomId") betRoomId: string,
+    @Body() updateBetRoomDto: UpdateBetRoomDto,
+    @Res() res: Response,
+  ) {
+    try {
+      await this.betRoomService.updateBetRoom(betRoomId, updateBetRoomDto);
+      return res.status(HttpStatus.OK).json({
+        status: HttpStatus.OK,
+        data: {
+          message: "OK",
+          betRoomId: betRoomId,
+        },
+      });
+    } catch (error) {
+      return res.status(error.status || HttpStatus.INTERNAL_SERVER_ERROR).json({
+        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        data: { message: error.message },
+      });
+    }
+  }
+
   @Patch("/start/:betRoomId")
   async startBetRoom(
     @Param("betRoomId") betRoomId: string,
@@ -63,18 +86,18 @@ export class BetRoomController {
     }
   }
 
-  @Patch("/:betRoomId")
-  async updateBetRoom(
+  @Patch("/end/:betRoomId")
+  async finishBetRoom(
     @Param("betRoomId") betRoomId: string,
-    @Body() updateBetRoomDto: UpdateBetRoomDto,
+    @Body("winning_option") winningOption: "option1" | "option2",
     @Res() res: Response,
   ) {
     try {
-      await this.betRoomService.updateBetRoom(betRoomId, updateBetRoomDto);
+      await this.betRoomService.finishBetRoom(betRoomId, winningOption);
       return res.status(HttpStatus.OK).json({
         status: HttpStatus.OK,
         data: {
-          message: "OK",
+          message: "배팅이 종료되었습니다",
           betRoomId: betRoomId,
         },
       });

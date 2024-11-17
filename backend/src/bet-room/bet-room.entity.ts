@@ -4,6 +4,7 @@ import {
   Entity,
   PrimaryColumn,
   OneToMany,
+  OneToOne,
   ManyToOne,
   CreateDateColumn,
   UpdateDateColumn,
@@ -56,6 +57,6 @@ export class BetRoom extends BaseEntity {
   @OneToMany(() => Bet, (bet) => bet.betRoom)
   bets: Bet[];
 
-  @OneToMany(() => BetResult, (betResult) => betResult.betRoom)
+  @OneToOne(() => BetResult, (betResult) => betResult.betRoom)
   betResults: BetResult[];
 }

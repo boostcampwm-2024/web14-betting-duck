@@ -3,8 +3,9 @@ import {
   Column,
   Entity,
   PrimaryGeneratedColumn,
-  ManyToOne,
+  OneToOne,
   CreateDateColumn,
+  JoinColumn,
 } from "typeorm";
 
 import { BetRoom } from "../bet-room/bet-room.entity";
@@ -14,19 +15,20 @@ export class BetResult extends BaseEntity {
   @PrimaryGeneratedColumn("increment")
   id: number;
 
-  @ManyToOne(() => BetRoom, (betRoom) => betRoom.betResults)
+  @OneToOne(() => BetRoom, (betRoom) => betRoom.betResults)
+  @JoinColumn()
   betRoom: BetRoom;
 
-  @Column({ nullable: true })
+  @Column()
   option1TotalBet: number;
 
-  @Column({ nullable: true })
+  @Column()
   option2TotalBet: number;
 
-  @Column({ nullable: true })
+  @Column()
   option1TotalParticipants: number;
 
-  @Column({ nullable: true })
+  @Column()
   option2TotalParticipants: number;
 
   @Column({ type: "enum", enum: ["option1", "option2"] })
