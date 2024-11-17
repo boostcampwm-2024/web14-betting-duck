@@ -75,7 +75,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     payload: fetchBetRoomInfoRequestType,
   ) {
     const { roomId } = fetchBetRoomInfoRequestSchema.parse(payload);
-    const channel = await this.getChannelData(roomId);
+    const channel = await this.redisManager.getChannelData(roomId);
     if (channel) {
       client.emit("fetchBetRoomInfo", { channel });
     } else {
@@ -88,7 +88,9 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage("joinBet")
   async handleJoinBet(client: Socket, payload: joinBetRoomRequestType) {
     const { sender, channel } = joinBetRoomRequestSchema.parse(payload);
-    const targetChannel = await this.getChannelData(channel.roomId);
+    const targetChannel = await this.redisManager.getChannelData(
+      channel.roomId,
+    );
 
     if (targetChannel && targetChannel.status === "active") {
       const selectedOption =
@@ -148,25 +150,5 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }),
     );
     return users;
-  }
-
-  private async getChannelData(roomId: string) {
-    const [creator, status, option1, option2] = await Promise.all([
-      this.redisManager.client.get(`room:${roomId}:creator`),
-      this.redisManager.client.get(`room:${roomId}:status`),
-      this.redisManager.client.hgetall(`room:${roomId}:option1`),
-      this.redisManager.client.hgetall(`room:${roomId}:option2`),
-    ]);
-
-    if (creator && status && option1 && option2) {
-      return {
-        creator,
-        status,
-        option1,
-        option2,
-      };
-    } else {
-      return null;
-    }
   }
 }
