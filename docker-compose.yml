@@ -13,29 +13,43 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ../nginx.conf:/etc/nginx/nginx.conf
-      - ../frontend/dist:/static
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./frontend/dist:/static
     depends_on:
       - betting_duck_app
     networks:
       - betting_duck_network
+    profiles:
+      - prod
+
+  nginx_dev:
+    image: nginx:latest
+    container_name: nginx-server
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.dev.conf:/etc/nginx/nginx.conf
+      - ./frontend/dist:/static
+    depends_on:
+      - betting_duck_app_dev
+    networks:
+      - betting_duck_network
+    profiles:
+      - dev
 
   betting_duck_app:
     image: node:22.11.0-alpine
     container_name: betting_duck_app
     working_dir: /app/backend
     volumes:
-      - ../:/app
+      - ./:/app
     ports:
       - "${SERVER_PORT}:3000"
-    # 테스트용
+    # 배포용 커맨드
     command: >
       sh -c " npm install -g pnpm && \
-      cd ../shared && pnpm install && \
       cd ../backend && pnpm install && \
-      tail -f /dev/null "
-    # command: >
-    #   sh -c " npm install -g pnpm &&  pnpm install && pnpm run start "
+      pnpm run start "
     environment:
       POSTGRES_HOSTNAME: ${POSTGRES_HOSTNAME}
       POSTGRES_PORT: ${POSTGRES_PORT}
@@ -50,6 +64,39 @@ services:
       - redis
     networks:
       - betting_duck_network
+    profiles:
+      - prod
+
+  betting_duck_app_dev:
+    image: node:22.11.0-alpine
+    container_name: betting_duck_app
+    working_dir: /app/backend
+    volumes:
+      - ./:/app
+    ports:
+      - "${SERVER_PORT}:3000"
+    # 테스트용 커맨드
+    command: >
+      sh -c " npm install -g pnpm && \
+      cd ../backend && pnpm install && \
+      tail -f /dev/null "
+    environment:
+      POSTGRES_HOSTNAME: ${POSTGRES_HOSTNAME}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB_NAME_DB_SYNCHRONIZE: ${POSTGRES_DB_NAME_DB_SYNCHRONIZE}
+      REDIS_HOSTNAME: ${REDIS_HOSTNAME}
+      REDIS_PORT: ${REDIS_PORT}
+    depends_on:
+      - postgres_db
+      - redis
+    networks:
+      - betting_duck_network
+    profiles:
+      - dev
+
 
   postgres_db:
     image: postgres:15

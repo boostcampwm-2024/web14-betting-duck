@@ -28,13 +28,7 @@ jobs:
             echo "Connected to the server"
             cd /app/web14-betting-duck
             git pull origin dev
-            echo "Install dependencies"
-            cd /app/web14-betting-duck/shared
-            pnpm install
-            cd /app/web14-betting-duck/frontend
-            pnpm install
-            echo "Build the project"
-            pnpm run build
+            docker exec betting_duck_app sh -c "cd /app/frontend; pnpm install; pnpm build"
           EOF
 
       - name: Notify deployment status
