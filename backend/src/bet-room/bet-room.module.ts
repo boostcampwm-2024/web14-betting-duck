@@ -7,10 +7,20 @@ import { UserRepository } from "src/auth/user.repository";
 import { BetRoom } from "./bet-room.entity";
 import { User } from "src/auth/user.entity";
 import { RedisManagerModule } from "src/utils/redis-manager.module";
+import { BetResultRepository } from "src/bet-result/bet-result.repository";
+import { BetResult } from "src/bet-result/bet-result.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BetRoom, User]), RedisManagerModule],
+  imports: [
+    TypeOrmModule.forFeature([BetRoom, User, BetResult]),
+    RedisManagerModule,
+  ],
   controllers: [BetRoomController],
-  providers: [BetRoomService, BetRoomRepository, UserRepository],
+  providers: [
+    BetRoomService,
+    BetRoomRepository,
+    UserRepository,
+    BetResultRepository,
+  ],
 })
 export class BetRoomModule {}

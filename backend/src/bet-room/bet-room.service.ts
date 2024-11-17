@@ -4,17 +4,20 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { BetRoomRepository } from "./bet-room.repository";
+import { BetResultRepository } from "src/bet-result/bet-result.repository";
 import { UserRepository } from "src/auth/user.repository";
 import { CreateBetRoomDto } from "./dto/create-bet-room.dto";
 import { UpdateBetRoomDto } from "./dto/update-bet-room.dto";
 import { v4 as uuidv4 } from "uuid";
 import { RedisManager } from "src/utils/redis.manager";
 import { BetRoom } from "./bet-room.entity";
+import { BetResult } from "src/bet-result/bet-result.entity";
 
 @Injectable()
 export class BetRoomService {
   constructor(
     private betRoomRepository: BetRoomRepository,
+    private betResultRepository: BetResultRepository,
     private userRepository: UserRepository,
     private redisManager: RedisManager,
   ) {}
@@ -45,35 +48,14 @@ export class BetRoomService {
     return createdRoom;
   }
 
-  async startBetRoom(betRoomId: string) {
-    const betRoom = await this.betRoomRepository.findOneById(betRoomId);
-    //TODO: JWT 토큰에서 추출
-    const userId = 8;
-    if (!betRoom) {
-      throw new NotFoundException("베팅 방을 찾을 수 없습니다.");
-    }
-    if (betRoom.manager.id !== userId) {
-      throw new ForbiddenException("베팅 방을 시작할 권한이 없습니다.");
-    }
-    const updateResult = await this.betRoomRepository.update(betRoomId, {
-      status: "active",
-      startTime: new Date(new Date().getTime()),
-    });
-
-    await this.redisManager.setRoomStatus(betRoomId, "active");
-    return updateResult;
-  }
-
   async updateBetRoom(
     betRoomId: string,
     updateBetRoomDto: UpdateBetRoomDto,
   ): Promise<void> {
-    const betRoom = await this.betRoomRepository.findOneById(betRoomId);
-    if (!betRoom) {
-      throw new NotFoundException("베팅 방을 찾을 수 없습니다.");
-    }
-    const updatedFields: Partial<BetRoom> = {};
+    const userId = 8;
+    this.assertBetRoomAccess(betRoomId, userId);
 
+    const updatedFields: Partial<BetRoom> = {};
     if (updateBetRoomDto.channel?.title) {
       updatedFields.title = updateBetRoomDto.channel.title;
     }
@@ -87,5 +69,68 @@ export class BetRoomService {
         updateBetRoomDto.channel.settings.defaultBetAmount;
     }
     await this.betRoomRepository.update(betRoomId, updatedFields);
+  }
+
+  async startBetRoom(betRoomId: string) {
+    //TODO: JWT 토큰에서 추출
+    const userId = 8;
+    this.assertBetRoomAccess(betRoomId, userId);
+
+    const updateResult = await this.betRoomRepository.update(betRoomId, {
+      status: "active",
+      startTime: new Date(new Date().getTime()),
+    });
+
+    await this.redisManager.setRoomStatus(betRoomId, "active");
+    return updateResult;
+  }
+
+  async finishBetRoom(betRoomId: string, winningOption: "option1" | "option2") {
+    //TODO: JWT 토큰에서 추출
+    const userId = 8;
+    this.assertBetRoomAccess(betRoomId, userId);
+
+    const updateResult = await this.betRoomRepository.update(betRoomId, {
+      status: "finished",
+      endTime: new Date(new Date().getTime()),
+    });
+    await this.redisManager.setRoomStatus(betRoomId, "finished");
+    this.saveBetResult(betRoomId, winningOption);
+
+    return updateResult;
+  }
+
+  private async saveBetResult(
+    betRoomId: string,
+    winningOption: "option1" | "option2",
+  ) {
+    const channel = await this.redisManager.getChannelData(betRoomId);
+    if (!channel) {
+      throw new Error(`채널 데이터를 찾을 수 없습니다. roomId: ${betRoomId}`);
+    }
+    const option1Participants = Number(channel.option1.participants);
+    const option2Participants = Number(channel.option2.participants);
+    const option1TotalBet = Number(channel.option1.currentBets);
+    const option2TotalBet = Number(channel.option2.currentBets);
+
+    const betResult: Partial<BetResult> = {
+      betRoom: { id: betRoomId } as BetRoom,
+      option1TotalBet: option1TotalBet,
+      option2TotalBet: option2TotalBet,
+      option1TotalParticipants: option1Participants,
+      option2TotalParticipants: option2Participants,
+      winningOption: winningOption,
+    };
+    await this.betResultRepository.saveBetResult(betResult);
+  }
+
+  private async assertBetRoomAccess(betRoomId: string, userId: number) {
+    const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+    if (!betRoom) {
+      throw new NotFoundException("베팅 방을 찾을 수 없습니다.");
+    }
+    if (betRoom.manager.id !== userId) {
+      throw new ForbiddenException("베팅 방에 접근할 권한이 없습니다.");
+    }
   }
 }
