@@ -1,18 +1,18 @@
 import { describe, it, expect } from "@jest/globals";
 
-// interface ChannelOption {
-//   participants?: number;
-//   currentBets: number;
-// }
+interface ChannelOption {
+  participants?: number;
+  currentBets: number;
+}
 
-// interface Channel {
-//   option1: ChannelOption;
-//   option2: ChannelOption;
-// }
+interface Channel {
+  option1: ChannelOption;
+  option2: ChannelOption;
+}
 
 describe("calculateWinningOdds", () => {
   const calculateWinningOdds = (
-    channel,
+    channel: Channel,
     winningOption: "option1" | "option2",
   ) => {
     const winningOptionTotalBet =
