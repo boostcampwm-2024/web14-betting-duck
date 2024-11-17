@@ -99,4 +99,21 @@ export class RedisManager {
       return null;
     }
   }
+
+  async deleteChannelData(roomId: string) {
+    let cursor = "0";
+    do {
+      const [nextCursor, keys] = await this.client.scan(
+        cursor,
+        "MATCH",
+        `room:${roomId}:*`,
+        "COUNT",
+        10,
+      );
+      cursor = nextCursor;
+      if (keys.length > 0) {
+        await this.client.unlink(...keys);
+      }
+    } while (cursor !== "0");
+  }
 }

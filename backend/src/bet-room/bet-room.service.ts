@@ -121,8 +121,8 @@ export class BetRoomService {
       winningOption: winningOption,
       winningOdds: winningOdds,
     });
-    //TODO: bet 참여 유저들에게 종료 이벤트 발행. 이후 레디스 값 제거.
 
+    await this.redisManager.deleteChannelData(betRoomId);
     //TODO: 베팅 참여 유저들에게 정산!
 
     return updateResult;

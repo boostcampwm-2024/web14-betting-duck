@@ -9,6 +9,7 @@ import { User } from "src/auth/user.entity";
 import { RedisManagerModule } from "src/utils/redis-manager.module";
 import { BetResultRepository } from "src/bet-result/bet-result.repository";
 import { BetResult } from "src/bet-result/bet-result.entity";
+import { BetGateway } from "src/bet/bet.gateway";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { BetResult } from "src/bet-result/bet-result.entity";
     BetRoomRepository,
     UserRepository,
     BetResultRepository,
+    BetGateway,
   ],
 })
 export class BetRoomModule {}
