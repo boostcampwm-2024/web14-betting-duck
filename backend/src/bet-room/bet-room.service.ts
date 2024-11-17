@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 import { RedisManager } from "src/utils/redis.manager";
 import { BetRoom } from "./bet-room.entity";
 import { BetResult } from "src/bet-result/bet-result.entity";
+import { BetGateway } from "src/bet/bet.gateway";
 
 @Injectable()
 export class BetRoomService {
@@ -20,6 +21,7 @@ export class BetRoomService {
     private betResultRepository: BetResultRepository,
     private userRepository: UserRepository,
     private redisManager: RedisManager,
+    private betGateway: BetGateway,
   ) {}
 
   async createBetRoom(createBetRoomDto: CreateBetRoomDto) {
@@ -95,15 +97,38 @@ export class BetRoomService {
       endTime: new Date(new Date().getTime()),
     });
     await this.redisManager.setRoomStatus(betRoomId, "finished");
-    this.saveBetResult(betRoomId, winningOption);
+
+    const {
+      channel,
+      option1Participants,
+      option2Participants,
+      option1TotalBet,
+      option2TotalBet,
+    } = await this.getBettingTotals(betRoomId);
+    this.saveBetResult(
+      betRoomId,
+      winningOption,
+      option1TotalBet,
+      option2TotalBet,
+      option1Participants,
+      option2Participants,
+    );
+    const winningOdds = this.calculateWinningOdds(channel, winningOption);
+
+    this.betGateway.server.to(betRoomId).emit("finished", {
+      message: "베팅이 종료되었습니다.",
+      roomId: betRoomId,
+      winningOption: winningOption,
+      winningOdds: winningOdds,
+    });
+    //TODO: bet 참여 유저들에게 종료 이벤트 발행. 이후 레디스 값 제거.
+
+    //TODO: 베팅 참여 유저들에게 정산!
 
     return updateResult;
   }
 
-  private async saveBetResult(
-    betRoomId: string,
-    winningOption: "option1" | "option2",
-  ) {
+  private async getBettingTotals(betRoomId: string) {
     const channel = await this.redisManager.getChannelData(betRoomId);
     if (!channel) {
       throw new Error(`채널 데이터를 찾을 수 없습니다. roomId: ${betRoomId}`);
@@ -113,6 +138,23 @@ export class BetRoomService {
     const option1TotalBet = Number(channel.option1.currentBets);
     const option2TotalBet = Number(channel.option2.currentBets);
 
+    return {
+      channel,
+      option1Participants,
+      option2Participants,
+      option1TotalBet,
+      option2TotalBet,
+    };
+  }
+
+  private async saveBetResult(
+    betRoomId: string,
+    winningOption: "option1" | "option2",
+    option1TotalBet: number,
+    option2TotalBet: number,
+    option1Participants: number,
+    option2Participants: number,
+  ) {
     const betResult: Partial<BetResult> = {
       betRoom: { id: betRoomId } as BetRoom,
       option1TotalBet: option1TotalBet,
@@ -132,5 +174,23 @@ export class BetRoomService {
     if (betRoom.manager.id !== userId) {
       throw new ForbiddenException("베팅 방에 접근할 권한이 없습니다.");
     }
+  }
+
+  private calculateWinningOdds(channel, winningOption: "option1" | "option2") {
+    const winningOptionTotalBet =
+      winningOption === "option1"
+        ? channel.option1.currentBets
+        : channel.option2.currentBets;
+    const losingOptionTotalBet =
+      winningOption === "option1"
+        ? channel.option2.currentBets
+        : channel.option1.currentBets;
+
+    if (winningOptionTotalBet === 0) {
+      return 0;
+    }
+    const winningOdds =
+      (winningOptionTotalBet + losingOptionTotalBet) / winningOptionTotalBet;
+    return winningOdds;
   }
 }
