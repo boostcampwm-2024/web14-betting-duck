@@ -8,6 +8,7 @@ export const swaggerConfig = (app: INestApplication): void => {
     .setTitle("Betting Duck API Docs")
     .setDescription("Betting Duck API description")
     .setVersion("1.0.0")
+    .addServer("/api")
     .build();
 
   const document = SwaggerModule.createDocument(app, options);

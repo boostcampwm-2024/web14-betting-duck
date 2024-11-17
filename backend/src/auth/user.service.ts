@@ -4,10 +4,10 @@ import * as bcrypt from "bcryptjs";
 import { JwtService } from "@nestjs/jwt";
 import {
   requestSignUpSchema,
-  requestSignUpType,
   requestSignInSchema,
-  requestSignInType,
 } from "@shared/schemas/users/request";
+import { SignUpUserDto } from "./dto/sign-up-user.dto";
+import { SignInUserDto } from "./dto/sign-in-user.dto";
 
 @Injectable()
 export class UserService {
@@ -16,7 +16,7 @@ export class UserService {
     private jwtService: JwtService,
   ) {}
 
-  async signUp(requestSignUp: requestSignUpType) {
+  async signUp(requestSignUp: SignUpUserDto) {
     const { email, nickname, password } =
       requestSignUpSchema.parse(requestSignUp);
     const hashedPassword = await this.hashPassword(password);
@@ -29,9 +29,7 @@ export class UserService {
     return this.userRepository.createUser(user);
   }
 
-  async signIn(
-    requestsignIn: requestSignInType,
-  ): Promise<{ accessToken: string }> {
+  async signIn(requestsignIn: SignInUserDto): Promise<{ accessToken: string }> {
     const { nickname, password } = requestSignInSchema.parse(requestsignIn);
     const user = await this.userRepository.findOneByNickname(nickname);
 
