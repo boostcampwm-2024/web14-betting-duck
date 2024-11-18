@@ -12,6 +12,13 @@ export default defineConfig(({ mode }) => {
     plugins: [react(), TanStackRouterVite()],
     server: {
       port: 3000,
+      proxy: {
+        "/api": {
+          target: env.SOCKET_URL,
+          changeOrigin: true,
+          secure: false,
+        },
+      },
     },
     publicDir: "public",
     resolve: {

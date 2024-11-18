@@ -1,5 +1,5 @@
 import React from "react";
-import { DuckCoinIcon, PeoplesIcon, TrophyIcon } from "@shared/icons";
+import { DuckCoinIcon, PeoplesIcon, TrophyIcon } from "@/shared/icons";
 
 interface BettingStats {
   coinAmount: number;

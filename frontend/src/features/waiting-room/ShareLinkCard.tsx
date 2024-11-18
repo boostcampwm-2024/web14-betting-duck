@@ -1,4 +1,4 @@
-import { CopyIcon, LinkIcon } from "@shared/icons";
+import { CopyIcon, LinkIcon } from "@/shared/icons";
 import { cn } from "@/shared/misc";
 
 function ShareLinkCard() {
