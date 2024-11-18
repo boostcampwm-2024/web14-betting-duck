@@ -76,8 +76,6 @@ function CreateVotePage() {
       <h1 className="text-default my-8 text-xl font-extrabold">
         승부 예측 생성하기
       </h1>
-
-      {/* 예측 제목 입력 */}
       <div className="w-full">
         <InputField
           icon={<TextIcon />}
@@ -89,7 +87,6 @@ function CreateVotePage() {
       </div>
 
       <div className="bg-layout-sidebar w-full rounded-lg shadow-inner">
-        {/* 승리 예측 케이스 입력 */}
         <InputField
           icon={<DuckIcon color="#4C79F8" />}
           placeholder="승리에 해당하는 예측 케이스를 적어주세요."
@@ -98,7 +95,6 @@ function CreateVotePage() {
           name="winCase"
           inputClass="text-bettingBlue placeholder-bettingBlue"
         />
-        {/* 구분선 */}
         <div className="border-border border-t"></div>
         {/* 패배 예측 케이스 입력 */}
         <InputField
