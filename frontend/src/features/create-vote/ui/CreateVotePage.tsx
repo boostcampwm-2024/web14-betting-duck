@@ -8,6 +8,7 @@ import {
 import { usePredictionStore } from "../model/store";
 import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/shared/misc";
+import { useMemo } from "react";
 
 interface InputFieldProps {
   icon: React.ReactNode;
@@ -46,8 +47,17 @@ function InputField({
 }
 
 function CreateVotePage() {
-  const { formState, handleInputChange, isFormVaild, submitPrediction } =
-    usePredictionStore();
+  const {
+    formState,
+    handleInputChange,
+    isFormVaild,
+    submitPrediction,
+    handleTimerIncrement,
+    handleTimerDecrement,
+    handleDefaultBetAmountChange,
+    incrementDefaultBetAmount,
+    decrementDefaultBetAmount,
+  } = usePredictionStore();
   const navigate = useNavigate();
 
   const handleCancelClick = () => {
@@ -57,8 +67,7 @@ function CreateVotePage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
-    submitPrediction(formData);
+    submitPrediction();
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
@@ -66,6 +75,13 @@ function CreateVotePage() {
       event.preventDefault();
     }
   };
+
+  const titleIcon = useMemo(() => <TextIcon />, []);
+  const winIcon = useMemo(() => <DuckIcon color="#4C79F8" />, []);
+  const loseIcon = useMemo(() => <DuckIcon color="#DF3491" />, []);
+  const timerIcon = useMemo(() => <TimerIcon />, []);
+  const arrowUpIcon = useMemo(() => <ArrowUpIcon />, []);
+  const arrowDownIcon = useMemo(() => <ArrowDownIcon />, []);
 
   return (
     <form
@@ -78,7 +94,7 @@ function CreateVotePage() {
       </h1>
       <div className="w-full">
         <InputField
-          icon={<TextIcon />}
+          icon={titleIcon}
           placeholder="승부를 예측할 제목을 입력해 주세요."
           value={formState.title}
           onChange={handleInputChange}
@@ -88,7 +104,7 @@ function CreateVotePage() {
 
       <div className="bg-layout-sidebar w-full rounded-lg shadow-inner">
         <InputField
-          icon={<DuckIcon color="#4C79F8" />}
+          icon={winIcon}
           placeholder="승리에 해당하는 예측 케이스를 적어주세요."
           value={formState.winCase}
           onChange={handleInputChange}
@@ -98,7 +114,7 @@ function CreateVotePage() {
         <div className="border-border border-t"></div>
         {/* 패배 예측 케이스 입력 */}
         <InputField
-          icon={<DuckIcon color="#DF3491" />}
+          icon={loseIcon}
           placeholder="패배에 해당하는 예측 케이스를 적어주세요."
           value={formState.loseCase}
           onChange={handleInputChange}
@@ -107,48 +123,52 @@ function CreateVotePage() {
         />
       </div>
 
-      {/* 타이머 및 최소 금액 설정 */}
       <div className="flex w-full gap-2">
-        {/* 타이머 설정 */}
         <div className="bg-layout-sidebar flex w-1/2 items-center justify-between gap-1 rounded-lg pl-2 shadow-inner">
           <div className="flex items-center gap-1">
-            <TimerIcon />
+            {timerIcon}
             <span className="text-md text-default">타이머 설정</span>
             <div className="border-border h-3 border-l"></div>
+            <span className="text-default ml-2 text-lg font-bold">
+              {formState.timer}분
+            </span>
           </div>
           {/* <input className=""></input> */}
           <div className="bg-primary flex flex-col items-center justify-center rounded-r-lg p-1">
-            <button>
-              <ArrowUpIcon />
+            <button type="button" onClick={handleTimerIncrement}>
+              {arrowUpIcon}
             </button>
             <div className="my-1 w-full border-t border-[#F0F4FA2B]" />
-            <button>
-              <ArrowDownIcon />
+            <button type="button" onClick={handleTimerDecrement}>
+              {arrowDownIcon}
             </button>
           </div>
         </div>
-
-        {/* 최소 금액 설정 */}
         <div className="bg-layout-sidebar flex w-1/2 items-center justify-between gap-1 rounded-lg pl-2 shadow-inner">
           <div className="flex items-center gap-1">
             <DuckIcon width={10} height={10} color="#4D5765" />
             <span className="text-md text-default">최소 금액 설정</span>
             <div className="border-border h-3 border-l"></div>
+            <input
+              type="number"
+              value={formState.defaultBetAmount}
+              onChange={handleDefaultBetAmountChange}
+              className="text-default w-1/3 border-none bg-transparent text-center text-lg font-bold outline-none"
+              min="100"
+            />
           </div>
           {/* <input className=""></input> */}
           <div className="bg-primary flex flex-col items-center justify-center rounded-r-lg p-1">
-            <button>
-              <ArrowUpIcon />
+            <button type="button" onClick={incrementDefaultBetAmount}>
+              {arrowUpIcon}
             </button>
             <div className="my-1 w-full border-t border-[#F0F4FA2B]" />
-            <button>
-              <ArrowDownIcon />
+            <button type="button" onClick={decrementDefaultBetAmount}>
+              {arrowDownIcon}
             </button>
           </div>
         </div>
       </div>
-
-      {/* 취소 및 투표 생성 버튼 */}
       <div className="flex w-full gap-2">
         <button
           className="bg-secondary hover:bg-secondary-hover shadow-middle text-default w-1/2 rounded-lg px-8 py-4 font-semibold hover:text-white"

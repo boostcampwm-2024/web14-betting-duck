@@ -1,14 +1,15 @@
 import { useMemo, useState } from "react";
 import { PredictionData } from "./types";
 import { createPrediction } from "./api";
-
-// TODO: input에 값이 입력될 때마다 해당 컴포넌트 전체가 리렌더링 되는 문제 해결
+import { formatPredictionData } from "./helpers/formatData";
 
 function usePredictionStore() {
   const [formState, setFormState] = useState<PredictionData>({
     title: "",
     winCase: "",
     loseCase: "",
+    timer: 1,
+    defaultBetAmount: 100,
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -19,23 +20,63 @@ function usePredictionStore() {
     }));
   };
 
+  const handleDefaultBetAmountChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const value = Number(e.target.value);
+    setFormState((prev) => ({
+      ...prev,
+      defaultBetAmount: value,
+    }));
+  };
+
+  const incrementDefaultBetAmount = () => {
+    setFormState((prev) => ({
+      ...prev,
+      defaultBetAmount: prev.defaultBetAmount + 100,
+    }));
+  };
+
+  const decrementDefaultBetAmount = () => {
+    setFormState((prev) => ({
+      ...prev,
+      defaultBetAmount: Math.max(100, prev.defaultBetAmount - 100),
+    }));
+  };
+
   const isFormVaild = useMemo(() => {
     return (
       formState.title.trim() !== "" &&
       formState.winCase.trim() !== "" &&
-      formState.loseCase.trim() !== ""
+      formState.loseCase.trim() !== "" &&
+      formState.defaultBetAmount >= 100
     );
   }, [formState]);
 
-  const submitPrediction = async (formData: FormData) => {
-    //TODO: API 요청 함수 호출해야함. API 요청 함수는 api.ts에 입력할 것
+  const handleTimerIncrement = () => {
+    setFormState((prev) => ({
+      ...prev,
+      timer: prev.timer + 1,
+    }));
+  };
+
+  const handleTimerDecrement = () => {
+    setFormState((prev) => ({
+      ...prev,
+      timer: Math.max(1, prev.timer - 1),
+    }));
+  };
+
+  const submitPrediction = async () => {
+    const requestData = formatPredictionData(formState);
     try {
-      // API 요청 함수 호출
-      const result = await createPrediction(formData);
+      const result = await createPrediction(requestData);
       setFormState({
         title: "",
         winCase: "",
         loseCase: "",
+        timer: 1,
+        defaultBetAmount: 100,
       });
       console.log(result);
     } catch (error) {
@@ -44,7 +85,17 @@ function usePredictionStore() {
     }
   };
 
-  return { formState, handleInputChange, isFormVaild, submitPrediction };
+  return {
+    formState,
+    handleTimerIncrement,
+    handleTimerDecrement,
+    handleDefaultBetAmountChange,
+    incrementDefaultBetAmount,
+    decrementDefaultBetAmount,
+    handleInputChange,
+    isFormVaild,
+    submitPrediction,
+  };
 }
 
 export { usePredictionStore };
