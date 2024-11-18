@@ -10,7 +10,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "prepush:frontend": "cd frontend && pnpm build"
   },
   "dependencies": {
     "@betting-duck/shared": "workspace:*",

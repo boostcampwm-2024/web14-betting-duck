@@ -1,7 +1,5 @@
 #!/bin/bash
 if test "$(git diff --cached --name-only | grep "^frontend/")"; then
-  cd frontend
   echo "Running build..."
-  pnpm build
-  cd ..
+  npm run prepush:frontend
 fi
