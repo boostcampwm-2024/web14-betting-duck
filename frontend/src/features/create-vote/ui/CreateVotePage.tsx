@@ -28,8 +28,8 @@ function InputField({
   inputClass = "text-gray-700",
 }: InputFieldProps) {
   return (
-    <div className="bg-layout-sidebar flex items-center gap-3 rounded-lg p-4 shadow-inner">
-      {icon}
+    <div className="flex items-center gap-2 p-4">
+      <div className="flex-shrink-0">{icon}</div>
       <div className="border-border h-3 border-l"></div>
       <input
         type="text"
@@ -77,8 +77,14 @@ function CreateVotePage() {
   };
 
   const titleIcon = useMemo(() => <TextIcon />, []);
-  const winIcon = useMemo(() => <DuckIcon color="#4C79F8" />, []);
-  const loseIcon = useMemo(() => <DuckIcon color="#DF3491" />, []);
+  const winIcon = useMemo(
+    () => <DuckIcon color="#4C79F8" width="18" height="18" />,
+    [],
+  );
+  const loseIcon = useMemo(
+    () => <DuckIcon color="#DF3491" width="18" height="18" />,
+    [],
+  );
   const timerIcon = useMemo(() => <TimerIcon />, []);
   const arrowUpIcon = useMemo(() => <ArrowUpIcon />, []);
   const arrowDownIcon = useMemo(() => <ArrowDownIcon />, []);
@@ -92,7 +98,7 @@ function CreateVotePage() {
       <h1 className="text-default my-8 text-xl font-extrabold">
         승부 예측 생성하기
       </h1>
-      <div className="w-full">
+      <div className="bg-layout-sidebar w-full rounded-lg shadow-inner">
         <InputField
           icon={titleIcon}
           placeholder="승부를 예측할 제목을 입력해 주세요."
