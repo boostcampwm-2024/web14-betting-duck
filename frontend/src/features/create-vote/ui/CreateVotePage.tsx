@@ -88,6 +88,10 @@ function CreateVotePage() {
   const timerIcon = useMemo(() => <TimerIcon />, []);
   const arrowUpIcon = useMemo(() => <ArrowUpIcon />, []);
   const arrowDownIcon = useMemo(() => <ArrowDownIcon />, []);
+  const duckIcon = useMemo(
+    () => <DuckIcon width={10} height={10} color="#4D5765" />,
+    [],
+  );
 
   return (
     <div className="bg-layout-main flex w-full flex-col items-center gap-4 p-9">
@@ -154,7 +158,7 @@ function CreateVotePage() {
 
           <div className="bg-layout-sidebar flex w-1/2 items-center justify-between gap-1 rounded-lg pl-2 shadow-inner">
             <div className="flex items-center gap-1">
-              <DuckIcon width={10} height={10} color="#4D5765" />
+              {duckIcon}
               <span className="text-md text-default">최소 금액 설정</span>
               <div className="border-border h-3 border-l"></div>
               <input
