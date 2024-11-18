@@ -95,7 +95,6 @@ function CreateVotePage() {
           name="winCase"
           inputClass="text-bettingBlue placeholder-bettingBlue"
         />
-        {/* 구분선 */}
         <div className="border-border border-t"></div>
         {/* 패배 예측 케이스 입력 */}
         <InputField
