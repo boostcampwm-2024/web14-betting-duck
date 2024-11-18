@@ -9,12 +9,13 @@ import { User } from "src/auth/user.entity";
 import { RedisManagerModule } from "src/utils/redis-manager.module";
 import { BetResultRepository } from "src/bet-result/bet-result.repository";
 import { BetResult } from "src/bet-result/bet-result.entity";
-import { BetGateway } from "src/bet/bet.gateway";
+import { BetModule } from "src/bet/bet.module";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([BetRoom, User, BetResult]),
     RedisManagerModule,
+    BetModule,
   ],
   controllers: [BetRoomController],
   providers: [
@@ -22,7 +23,6 @@ import { BetGateway } from "src/bet/bet.gateway";
     BetRoomRepository,
     UserRepository,
     BetResultRepository,
-    BetGateway,
   ],
 })
 export class BetRoomModule {}

@@ -9,7 +9,6 @@ export type fetchBetRoomInfoRequestType = z.infer<
 
 export const joinBetRoomRequestSchema = z.object({
   sender: z.object({
-    nickname: z.string().min(1, "닉네임이 필요합니다."),
     betAmount: z.number().min(0, "베팅 금액은 0 이상이어야 합니다."),
     selectOption: z.enum(["option1", "option2"], {
       message: "선택 옵션은 1 또는 2이어야 합니다.",

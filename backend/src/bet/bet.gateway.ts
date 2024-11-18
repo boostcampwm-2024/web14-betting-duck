@@ -31,6 +31,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`Client connected: ${client.id}`);
   }
 
+  //TODO: 여기서 유저가 베팅 이후에 방을 나간 경우 고려해야함
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
     const userId = client.data.userId;
@@ -61,20 +62,20 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       owner: owner,
     });
 
-    const users = await this.redisManager.getRoomUsersWithDetails(roomId);
+    const users = await this.redisManager.getRoomUsersNicknameAndJoinAt(roomId);
     this.server.to(roomId).emit("fetchRoomUsers", users);
   }
 
   @SubscribeMessage("leaveRoom")
   async handleLeaveRoom(client: Socket, payload: leaveRoomRequestType) {
     const userId = client.data.userId;
-
+    console.log("client.data.userId" + client.data.userId);
     const { roomId } = leaveRoomRequestSchema.parse(payload);
     client.leave(roomId);
 
     await this.redisManager.client.del(`room:${roomId}:user:${userId}`);
 
-    const users = await this.redisManager.getRoomUsersWithDetails(roomId);
+    const users = await this.redisManager.getRoomUsersNicknameAndJoinAt(roomId);
     this.server.to(roomId).emit("fetchRoomUsers", users);
   }
 
@@ -100,6 +101,21 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const targetChannel = await this.redisManager.getChannelData(
       channel.roomId,
     );
+    const userId = client.data.userId;
+    if (!userId) {
+      client.emit("joinBet", { error: "인증되지 않은 사용자입니다." });
+      return;
+    }
+    const userDuck = await this.redisManager.client.hget(
+      `user:${userId}`,
+      "duck",
+    );
+
+    if (!userDuck || Number(userDuck) < sender.betAmount) {
+      client.emit("joinBet", { error: "보유한 duck이 부족합니다." });
+      return;
+    }
+    //TODO: betAmount가 디폴트 값 이상인지 체크!
 
     if (targetChannel && targetChannel.status === "active") {
       const selectedOption =
@@ -130,6 +146,12 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
           channel: updatedChannel,
         });
         //TODO: RDB에 배팅 내역 저장 로직 추가
+        await this.redisManager.setBettingUserOnBet({
+          userId,
+          roomId: channel.roomId,
+          betAmount: sender.betAmount,
+          selectedOption: sender.selectOption,
+        });
       } else {
         client.emit("joinBet", { error: "해당하는 옵션이 존재하지 않습니다." });
       }
