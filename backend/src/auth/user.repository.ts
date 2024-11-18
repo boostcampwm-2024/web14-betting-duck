@@ -46,4 +46,14 @@ export class UserRepository {
       throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
     }
   }
+
+  async update(userId: number, partialEntity: Partial<User>) {
+    try {
+      return await this.userRepository.update(userId, partialEntity);
+    } catch {
+      throw new InternalServerErrorException(
+        "사용자 정보 업데이트에 실패했습니다.",
+      );
+    }
+  }
 }
