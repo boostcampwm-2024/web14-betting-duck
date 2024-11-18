@@ -37,6 +37,11 @@ export class RedisManager {
     });
   }
 
+  async findUser(userId: string) {
+    const exists = await this.client.exists(`user:${userId}`);
+    return exists === 1;
+  }
+
   async setBettingUserOnJoin({
     userId,
     nickname,

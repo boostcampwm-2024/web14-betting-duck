@@ -40,7 +40,7 @@ export class UserService {
     const user = await this.userRepository.findOneByNickname(nickname);
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      this.redisManager.setUser({
+      await this.redisManager.setUser({
         userId: String(user.id),
         nickname: user.nickname,
         role: role,
@@ -65,29 +65,34 @@ export class UserService {
     const { nickname } = requestGuestSignInSchema.parse(req.body);
     const role = "guest";
     const guestIdentifier = this.generateGuestIdentifier(req);
-    // TODO: Redis에 guestIdentifier 조회 로직 추가
-    // TODO: Redis에 guest 저장 로직 추가
-    this.redisManager.setUser({
-      userId: guestIdentifier,
-      nickname: nickname,
-      role: role,
-      duck: "300",
-    });
+    const userInfo = await this.redisManager.getUser(guestIdentifier);
 
-    const payload = {
-      id: guestIdentifier,
-      role: role,
-    };
-    const accessToken = await this.jwtService.sign(payload);
+    if (userInfo.role === role && userInfo.nickname === nickname) {
+      this.redisManager.setUser({
+        userId: guestIdentifier,
+        nickname: nickname,
+        role: role,
+        duck: "300",
+      });
 
-    return { accessToken, nickname, role };
+      const payload = {
+        id: guestIdentifier,
+        role: role,
+      };
+      const accessToken = await this.jwtService.sign(payload);
+
+      return { accessToken, nickname, role };
+    }
   }
 
   async getGuestLoginActivity(req: Request) {
     const guestIdentifier = this.generateGuestIdentifier(req);
-    console.log(guestIdentifier);
-    // TODO: Redis에 guestIdentifier 조회 로직 추가
-    return {};
+    const userInfo = await this.redisManager.getUser(guestIdentifier);
+    if (userInfo.role === "guest") {
+      return {
+        nickname: userInfo.nickname,
+      };
+    }
   }
 
   private async hashPassword(password: string): Promise<string> {
