@@ -8,6 +8,12 @@ export default {
       maxWidth: {
         layout: "520px",
       },
+      backgroundImage: {
+        "gradient-winning-button":
+          "linear-gradient(180deg, #8D93FF 0%, #4B78F7 10%, #4B78F7 90%, #8D93FF 100%)",
+        "gradient-losing-button":
+          "linear-gradient(180deg, #FFAAD8 0%, #DE3390 10%, #DE3390 90%, #FFAAD8 100%)",
+      },
       maxHeight: {
         layout: "780px",
       },
@@ -58,6 +64,7 @@ export default {
         bettingBlue: {
           DEFAULT: "#4C79F8",
           disabled: "#C7D5F9",
+          behind: "#c7d5f9",
         },
         bettingPink: {
           DEFAULT: "#DF3491",
