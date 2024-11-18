@@ -1,7 +1,16 @@
 import { Dialog, DialogTrigger, DialogContent } from "@/shared/ui/Dialog";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+
+const user = undefined;
 
 export const Route = createFileRoute("/")({
+  loader: () => {
+    if (!user) {
+      throw redirect({
+        to: "/login",
+      });
+    }
+  },
   component: () => (
     <Dialog>
       <DialogTrigger asChild>
