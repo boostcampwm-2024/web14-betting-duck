@@ -1,4 +1,4 @@
-function WaitingRoom() {
+function WaitingRoomIcon() {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -13,4 +13,4 @@ function WaitingRoom() {
   );
 }
 
-export { WaitingRoom };
+export { WaitingRoomIcon };
