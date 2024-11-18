@@ -1,4 +1,4 @@
-import { BettingPage } from "@/pages/betting-page";
+import { BettingPage } from "@/features/betting-page";
 import { Dialog, DialogTrigger, DialogContent } from "@/shared/ui/Dialog";
 
 function PredictButton() {
