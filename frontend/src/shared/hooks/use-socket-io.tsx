@@ -1,7 +1,9 @@
 import React from "react";
 import { io, Socket } from "socket.io-client";
+import { config } from "@shared/config/environment";
 
 interface SocketOptions {
+  url: string;
   onConnect?: () => void;
   onDisconnect?: (reason: Socket.DisconnectReason) => void;
   onError?: (error: Error) => void;
@@ -16,7 +18,7 @@ interface SocketState {
   error: Error | null;
 }
 
-const SOCKET_URL = "http://175.45.205.245/api/chat";
+const SOCKET_URL = config.socketUrl;
 
 function useEffectOnce(callback: () => void) {
   const isUsedRef = React.useRef(false);
@@ -36,6 +38,7 @@ function useEffectOnce(callback: () => void) {
  * @description
  * 다음과 같은 이벤트들을 처리합니다:
  *
+ * - url: 소켓이 연결할 URL을 입력해야 합니다.
  * - connect: 소켓이 연결되었을 때
  * - disconnect: 소켓이 연결이 끊어졌을 때
  * - reconnect_attempt: 소켓이 재연결을 시도할 때
@@ -53,7 +56,7 @@ export function useSocketIO(options: SocketOptions) {
   });
 
   const initializeSocket = React.useCallback(() => {
-    const socket = io(SOCKET_URL, {
+    const socket = io(SOCKET_URL + options.url, {
       reconnectionDelayMax: 10000,
       reconnectionAttempts: 10,
       reconnection: true,
@@ -123,6 +126,13 @@ export function useSocketIO(options: SocketOptions) {
   );
 
   /**
+   * 소캣에 등록되어 있는 이벤트를 해제하는 메서드
+   */
+  const off = React.useCallback((eventName: string) => {
+    socketRef.current?.off(eventName);
+  }, []);
+
+  /**
    * 특정 이벤트에 대한 콜백을 한번만 실행하는 메서드
    */
   const once = React.useCallback(
@@ -161,6 +171,7 @@ export function useSocketIO(options: SocketOptions) {
     ...socketState,
     emit,
     on,
+    off,
     once,
     reconnect,
     disconnect,

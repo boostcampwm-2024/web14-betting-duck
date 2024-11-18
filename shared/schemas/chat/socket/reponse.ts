@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { senderSchema, messageSchema } from "../../shared";
+import { nicknameSchema, messageSchema } from "../../shared";
 
 export const messageResponseSchema = z.object({
-  sender: senderSchema,
+  sender: nicknameSchema,
   message: messageSchema,
 });
