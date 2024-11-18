@@ -87,7 +87,6 @@ function CreateVotePage() {
       </div>
 
       <div className="bg-layout-sidebar w-full rounded-lg shadow-inner">
-        {/* 승리 예측 케이스 입력 */}
         <InputField
           icon={<DuckIcon color="#4C79F8" />}
           placeholder="승리에 해당하는 예측 케이스를 적어주세요."

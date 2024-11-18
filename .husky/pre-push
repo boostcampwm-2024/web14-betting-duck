@@ -1,5 +1,11 @@
-#!/bin/bash
-if test "$(git diff --cached --name-only | grep "^frontend/")"; then
-  echo "Running build..."
-  npm run prepush:frontend
+CHANGED_FILES=$(git diff --cached --name-only)
+echo "Changed files: $CHANGED_FILES"  # 디버그 메시지
+
+if echo "$CHANGED_FILES" | grep -q "^frontend/"; then
+  echo "Running build in frontend directory..."
+  cd frontend
+  pnpm build
+  cd ..
+else
+  echo "No changes in frontend directory."
 fi
