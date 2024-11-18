@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DecideBettingResult } from "@/pages/decide-betting-result";
+import { PredictDetail } from "@/pages/predict-detail";
 
 export const Route = createFileRoute("/login")({
-  component: DecideBettingResult,
+  component: PredictDetail,
 });
