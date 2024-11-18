@@ -4,6 +4,10 @@ import { PercentageDisplay } from "./PercentageDisplay";
 import { BettingForm } from "./BettingForm";
 import { BettingHeader } from "./BettingHeader";
 import { cn } from "@/shared/misc";
+import { useSocketIO } from "@/shared/hooks/use-socket-io";
+import React from "react";
+import { fetchBetRoomInfoRequestSchema } from "@betting-duck/shared";
+import { responseFetchBetRoomInfoSchema } from "@betting-duck/shared";
 
 interface BettingStats {
   coinAmount: number;
@@ -26,6 +30,15 @@ interface BettingRoom {
 }
 
 function BettingPage() {
+  const socket = useSocketIO({
+    url: "/api/betting",
+    onConnect: () => {
+      console.log("connected");
+    },
+    onDisconnect: () => {
+      console.log("disconnected");
+    },
+  });
   const bettingData: BettingRoom = {
     title: "KBO 우승은 KIA다!",
     timeRemaining: 445,
@@ -49,6 +62,34 @@ function BettingPage() {
     },
   };
 
+  React.useEffect(() => {
+    socket.on("fetchBetRoomInfo", (data) => {
+      console.log(data);
+      const response = responseFetchBetRoomInfoSchema.safeParse(data);
+      if (response.error) {
+        console.error(
+          "서버로 부터 반환되는 데이터에 타입이 맞지 않습니다.",
+          response.error,
+        );
+        return;
+      }
+
+      console.log(response.data);
+    });
+
+    socket.on("error", (error) => {
+      console.log(error);
+    });
+
+    const roomId = fetchBetRoomInfoRequestSchema.safeParse({ roomId: "1234" });
+    if (!roomId.success) {
+      console.error(roomId.error.errors);
+      return;
+    }
+
+    socket.emit("fetchBetRoomInfo", roomId.data);
+  }, [socket]);
+
   return (
     <div
       className={cn(
@@ -56,6 +97,21 @@ function BettingPage() {
         "shadow-middle bg-layout-main h-full max-h-[430px] w-full min-w-[630px] rounded-lg border-2 p-6",
       )}
     >
+      <button
+        onClick={() => {
+          const roomId = fetchBetRoomInfoRequestSchema.safeParse({
+            roomId: "1234",
+          });
+          if (!roomId.success) {
+            console.error(roomId.error.errors);
+            return;
+          }
+
+          socket.emit("fetchBetRoomInfo", roomId.data);
+        }}
+      >
+        전송하기
+      </button>
       <div className="flex h-full flex-col">
         <BettingHeader
           content={bettingData.title}
