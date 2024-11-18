@@ -4,14 +4,14 @@ export const roomIdSchema = z.object({
   roomId: z.string().min(1, "Room ID가 필요합니다."),
 });
 
-export const senderSchema = z.object({
+export const nicknameSchema = z.object({
   nickname: z.string().min(1, "닉네임이 필요합니다."),
 });
 
 export const messageSchema = z.string().min(1, "메시지가 필요합니다.");
 
 export const joinRoomRequestSchema = z.object({
-  sender: senderSchema,
+  sender: nicknameSchema,
   channel: roomIdSchema,
 });
 

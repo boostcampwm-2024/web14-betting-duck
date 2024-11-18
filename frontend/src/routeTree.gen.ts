@@ -16,6 +16,7 @@ import { Route as MyPageImport } from "./routes/my-page";
 import { Route as LoginImport } from "./routes/login";
 import { Route as CreateVoteImport } from "./routes/create-vote";
 import { Route as ChatImport } from "./routes/chat";
+import { Route as BettingPageImport } from "./routes/betting-page";
 import { Route as IndexImport } from "./routes/index";
 
 // Create/Update Routes
@@ -50,6 +51,12 @@ const ChatRoute = ChatImport.update({
   getParentRoute: () => rootRoute,
 } as any);
 
+const BettingPageRoute = BettingPageImport.update({
+  id: "/betting-page",
+  path: "/betting-page",
+  getParentRoute: () => rootRoute,
+} as any);
+
 const IndexRoute = IndexImport.update({
   id: "/",
   path: "/",
@@ -65,6 +72,13 @@ declare module "@tanstack/react-router" {
       path: "/";
       fullPath: "/";
       preLoaderRoute: typeof IndexImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/betting-page": {
+      id: "/betting-page";
+      path: "/betting-page";
+      fullPath: "/betting-page";
+      preLoaderRoute: typeof BettingPageImport;
       parentRoute: typeof rootRoute;
     };
     "/chat": {
@@ -109,6 +123,7 @@ declare module "@tanstack/react-router" {
 
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
+  "/betting-page": typeof BettingPageRoute;
   "/chat": typeof ChatRoute;
   "/create-vote": typeof CreateVoteRoute;
   "/login": typeof LoginRoute;
@@ -118,6 +133,7 @@ export interface FileRoutesByFullPath {
 
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
+  "/betting-page": typeof BettingPageRoute;
   "/chat": typeof ChatRoute;
   "/create-vote": typeof CreateVoteRoute;
   "/login": typeof LoginRoute;
@@ -128,6 +144,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRoute;
   "/": typeof IndexRoute;
+  "/betting-page": typeof BettingPageRoute;
   "/chat": typeof ChatRoute;
   "/create-vote": typeof CreateVoteRoute;
   "/login": typeof LoginRoute;
@@ -139,16 +156,25 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
     | "/"
+    | "/betting-page"
     | "/chat"
     | "/create-vote"
     | "/login"
     | "/my-page"
     | "/waiting-room";
   fileRoutesByTo: FileRoutesByTo;
-  to: "/" | "/chat" | "/create-vote" | "/login" | "/my-page" | "/waiting-room";
+  to:
+    | "/"
+    | "/betting-page"
+    | "/chat"
+    | "/create-vote"
+    | "/login"
+    | "/my-page"
+    | "/waiting-room";
   id:
     | "__root__"
     | "/"
+    | "/betting-page"
     | "/chat"
     | "/create-vote"
     | "/login"
@@ -159,6 +185,7 @@ export interface FileRouteTypes {
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  BettingPageRoute: typeof BettingPageRoute;
   ChatRoute: typeof ChatRoute;
   CreateVoteRoute: typeof CreateVoteRoute;
   LoginRoute: typeof LoginRoute;
@@ -168,6 +195,7 @@ export interface RootRouteChildren {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BettingPageRoute: BettingPageRoute,
   ChatRoute: ChatRoute,
   CreateVoteRoute: CreateVoteRoute,
   LoginRoute: LoginRoute,
@@ -186,6 +214,7 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/betting-page",
         "/chat",
         "/create-vote",
         "/login",
@@ -195,6 +224,9 @@ export const routeTree = rootRoute
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/betting-page": {
+      "filePath": "betting-page.tsx"
     },
     "/chat": {
       "filePath": "chat.tsx"

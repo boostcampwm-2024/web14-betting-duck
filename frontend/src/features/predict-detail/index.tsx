@@ -1,6 +1,4 @@
-import { DuckCoinIcon } from "@/assets/icons";
-import { PeoplesIcon } from "@/assets/icons";
-import { TrophyIcon } from "@/shared/icons/TrophyIcon";
+import { PeoplesIcon, DuckCoinIcon, TrophyIcon } from "@/shared/icons";
 import { Image } from "@/shared/components/Image";
 import userPlusImage from "@/assets/images/user-plus.png";
 import { ProgressBar } from "@/shared/components/ProgressBar";
