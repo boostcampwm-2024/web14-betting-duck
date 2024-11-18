@@ -28,7 +28,7 @@ export class RedisManager {
     userId: string;
     nickname: string;
     role: string;
-    duck: string;
+    duck: number;
   }) {
     await this.client.hset(`user:${userId}`, {
       nickname,
@@ -64,7 +64,7 @@ export class RedisManager {
     roomId,
   }: {
     userId: string;
-    betAmount: string;
+    betAmount: number;
     selectedOption: string;
     roomId: string;
   }) {
@@ -86,7 +86,7 @@ export class RedisManager {
     return { nickname, joinAt, betAmount, selectedOption, owner };
   }
 
-  async getRoomUsersWithDetails(roomId: string) {
+  async getRoomUsersNicknameAndJoinAt(roomId: string) {
     let cursor = "0";
     const users: { nickname: string; joinAt: string }[] = [];
 
