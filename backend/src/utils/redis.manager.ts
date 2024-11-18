@@ -12,8 +12,8 @@ export class RedisManager {
 
   async getUser(userId: string) {
     const [nickname, role, duck] = await Promise.all([
-      this.client.hget(`user:${userId}`, "role"),
       this.client.hget(`user:${userId}`, "nickname"),
+      this.client.hget(`user:${userId}`, "role"),
       this.client.hget(`user:${userId}`, "duck"),
     ]);
     return { nickname, role, duck };
