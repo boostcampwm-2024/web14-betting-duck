@@ -45,7 +45,9 @@ export class BetRoomService {
       status: "waiting" as "waiting" | "active" | "finished",
     };
     const createdRoom = await this.betRoomRepository.createBetRoom(betRoomData);
-    await this.redisManager.initializeBetRoom(roomUUID, manager.nickname);
+
+    //TODO: userID 타입 변환 이후 재 연결
+    // await this.redisManager.initializeBetRoom(roomUUID, manager.userId);
 
     return createdRoom;
   }
