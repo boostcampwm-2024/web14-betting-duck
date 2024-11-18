@@ -3,6 +3,7 @@ import React from "react";
 
 function InputBar() {
   const socket = useSocketIO({
+    url: "/api/chat",
     onConnect: () => {
       console.log("소켓 연결 성공");
     },
