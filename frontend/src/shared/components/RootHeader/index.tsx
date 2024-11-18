@@ -1,4 +1,4 @@
-import { LogoIcon } from "@/assets/icons";
+import { LogoIcon } from "@shared/icons";
 
 function RootHeader() {
   return (

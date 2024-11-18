@@ -1,4 +1,4 @@
-import { DuckCoinIcon } from "@/assets/icons";
+import { DuckCoinIcon } from "@shared/icons";
 import { BettingStatsDisplay } from "./BettingStatsDisplay";
 import { PercentageDisplay } from "./PercentageDisplay";
 import { BettingForm } from "./BettingForm";

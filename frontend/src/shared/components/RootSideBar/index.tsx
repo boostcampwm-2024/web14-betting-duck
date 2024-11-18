@@ -5,7 +5,7 @@ import {
   ChatIcon,
   CreateVoteIcon,
   WaitingRoomIcon,
-} from "@/assets/icons";
+} from "@shared/icons";
 import { NavItem } from "./item";
 import styles from "./style.module.css";
 import { useLocation } from "@tanstack/react-router";

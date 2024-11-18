@@ -1,4 +1,4 @@
-import { DuckCoinIcon } from "@/assets/icons";
+import { DuckCoinIcon } from "@shared/icons";
 
 function BettingPredictResult({ outcome }: { outcome: "win" | "lose" }) {
   const winningTeam = "KIA";
