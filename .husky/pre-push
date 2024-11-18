@@ -1,5 +1,3 @@
-echo "Pre-push hook triggered"
-
 cd frontend
 pnpm build
 cd ..
