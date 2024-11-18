@@ -1,4 +1,4 @@
-import { DuckCoinIcon } from "@/assets/icons";
+import { DuckCoinIcon } from "@/shared/icons";
 import { cn } from "@/shared/misc";
 
 interface BettingStats {
