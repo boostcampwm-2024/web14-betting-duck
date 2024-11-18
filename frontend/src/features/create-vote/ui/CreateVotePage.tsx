@@ -76,7 +76,7 @@ function CreateVotePage() {
       <h1 className="text-default my-8 text-xl font-extrabold">
         승부 예측 생성하기
       </h1>
-
+      <div></div>
       {/* 예측 제목 입력 */}
       <div className="w-full">
         <InputField
