@@ -33,39 +33,48 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    this.removeUserFromAllRooms(client.id);
+    const userId = client.data.userId;
+    this.removeUserFromAllRooms(userId);
   }
 
   @SubscribeMessage("joinRoom")
   async handleJoinRoom(client: Socket, payload: joinRoomRequestType) {
+    //TODO: userID 토큰에서 뽑기
+    const userId = "8";
+    client.data.userId = userId;
+
     const { sender, channel } = joinRoomRequestSchema.parse(payload);
     const { nickname } = sender;
     const { roomId } = channel;
     client.join(roomId);
-    const ipAddress = client.handshake.address;
 
-    //TODO: 베팅방 생성 API 에서 redis에 channel 데이터 초기화 이후 role 구분 메서드 구현
-    await this.redisManager.setUser({
+    const creatorID = await this.redisManager.client.get(
+      `room:${roomId}:creator`,
+    );
+    const owner = userId === creatorID ? 1 : 0;
+
+    await this.redisManager.setBettingUserOnJoin({
+      userId,
       nickname,
-      ipAddress: ipAddress,
-      role: "user",
       joinAt: new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString(),
+      roomId,
+      owner: owner,
     });
 
-    await this.redisManager.addUserToRoom(roomId, nickname);
-
-    const users = await this.getUsersWithJoinAt(roomId);
+    const users = await this.redisManager.getRoomUsersWithDetails(roomId);
     this.server.to(roomId).emit("fetchRoomUsers", users);
   }
 
   @SubscribeMessage("leaveRoom")
   async handleLeaveRoom(client: Socket, payload: leaveRoomRequestType) {
+    const userId = client.data.userId;
+
     const { roomId } = leaveRoomRequestSchema.parse(payload);
     client.leave(roomId);
 
-    await this.redisManager.removeUserFromRoom(roomId, client.id);
+    await this.redisManager.client.del(`room:${roomId}:user:${userId}`);
 
-    const users = await this.getUsersWithJoinAt(roomId);
+    const users = await this.redisManager.getRoomUsersWithDetails(roomId);
     this.server.to(roomId).emit("fetchRoomUsers", users);
   }
 
@@ -131,24 +140,20 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  private async removeUserFromAllRooms(clientId: string) {
-    const roomKeys = await this.redisManager.client.keys("room:*:users");
-    for (const key of roomKeys) {
-      const users = await this.redisManager.client.lrange(key, 0, -1);
-      const updatedUsers = users.filter((user: string) => user !== clientId);
-      await this.redisManager.client.del(key);
-      await this.redisManager.client.rpush(key, ...updatedUsers);
-    }
-  }
-
-  private async getUsersWithJoinAt(roomId: string) {
-    const userNicknames = await this.redisManager.getRoomUsers(roomId);
-    const users = await Promise.all(
-      userNicknames.map(async (nickname) => {
-        const userInfo = await this.redisManager.getUser(nickname);
-        return { nickname: userInfo.nickname, joinAt: userInfo.joinAt };
-      }),
-    );
-    return users;
+  private async removeUserFromAllRooms(userId: string) {
+    let cursor = "0";
+    do {
+      const [nextCursor, keys] = await this.redisManager.client.scan(
+        cursor,
+        "MATCH",
+        `room:*:user:${userId}`,
+        "COUNT",
+        10,
+      );
+      cursor = nextCursor;
+      for (const key of keys) {
+        await this.redisManager.client.del(key);
+      }
+    } while (cursor !== "0");
   }
 }
