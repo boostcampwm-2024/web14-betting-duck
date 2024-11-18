@@ -1,0 +1,23 @@
+@keyframes icon-anime {
+  0% {
+    .copy rect {
+      transform: translate(-4px, -4px);
+    }
+    .copy path {
+      transform: translate(3px, 3px);
+    }
+  }
+
+  100% {
+    .copy rect {
+      transform: translate(0px, 0px);
+    }
+    .copy path {
+      transform: translate(0px, 0px);
+    }
+  }
+}
+
+.copy:hover {
+  animation: icon-anime 1s infinite;
+}

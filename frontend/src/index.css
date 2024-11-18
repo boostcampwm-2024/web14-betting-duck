@@ -2,167 +2,195 @@
 @tailwind components;
 @tailwind utilities;
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-* {
-  margin: 0px;
-  line-height: calc(1em + 0.8rem);
-  -webkit-font-smoothing: antialiased;
-}
-
-#root {
-  display: flex;
-  height: 100dvh;
-  align-items: center;
-  background: #d9e3f3;
-}
-
-:root {
-  --shadow-color: 217deg 20% 62%;
-  --shadow-elevation-low: 0px 0.5px 0.5px hsl(217deg 20% 62% / 0.42),
-    0px 0.7px 0.7px -1.9px hsl(217deg 20% 62% / 0.33),
-    0px 1.8px 1.7px -3.7px hsl(217deg 20% 62% / 0.23);
-  --shadow-elevation-medium: 0px 0.5px 0.5px hsl(217deg 20% 62% / 0.35),
-    0px 0.9px 0.8px -0.9px hsl(217deg 20% 62% / 0.31),
-    0px 2px 1.9px -1.9px hsl(217deg 20% 62% / 0.26),
-    -0.1px 4.4px 4.1px -2.8px hsl(217deg 20% 62% / 0.21),
-    -0.1px 9.1px 8.5px -3.7px hsl(217deg 20% 62% / 0.16);
-  --shadow-elevation-high: 0px 0.5px 0.5px hsl(217deg 20% 62% / 0.33),
-    0px 1.3px 1.2px -0.4px hsl(217deg 20% 62% / 0.31),
-    0px 2.3px 2.2px -0.8px hsl(217deg 20% 62% / 0.28),
-    -0.1px 3.7px 3.5px -1.2px hsl(217deg 20% 62% / 0.26),
-    -0.1px 5.9px 5.5px -1.7px hsl(217deg 20% 62% / 0.24),
-    -0.1px 9.3px 8.7px -2.1px hsl(217deg 20% 62% / 0.22),
-    -0.2px 14.2px 13.3px -2.5px hsl(217deg 20% 62% / 0.2),
-    -0.3px 20.9px 19.6px -2.9px hsl(217deg 20% 62% / 0.17),
-    -0.4px 29.7px 27.8px -3.3px hsl(217deg 20% 62% / 0.15),
-    -0.6px 41px 38.4px -3.7px hsl(217deg 20% 62% / 0.13);
-
-  --navigator-position: 0;
-  --scrollbar-width: 12px;
-  --scrollbar-height: 4px;
-  --color-thumb: #bacaf0;
-  --color-thumb-background: #dbe2f3;
-}
-@font-face {
-  font-family: "NanumSquare";
-  src: url("/src/assets/fonts/NanumSquareRound.woff2") format("woff2");
-  font-weight: 400;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "NanumSquare";
-  src: url("/src/assets/fonts/NanumSquareRoundB.woff2") format("woff2");
-  font-weight: 700;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "NanumSquare";
-  src: url("/src/assets/fonts/NanumSquareRoundEB.woff2") format("woff2");
-  font-weight: 800;
-  font-display: swap;
-}
-
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  * {
+    margin: 0px;
+    line-height: calc(1em + 0.8rem);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :root {
+    --shadow-color: 217deg 20% 62%;
+    --shadow-elevation-low: 0px 0.5px 0.5px hsl(217deg 20% 62% / 0.42),
+      0px 0.7px 0.7px -1.9px hsl(217deg 20% 62% / 0.33),
+      0px 1.8px 1.7px -3.7px hsl(217deg 20% 62% / 0.23);
+    --shadow-elevation-medium: 0px 0.5px 0.5px hsl(217deg 20% 62% / 0.35),
+      0px 0.9px 0.8px -0.9px hsl(217deg 20% 62% / 0.31),
+      0px 2px 1.9px -1.9px hsl(217deg 20% 62% / 0.26),
+      -0.1px 4.4px 4.1px -2.8px hsl(217deg 20% 62% / 0.21),
+      -0.1px 9.1px 8.5px -3.7px hsl(217deg 20% 62% / 0.16);
+    --shadow-elevation-high: 0px 0.5px 0.5px hsl(217deg 20% 62% / 0.33),
+      0px 1.3px 1.2px -0.4px hsl(217deg 20% 62% / 0.31),
+      0px 2.3px 2.2px -0.8px hsl(217deg 20% 62% / 0.28),
+      -0.1px 3.7px 3.5px -1.2px hsl(217deg 20% 62% / 0.26),
+      -0.1px 5.9px 5.5px -1.7px hsl(217deg 20% 62% / 0.24),
+      -0.1px 9.3px 8.7px -2.1px hsl(217deg 20% 62% / 0.22),
+      -0.2px 14.2px 13.3px -2.5px hsl(217deg 20% 62% / 0.2),
+      -0.3px 20.9px 19.6px -2.9px hsl(217deg 20% 62% / 0.17),
+      -0.4px 29.7px 27.8px -3.3px hsl(217deg 20% 62% / 0.15),
+      -0.6px 41px 38.4px -3.7px hsl(217deg 20% 62% / 0.13);
+
+    --navigator-position: 0;
+    --scrollbar-width: 12px;
+    --scrollbar-height: 4px;
+    --color-thumb: #bacaf0;
+    --color-thumb-background: #dbe2f3;
+  }
+
+  @font-face {
+    font-family: "NanumSquare";
+    src: url("/src/assets/fonts/NanumSquareRound.woff2") format("woff2");
+    font-weight: 400;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: "NanumSquare";
+    src: url("/src/assets/fonts/NanumSquareRoundB.woff2") format("woff2");
+    font-weight: 700;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: "NanumSquare";
+    src: url("/src/assets/fonts/NanumSquareRoundEB.woff2") format("woff2");
+    font-weight: 800;
+    font-display: swap;
+  }
+
   body {
     @apply font-sans;
     font-family: "NanumSquare", sans-serif;
   }
+
+  progress {
+    --track-size: min(10px, 1rem);
+    --radius: 1e3px;
+
+    --track: #d6def8;
+    --progress: #4b78f7;
+
+    --_indeterminate-track: linear-gradient(
+      to right,
+      var(--_track) 45%,
+      var(--_progress) 0%,
+      var(--_progress) 55%,
+      var(--_track) 0%
+    );
+    appearance: none;
+    border: none;
+
+    position: relative;
+    height: var(--track-size);
+    border-radius: var(--radius);
+    overflow: hidden;
+
+    &[value]::-webkit-progress-bar {
+      background-color: var(--track);
+    }
+
+    &[value]::-webkit-progress-value {
+      background-color: var(--progress);
+      border-radius: var(--radius);
+      transition: inline-size 0.25s ease-out;
+    }
+
+    &:indeterminate::-webkit-progress-bar::after {
+      background-color: var(--_indeterminate-track);
+    }
+  }
+
+  ::-webkit-scrollbar {
+    width: var(--scrollbar-width, 12px);
+    height: var(--scrollbar-height, 12px);
+    background-color: #e6edf8;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    border: 2px solid
+      color-mix(in oklch, oklch(83.94% 0.0561 267.19) 20%, transparent);
+    background-color: color-mix(
+      in oklch,
+      oklch(83.94% 0.0561 267.19) 15%,
+      transparent
+    );
+  }
+
+  ::-webkit-scrollbar-track {
+    border-radius: 8px;
+    background: #e6edf8;
+  }
 }
 
-#navigation-sidebar nav a label input[type="radio"] {
-  position: absolute;
-  opacity: 0;
+@layer components {
+  .layout {
+    display: grid;
+    grid-template-areas:
+      "header header"
+      "sidebar main";
+    grid-template-rows: 54px 1fr; /* 첫 번째 행은 54px, 두 번째 행은 남은 공간 */
+    grid-template-columns: 60px 1fr; /* 첫 번째 열은 60px, 두 번째 열은 남은 공간 */
+    height: 100vh; /* viewport 높이의 100%를 차지하도록 설정 */
+    grid-template-rows: 54px 1fr;
+    grid-template-columns: 60px 1fr;
+    height: 100vh;
+    box-shadow: var(--shadow-elevation-high);
+    border-radius: 8px;
+  }
+
+  /* 각 영역에 대한 grid-area 설정 */
+  .header {
+    grid-area: header;
+    background: #e6edf8;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+
+    font-family: Bold, sans-serif;
+    font-size: 1rem;
+  }
+
+  .sidebar {
+    grid-area: sidebar;
+    background: #e6edf8;
+    border-bottom-left-radius: 8px;
+  }
+
+  .main {
+    grid-area: main;
+    background: #f0f4fa;
+    border-bottom-right-radius: 8px;
+  }
+
+  .betting-container {
+    container: betting-container / size;
+    min-width: 620px;
+    min-height: 430px;
+    width: fit-content;
+    height: 100%;
+  }
 }
 
-#navigation-sidebar nav a label input[type="radio"]:checked ~ svg,
-#navigation-sidebar nav a label input[type="radio"]:checked ~ span {
-  color: #6e29da;
-}
+@layer utilities {
+  #root {
+    display: flex;
+    height: 100dvh;
+    align-items: center;
+    background: #d9e3f3;
+  }
 
-.primary-container {
-  gap: 1rem;
-  box-shadow: inset 0px 4px 4px rgba(0, 0, 0, 0.25);
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  background: #e3e8f4;
-}
+  #navigation-sidebar nav a label input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+  }
 
-.layout {
-  display: grid;
-  grid-template-areas:
-    "header header"
-    "sidebar main";
-  grid-template-rows: 54px 1fr; /* 첫 번째 행은 54px, 두 번째 행은 남은 공간 */
-  grid-template-columns: 60px 1fr; /* 첫 번째 열은 60px, 두 번째 열은 남은 공간 */
-  height: 100vh; /* viewport 높이의 100%를 차지하도록 설정 */
-  grid-template-rows: 54px 1fr;
-  grid-template-columns: 60px 1fr;
-  height: 100vh;
-  box-shadow: var(--shadow-elevation-high);
-  border-radius: 8px;
-}
-
-/* 각 영역에 대한 grid-area 설정 */
-.header {
-  grid-area: header;
-  background: #e6edf8;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-
-  font-family: Bold, sans-serif;
-  font-size: 1rem;
-}
-
-.sidebar {
-  grid-area: sidebar;
-  background: #e6edf8;
-  border-bottom-left-radius: 8px;
-}
-
-.main {
-  grid-area: main;
-  background: #f0f4fa;
-  border-bottom-right-radius: 8px;
-}
-
-.tooltip {
-  clip-path: polygon(
-    0% 0%,
-    100% 0%,
-    100% calc(100% - 10px),
-    calc(50% + 10px) calc(100% - 10px),
-    50% 100%,
-    calc(50% - 10px) calc(100% - 10px),
-    0% calc(100% - 10px)
-  );
-  font-size: 0;
-}
-
-::-webkit-scrollbar {
-  width: var(--scrollbar-width, 12px);
-  height: var(--scrollbar-height, 12px);
-  background-color: #e6edf8;
-}
-
-::-webkit-scrollbar-thumb {
-  border-radius: 8px;
-  border: 2px solid
-    color-mix(in oklch, oklch(83.94% 0.0561 267.19) 20%, transparent);
-  background-color: color-mix(
-    in oklch,
-    oklch(83.94% 0.0561 267.19) 15%,
-    transparent
-  );
-}
-
-::-webkit-scrollbar-track {
-  border-radius: 8px;
-  background: #e6edf8;
+  #navigation-sidebar label:has(input[type="radio"]:checked) {
+    color: #6e29da;
+  }
 }

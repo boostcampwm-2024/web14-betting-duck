@@ -1,4 +1,4 @@
-import { CreateVotePage } from "@/features/CreateVote";
+import { CreateVotePage } from "@/features/create-vote";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/create-vote")({
