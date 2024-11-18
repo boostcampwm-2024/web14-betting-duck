@@ -1,4 +1,3 @@
-import React from "react";
 import { DuckCoinIcon } from "@/assets/icons";
 import { PeoplesIcon } from "@/assets/icons";
 import { TrophyIcon } from "@/assets/icons/TrophyIcon";
@@ -51,7 +50,7 @@ function PredictDetail() {
             </div>
             <ProgressBar
               max={159}
-              value={70}
+              value={50}
               uses={"losing"}
               label="패배에 참여한 사용자 비율"
             />
