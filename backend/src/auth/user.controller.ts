@@ -4,6 +4,7 @@ import { ApiBody, ApiOperation } from "@nestjs/swagger";
 import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
+import { CheckNicknameExistsDto } from "./dto/check-nickname-exists.dto";
 
 @Controller("/api/users")
 export class UserController {
@@ -56,6 +57,22 @@ export class UserController {
   @Post("/guestloginactivity")
   async guestLoginActivity(@Req() req: Request, @Res() res: Response) {
     const result = await this.userService.getGuestLoginActivity(req);
+    return res.status(HttpStatus.CREATED).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
+        ...result,
+      },
+    });
+  }
+
+  @ApiOperation({ summary: "닉네임 중복검사" })
+  @Post("/nicknameexists")
+  async guestExists(
+    @Body() body: CheckNicknameExistsDto,
+    @Res() res: Response,
+  ) {
+    const result = await this.userService.checkNicknameExists(body);
     return res.status(HttpStatus.CREATED).json({
       status: HttpStatus.OK,
       data: {

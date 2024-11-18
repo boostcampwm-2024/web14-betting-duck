@@ -8,9 +8,11 @@ import {
   requestSignUpSchema,
   requestSignInSchema,
   requestGuestSignInSchema,
+  requestNicknameExistsSchema,
 } from "@shared/schemas/users/request";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
+import { CheckNicknameExistsDto } from "./dto/check-nickname-exists.dto";
 
 @Injectable()
 export class UserService {
@@ -94,13 +96,22 @@ export class UserService {
     const userInfo = await this.redisManager.getUser(guestIdentifier);
     if (userInfo.role === "guest") {
       return {
+        loggedInBefore: true,
         nickname: userInfo.nickname,
       };
     } else {
       return {
+        loggedInBefore: false,
         nickname: null,
       };
     }
+  }
+
+  async checkNicknameExists(body: CheckNicknameExistsDto) {
+    const { nickname } = requestNicknameExistsSchema.parse(body);
+    return {
+      exists: await this.redisManager.checkNicknameExists(nickname),
+    };
   }
 
   private async hashPassword(password: string): Promise<string> {
