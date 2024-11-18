@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { Request } from "express";
+import { RedisManager } from "src/utils/redis.manager";
 import { UserRepository } from "./user.repository";
 import * as bcrypt from "bcryptjs";
 import { JwtService } from "@nestjs/jwt";
@@ -16,11 +17,11 @@ export class UserService {
   constructor(
     private userRepository: UserRepository,
     private jwtService: JwtService,
+    private redisManager: RedisManager,
   ) {}
 
-  async signUp(requestSignUp: SignUpUserRequestDto): Promise<void> {
-    const { email, nickname, password } =
-      requestSignUpSchema.parse(requestSignUp);
+  async signUp(body: SignUpUserRequestDto): Promise<void> {
+    const { email, nickname, password } = requestSignUpSchema.parse(body);
     const hashedPassword = await this.hashPassword(password);
     const user = {
       email,
@@ -28,19 +29,24 @@ export class UserService {
       password: hashedPassword,
       duck: 300,
     };
-    console.log(user);
     await this.userRepository.createUser(user);
   }
 
   async signIn(
-    requestSignIn: SignInUserRequestDto,
+    body: SignInUserRequestDto,
   ): Promise<{ accessToken: string; nickname: string; role: string }> {
-    const { nickname, password } = requestSignInSchema.parse(requestSignIn);
+    const { nickname, password } = requestSignInSchema.parse(body);
     const role = "user";
     const user = await this.userRepository.findOneByNickname(nickname);
 
     if (user && (await bcrypt.compare(password, user.password))) {
-      // TODO: Redis에 user 저장 로직 추가
+      this.redisManager.setUser({
+        userId: String(user.id),
+        nickname: user.nickname,
+        role: role,
+        duck: String(user.duck),
+      });
+
       const payload = {
         id: user.id,
         role: role,
@@ -54,15 +60,20 @@ export class UserService {
   }
 
   async guestSignIn(
-    requestGuestSignIn: Request,
+    req: Request,
   ): Promise<{ accessToken: string; nickname: string; role: string }> {
-    const { nickname } = requestGuestSignInSchema.parse(
-      requestGuestSignIn.body,
-    );
+    const { nickname } = requestGuestSignInSchema.parse(req.body);
     const role = "guest";
-    const guestIdentifier = this.generateGuestIdentifier(requestGuestSignIn);
+    const guestIdentifier = this.generateGuestIdentifier(req);
     // TODO: Redis에 guestIdentifier 조회 로직 추가
     // TODO: Redis에 guest 저장 로직 추가
+    this.redisManager.setUser({
+      userId: guestIdentifier,
+      nickname: nickname,
+      role: role,
+      duck: "300",
+    });
+
     const payload = {
       id: guestIdentifier,
       role: role,
@@ -70,6 +81,13 @@ export class UserService {
     const accessToken = await this.jwtService.sign(payload);
 
     return { accessToken, nickname, role };
+  }
+
+  async getGuestLoginActivity(req: Request) {
+    const guestIdentifier = this.generateGuestIdentifier(req);
+    console.log(guestIdentifier);
+    // TODO: Redis에 guestIdentifier 조회 로직 추가
+    return {};
   }
 
   private async hashPassword(password: string): Promise<string> {

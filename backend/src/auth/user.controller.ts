@@ -10,11 +10,8 @@ export class UserController {
   constructor(private userService: UserService) {}
 
   @Post("/signup")
-  async signUp(
-    @Body() requestSignUp: SignUpUserRequestDto,
-    @Res() res: Response,
-  ) {
-    await this.userService.signUp(requestSignUp);
+  async signUp(@Body() body: SignUpUserRequestDto, @Res() res: Response) {
+    await this.userService.signUp(body);
     return res.status(HttpStatus.CREATED).json({
       status: HttpStatus.CREATED,
       data: {
@@ -24,8 +21,8 @@ export class UserController {
   }
 
   @Post("/signin")
-  signIn(@Body() requestLogin: SignInUserRequestDto, @Res() res: Response) {
-    const result = this.userService.signIn(requestLogin);
+  async signIn(@Body() body: SignInUserRequestDto, @Res() res: Response) {
+    const result = await this.userService.signIn(body);
     return res.status(HttpStatus.CREATED).json({
       status: HttpStatus.OK,
       data: {
@@ -44,8 +41,20 @@ export class UserController {
       },
     },
   })
-  async guestSignIn(@Req() requestGuestSignUp: Request, @Res() res: Response) {
-    const result = await this.userService.guestSignIn(requestGuestSignUp);
+  async guestSignIn(@Req() req: Request, @Res() res: Response) {
+    const result = await this.userService.guestSignIn(req);
+    return res.status(HttpStatus.CREATED).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
+        ...result,
+      },
+    });
+  }
+
+  @Post("/guestloginactivity")
+  async guestLoginActivity(@Req() req: Request, @Res() res: Response) {
+    const result = await this.userService.getGuestLoginActivity(req);
     return res.status(HttpStatus.CREATED).json({
       status: HttpStatus.OK,
       data: {
