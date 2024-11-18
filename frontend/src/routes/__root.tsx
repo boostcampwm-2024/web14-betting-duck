@@ -1,7 +1,6 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { RootLayout } from "@pages/RootLayout";
-import { RootHeader } from "@widgets/root/RootHeader";
-import { RootSideBar } from "@widgets/root/RootSideBar";
+import { RootHeader } from "@/shared/components/RootHeader";
+import { RootSideBar } from "@/shared/components/RootSideBar";
 
 export const Route = createRootRoute({
   component: () => (
@@ -12,3 +11,15 @@ export const Route = createRootRoute({
     </RootLayout>
   ),
 });
+
+function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className={`h-h-full layout ml-auto mr-auto grid max-h-[834px] w-full max-w-[520px]`}
+    >
+      {children}
+    </div>
+  );
+}
+
+export { RootLayout };
