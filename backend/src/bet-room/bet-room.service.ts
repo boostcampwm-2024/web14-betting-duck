@@ -28,7 +28,9 @@ export class BetRoomService {
     //TODO: JWT 토큰에서 추출
     const creatorID = 8;
     const manager = await this.userRepository.findOne(creatorID);
-
+    if (!manager) {
+      throw new NotFoundException("해당하는 유저를 찾을 수 없습니다.");
+    }
     const roomUUID = uuidv4();
     //TODO: 도메인 주소 변경
     const joinUrl = `http://bettingduck.com/room/${roomUUID}`;
@@ -46,9 +48,7 @@ export class BetRoomService {
     };
     const createdRoom = await this.betRoomRepository.createBetRoom(betRoomData);
 
-    //TODO: userID 타입 변환 이후 재 연결
-    // await this.redisManager.initializeBetRoom(roomUUID, manager.userId);
-
+    await this.redisManager.initializeBetRoom(roomUUID, String(manager.id));
     return createdRoom;
   }
 
@@ -107,7 +107,7 @@ export class BetRoomService {
       option1TotalBet,
       option2TotalBet,
     } = await this.getBettingTotals(betRoomId);
-    this.saveBetResult(
+    await this.saveBetResult(
       betRoomId,
       winningOption,
       option1TotalBet,
@@ -124,8 +124,8 @@ export class BetRoomService {
       winningOdds: winningOdds,
     });
 
+    await this.settleBetRoom(betRoomId, winningOption, winningOdds);
     await this.redisManager.deleteChannelData(betRoomId);
-    //TODO: 베팅 참여 유저들에게 정산!
 
     return updateResult;
   }
@@ -181,12 +181,13 @@ export class BetRoomService {
   private calculateWinningOdds(channel, winningOption: "option1" | "option2") {
     const winningOptionTotalBet =
       winningOption === "option1"
-        ? channel.option1.currentBets
-        : channel.option2.currentBets;
+        ? Number(channel.option1.currentBets)
+        : Number(channel.option2.currentBets);
+
     const losingOptionTotalBet =
       winningOption === "option1"
-        ? channel.option2.currentBets
-        : channel.option1.currentBets;
+        ? Number(channel.option2.currentBets)
+        : Number(channel.option1.currentBets);
 
     if (winningOptionTotalBet === 0) {
       return 0;
@@ -194,5 +195,41 @@ export class BetRoomService {
     const winningOdds =
       (winningOptionTotalBet + losingOptionTotalBet) / winningOptionTotalBet;
     return winningOdds;
+  }
+
+  private async settleBetRoom(
+    roomId: string,
+    winningOption: string,
+    winningOdds: number,
+  ) {
+    let cursor = "0";
+    do {
+      const [nextCursor, keys] = await this.redisManager.client.scan(
+        cursor,
+        "MATCH",
+        `room:${roomId}:user:*`,
+        "COUNT",
+        20,
+      );
+      cursor = nextCursor;
+
+      const userUpdates = keys.map(async (key) => {
+        const userData = await this.redisManager.client.hgetall(key);
+        const userId = Number(key.split(":").pop());
+        const { betAmount, selectedOption, duck } = userData;
+
+        const isWinner = selectedOption === winningOption;
+        const duckChange = isWinner ? Number(betAmount) * winningOdds : 0;
+        const updatedDuck = duck
+          ? Number(duck) - Number(betAmount) + duckChange
+          : duckChange;
+        // DB 업데이트 (배팅 결과 처리)
+        await this.userRepository.update(userId, {
+          duck: updatedDuck,
+        });
+      });
+
+      await Promise.all(userUpdates);
+    } while (cursor !== "0");
   }
 }
