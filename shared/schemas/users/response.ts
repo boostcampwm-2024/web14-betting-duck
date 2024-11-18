@@ -9,16 +9,17 @@ const commonUserSchema = z.object({
 	}),
 });
 
-export const responseSignupSchema = commonUserSchema;
+export const responseSignUpSchema = commonUserSchema;
 
-export const responseLoginSchema = commonUserSchema.extend({
+export const responseSignInSchema = commonUserSchema.extend({
 	data: z.object({
 		role: z.enum(USER_ROLE),
+		accessToken: z.string(),
 		nickname: z.string().min(2, "닉네임은 2자 이상이어야 합니다."),
 	}),
 });
 
-export const responseGuestLoginSchema = responseLoginSchema;
+export const responseGuestLoginSchema = responseSignInSchema;
 
 export const responseUsersSchema = commonUserSchema.extend({
 	nickename: z.string().min(2, "닉네임은 2자 이상이어야 합니다."),

@@ -26,6 +26,6 @@ export const requestSignUpSchema = userCommonSchema.extend({
 
 export const requestSignInSchema = userCommonSchema;
 
-export const requestGuestLoginSchema = z.object({
-	role: z.enum(USER_ROLE),
+export const requestGuestSignInSchema = z.object({
+	nickname: z.string().min(1, "닉네임은 1자 이상이어야 합니다."),
 });
