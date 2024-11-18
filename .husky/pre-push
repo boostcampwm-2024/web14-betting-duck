@@ -1,7 +1,7 @@
-echo "Pre-push hook triggered"
-
+#!/bin/bash
 if git diff --cached --name-only | grep "^frontend/"; then
   cd frontend
+  echo "Running build..."
   pnpm build
   cd ..
 fi
