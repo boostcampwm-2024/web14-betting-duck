@@ -1,6 +1,6 @@
 import { Body, Controller, HttpStatus, Post, Req, Res } from "@nestjs/common";
 import { Request, Response } from "express";
-import { ApiBody } from "@nestjs/swagger";
+import { ApiBody, ApiOperation } from "@nestjs/swagger";
 import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
@@ -52,6 +52,7 @@ export class UserController {
     });
   }
 
+  @ApiOperation({ summary: "비회원 로그인 이력 조회" })
   @Post("/guestloginactivity")
   async guestLoginActivity(@Req() req: Request, @Res() res: Response) {
     const result = await this.userService.getGuestLoginActivity(req);

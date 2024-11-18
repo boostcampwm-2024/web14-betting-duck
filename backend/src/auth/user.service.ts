@@ -65,24 +65,28 @@ export class UserService {
     const { nickname } = requestGuestSignInSchema.parse(req.body);
     const role = "guest";
     const guestIdentifier = this.generateGuestIdentifier(req);
-    const userInfo = await this.redisManager.getUser(guestIdentifier);
 
-    if (userInfo.role === role && userInfo.nickname === nickname) {
-      this.redisManager.setUser({
+    if (await this.redisManager.findUser(guestIdentifier)) {
+      const userInfo = await this.redisManager.getUser(guestIdentifier);
+      if (userInfo.nickname !== nickname) {
+        throw new UnauthorizedException("Already signed in");
+      }
+    } else {
+      await this.redisManager.setUser({
         userId: guestIdentifier,
         nickname: nickname,
         role: role,
         duck: "300",
       });
-
-      const payload = {
-        id: guestIdentifier,
-        role: role,
-      };
-      const accessToken = await this.jwtService.sign(payload);
-
-      return { accessToken, nickname, role };
     }
+
+    const payload = {
+      id: guestIdentifier,
+      role: role,
+    };
+    const accessToken = await this.jwtService.sign(payload);
+
+    return { accessToken, nickname, role };
   }
 
   async getGuestLoginActivity(req: Request) {
@@ -91,6 +95,10 @@ export class UserService {
     if (userInfo.role === "guest") {
       return {
         nickname: userInfo.nickname,
+      };
+    } else {
+      return {
+        nickname: null,
       };
     }
   }
