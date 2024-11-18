@@ -8,8 +8,20 @@ import { ArrowUpIcon } from "./ArrowUpIcon";
 import { TimerIcon } from "./TimerIcon";
 import { TextIcon } from "./TextIcon";
 import { DuckIcon } from "./DuckIcon";
+import { TrophyIcon } from "./TrophyIcon";
+import { PeoplesIcon } from "./PeoplesIcon";
+import { LinkIcon } from "./LinkIcon";
+import { WaitingRoomIcon } from "./WatingRoomIcon";
+import { CopyIcon } from "./CopyIcon";
+import { DuckCoinIcon } from "./DuckCoinIcon";
 
 export {
+  TrophyIcon,
+  PeoplesIcon,
+  DuckCoinIcon,
+  WaitingRoomIcon,
+  CopyIcon,
+  LinkIcon,
   LoginIcon,
   LogoIcon,
   UserIcon,
