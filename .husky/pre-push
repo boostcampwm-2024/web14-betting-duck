@@ -1,5 +1,5 @@
 #!/bin/bash
-if git diff --cached --name-only | grep "^frontend/"; then
+if test "$(git diff --cached --name-only | grep "^frontend/")"; then
   cd frontend
   echo "Running build..."
   pnpm build
