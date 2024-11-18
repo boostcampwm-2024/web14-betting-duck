@@ -12,8 +12,8 @@ export class RedisManager {
 
   async getUser(userId: string) {
     const [nickname, role, duck] = await Promise.all([
-      this.client.hget(`user:${userId}`, "role"),
       this.client.hget(`user:${userId}`, "nickname"),
+      this.client.hget(`user:${userId}`, "role"),
       this.client.hget(`user:${userId}`, "duck"),
     ]);
     return { nickname, role, duck };
@@ -35,6 +35,25 @@ export class RedisManager {
       role,
       duck,
     });
+  }
+
+  async findUser(userId: string) {
+    const exists = await this.client.exists(`user:${userId}`);
+    return exists === 1;
+  }
+
+  // 시간 복잡도가 이게 맞나요..?
+  async checkNicknameExists(nickname: string): Promise<boolean> {
+    const keys = await this.client.keys("*");
+
+    for (const key of keys) {
+      const value = await this.client.hget(key, "nickname");
+      if (value === nickname) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   async setBettingUserOnJoin({

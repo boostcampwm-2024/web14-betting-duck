@@ -5,6 +5,7 @@ import { UserService } from "./user.service";
 import { UserRepository } from "./user.repository";
 import { User } from "./user.entity";
 import { JwtModule } from "@nestjs/jwt";
+import { RedisManagerModule } from "src/utils/redis-manager.module";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { JwtModule } from "@nestjs/jwt";
       secret: process.env.JWT_SECRET || "secret",
       signOptions: { expiresIn: "1h" },
     }),
+    RedisManagerModule,
   ],
   controllers: [UserController],
   providers: [UserService, UserRepository],
