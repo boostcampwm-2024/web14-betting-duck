@@ -7,7 +7,7 @@ interface CustomCSSProperties extends React.CSSProperties {
 
 interface ProgressBarProps extends React.HTMLAttributes<HTMLProgressElement> {
   value: number;
-  uses: "winning" | "losing";
+  uses: "winning" | "losing" | "default";
   max?: number;
   label?: string;
   style?: CustomCSSProperties;
@@ -20,11 +20,13 @@ function ProgressBar({
   uses,
   ...rest
 }: ProgressBarProps) {
-  const trackColor = uses === "winning" ? "#D6DEF8" : "#FBDDF0";
-  const progressColor = uses === "winning" ? "#4B78F7" : "#DE3390";
+  const trackColor =
+    uses === "winning" ? "#D6DEF8" : uses === "losing" ? "#F8D6D6" : "#DDC7FC";
+  const progressColor =
+    uses === "winning" ? "#4B78F7" : uses === "losing" ? "#DE3390" : "#6D28D9";
 
   return (
-    <label>
+    <label className={rest.className}>
       <span
         className="absolute m-[-1px] h-[1px] w-[1px] overflow-hidden p-0"
         style={{ clip: "rect(1px, 1px, 1px, 1px)", clipPath: "inset(50%)" }}
