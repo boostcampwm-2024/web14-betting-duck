@@ -1,9 +1,12 @@
 import { PeoplesIcon, DuckCoinIcon, TrophyIcon } from "@/shared/icons";
-import { Image } from "@/shared/components/Image";
-import userPlusImage from "@/assets/images/user-plus.png";
 import { ProgressBar } from "@/shared/components/ProgressBar";
+import { Route } from "@/routes/predict-detail.$userType";
+import { UserFooter } from "./ui/UserFooter";
+import { GuestFooter } from "./ui/GuestFooter";
 
 function PredictDetail() {
+  const { userType } = Route.useParams();
+
   return (
     <div className="bg-layout-main flex h-full w-full flex-col gap-4 px-4 pt-8">
       {/* PredictDetail Header */}
@@ -95,19 +98,7 @@ function PredictDetail() {
 
       {/* PredictDetail footer */}
       <div className="flex flex-col gap-2 pt-8">
-        <button className="bg-default text-layout-main flex w-full items-center justify-center gap-4 rounded-lg py-2 text-lg font-extrabold">
-          <Image
-            src={userPlusImage}
-            width={24}
-            height={24}
-            alt="사용자 추가 아이콘 이미지"
-          />
-          회원가입하고 코인 받기
-        </button>
-        <span className="text-lg font-bold">
-          회원가입을 하시면 얻은 코인을 모두 얻을 수 있고 마이페이지를 이용하실
-          수 있습니다!
-        </span>
+        {userType === "user" ? <UserFooter /> : <GuestFooter />}
       </div>
     </div>
   );
