@@ -58,5 +58,5 @@ export class BetRoom extends BaseEntity {
   bets: Bet[];
 
   @OneToOne(() => BetResult, (betResult) => betResult.betRoom)
-  betResults: BetResult[];
+  betResult: BetResult;
 }
