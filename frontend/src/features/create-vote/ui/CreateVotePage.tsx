@@ -8,6 +8,7 @@ import {
 import { usePredictionStore } from "../model/store";
 import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/shared/misc";
+import { useMemo } from "react";
 
 interface InputFieldProps {
   icon: React.ReactNode;
@@ -27,8 +28,8 @@ function InputField({
   inputClass = "text-gray-700",
 }: InputFieldProps) {
   return (
-    <div className="bg-layout-sidebar flex items-center gap-3 rounded-lg p-4 shadow-inner">
-      {icon}
+    <div className="flex items-center gap-2 p-4">
+      <div className="flex-shrink-0">{icon}</div>
       <div className="border-border h-3 border-l"></div>
       <input
         type="text"
@@ -46,8 +47,17 @@ function InputField({
 }
 
 function CreateVotePage() {
-  const { formState, handleInputChange, isFormVaild, submitPrediction } =
-    usePredictionStore();
+  const {
+    formState,
+    handleInputChange,
+    isFormVaild,
+    submitPrediction,
+    handleTimerIncrement,
+    handleTimerDecrement,
+    handleDefaultBetAmountChange,
+    incrementDefaultBetAmount,
+    decrementDefaultBetAmount,
+  } = usePredictionStore();
   const navigate = useNavigate();
 
   const handleCancelClick = () => {
@@ -57,8 +67,7 @@ function CreateVotePage() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
-    submitPrediction(formData);
+    submitPrediction();
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
@@ -67,104 +76,128 @@ function CreateVotePage() {
     }
   };
 
+  const titleIcon = useMemo(() => <TextIcon />, []);
+  const winIcon = useMemo(
+    () => <DuckIcon color="#4C79F8" width="18" height="18" />,
+    [],
+  );
+  const loseIcon = useMemo(
+    () => <DuckIcon color="#DF3491" width="18" height="18" />,
+    [],
+  );
+  const timerIcon = useMemo(() => <TimerIcon />, []);
+  const arrowUpIcon = useMemo(() => <ArrowUpIcon />, []);
+  const arrowDownIcon = useMemo(() => <ArrowDownIcon />, []);
+  const duckIcon = useMemo(
+    () => <DuckIcon width={10} height={10} color="#4D5765" />,
+    [],
+  );
+
   return (
-    <form
-      className="bg-layout-main flex w-full flex-col items-center gap-4 p-9"
-      onSubmit={handleSubmit}
-      onKeyDown={handleKeyDown}
-    >
+    <div className="bg-layout-main flex w-full flex-col items-center gap-4 p-9">
       <h1 className="text-default my-8 text-xl font-extrabold">
         승부 예측 생성하기
       </h1>
-      <div className="w-full">
-        <InputField
-          icon={<TextIcon />}
-          placeholder="승부를 예측할 제목을 입력해 주세요."
-          value={formState.title}
-          onChange={handleInputChange}
-          name="title"
-        />
-      </div>
 
-      <div className="bg-layout-sidebar w-full rounded-lg shadow-inner">
-        <InputField
-          icon={<DuckIcon color="#4C79F8" />}
-          placeholder="승리에 해당하는 예측 케이스를 적어주세요."
-          value={formState.winCase}
-          onChange={handleInputChange}
-          name="winCase"
-          inputClass="text-bettingBlue placeholder-bettingBlue"
-        />
-        <div className="border-border border-t"></div>
-        {/* 패배 예측 케이스 입력 */}
-        <InputField
-          icon={<DuckIcon color="#DF3491" />}
-          placeholder="패배에 해당하는 예측 케이스를 적어주세요."
-          value={formState.loseCase}
-          onChange={handleInputChange}
-          name="loseCase"
-          inputClass="text-bettingPink placeholder-bettingPink"
-        />
-      </div>
-
-      {/* 타이머 및 최소 금액 설정 */}
-      <div className="flex w-full gap-2">
-        {/* 타이머 설정 */}
-        <div className="bg-layout-sidebar flex w-1/2 items-center justify-between gap-1 rounded-lg pl-2 shadow-inner">
-          <div className="flex items-center gap-1">
-            <TimerIcon />
-            <span className="text-md text-default">타이머 설정</span>
-            <div className="border-border h-3 border-l"></div>
-          </div>
-          {/* <input className=""></input> */}
-          <div className="bg-primary flex flex-col items-center justify-center rounded-r-lg p-1">
-            <button>
-              <ArrowUpIcon />
-            </button>
-            <div className="my-1 w-full border-t border-[#F0F4FA2B]" />
-            <button>
-              <ArrowDownIcon />
-            </button>
-          </div>
+      {/* 입력 필드와 버튼만 form으로 감싸기 */}
+      <form
+        onSubmit={handleSubmit}
+        onKeyDown={handleKeyDown}
+        className="flex w-full flex-col gap-4"
+      >
+        <div className="bg-layout-sidebar w-full rounded-lg shadow-inner">
+          <InputField
+            icon={titleIcon}
+            placeholder="승부를 예측할 제목을 입력해 주세요."
+            value={formState.title}
+            onChange={handleInputChange}
+            name="title"
+          />
         </div>
 
-        {/* 최소 금액 설정 */}
-        <div className="bg-layout-sidebar flex w-1/2 items-center justify-between gap-1 rounded-lg pl-2 shadow-inner">
-          <div className="flex items-center gap-1">
-            <DuckIcon width={10} height={10} color="#4D5765" />
-            <span className="text-md text-default">최소 금액 설정</span>
-            <div className="border-border h-3 border-l"></div>
+        <div className="bg-layout-sidebar w-full rounded-lg shadow-inner">
+          <InputField
+            icon={winIcon}
+            placeholder="승리에 해당하는 예측 케이스를 적어주세요."
+            value={formState.winCase}
+            onChange={handleInputChange}
+            name="winCase"
+            inputClass="text-bettingBlue placeholder-bettingBlue"
+          />
+          <div className="border-border border-t"></div>
+          <InputField
+            icon={loseIcon}
+            placeholder="패배에 해당하는 예측 케이스를 적어주세요."
+            value={formState.loseCase}
+            onChange={handleInputChange}
+            name="loseCase"
+            inputClass="text-bettingPink placeholder-bettingPink"
+          />
+        </div>
+        {/* 타이머와 최소 금액 설정 부분을 form 밖으로 이동 */}
+        <div className="flex w-full gap-2">
+          <div className="bg-layout-sidebar flex w-1/2 items-center justify-between gap-1 rounded-lg pl-2 shadow-inner">
+            <div className="flex items-center gap-1">
+              {timerIcon}
+              <span className="text-md text-default">타이머 설정</span>
+              <div className="border-border h-3 border-l"></div>
+              <span className="text-default ml-2 text-lg font-bold">
+                {formState.timer}분
+              </span>
+            </div>
+            <div className="bg-primary flex flex-col items-center justify-center rounded-r-lg p-1">
+              <button type="button" onClick={handleTimerIncrement}>
+                {arrowUpIcon}
+              </button>
+              <div className="my-1 w-full border-t border-[#F0F4FA2B]" />
+              <button type="button" onClick={handleTimerDecrement}>
+                {arrowDownIcon}
+              </button>
+            </div>
           </div>
-          {/* <input className=""></input> */}
-          <div className="bg-primary flex flex-col items-center justify-center rounded-r-lg p-1">
-            <button>
-              <ArrowUpIcon />
-            </button>
-            <div className="my-1 w-full border-t border-[#F0F4FA2B]" />
-            <button>
-              <ArrowDownIcon />
-            </button>
+
+          <div className="bg-layout-sidebar flex w-1/2 items-center justify-between gap-1 rounded-lg pl-2 shadow-inner">
+            <div className="flex items-center gap-1">
+              {duckIcon}
+              <span className="text-md text-default">최소 금액 설정</span>
+              <div className="border-border h-3 border-l"></div>
+              <input
+                type="number"
+                value={formState.defaultBetAmount}
+                onChange={handleDefaultBetAmountChange}
+                className="text-default w-1/3 border-none bg-transparent text-center text-lg font-bold outline-none"
+                min="100"
+              />
+            </div>
+            <div className="bg-primary flex flex-col items-center justify-center rounded-r-lg p-1">
+              <button type="button" onClick={incrementDefaultBetAmount}>
+                {arrowUpIcon}
+              </button>
+              <div className="my-1 w-full border-t border-[#F0F4FA2B]" />
+              <button type="button" onClick={decrementDefaultBetAmount}>
+                {arrowDownIcon}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* 취소 및 투표 생성 버튼 */}
-      <div className="flex w-full gap-2">
-        <button
-          className="bg-secondary hover:bg-secondary-hover shadow-middle text-default w-1/2 rounded-lg px-8 py-4 font-semibold hover:text-white"
-          onClick={handleCancelClick}
-        >
-          취소
-        </button>
-        <button
-          type="submit"
-          className="bg-primary hover:bg-primary-hover disabled:bg-primary-disabled shadow-middle w-1/2 rounded-lg px-8 py-4 font-semibold text-white"
-          disabled={!isFormVaild}
-        >
-          생성
-        </button>
-      </div>
-    </form>
+        <div className="mt-4 flex w-full gap-2">
+          <button
+            type="button"
+            className="bg-secondary hover:bg-secondary-hover shadow-middle text-default w-1/2 rounded-lg px-8 py-4 font-semibold hover:text-white"
+            onClick={handleCancelClick}
+          >
+            취소
+          </button>
+          <button
+            type="submit"
+            className="bg-primary hover:bg-primary-hover disabled:bg-primary-disabled shadow-middle w-1/2 rounded-lg px-8 py-4 font-semibold text-white"
+            disabled={!isFormVaild}
+          >
+            생성
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 

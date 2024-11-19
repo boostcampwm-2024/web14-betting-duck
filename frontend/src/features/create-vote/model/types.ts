@@ -2,5 +2,20 @@ export interface PredictionData {
   title: string;
   winCase: string;
   loseCase: string;
-  // TODO 타이머 정보, 최소 금액 내용이 추가되어야 함
+  timer: number;
+  defaultBetAmount: number;
+}
+
+export interface PredictionRequest {
+  channel: {
+    title: string;
+    options: {
+      option1: string;
+      option2: string;
+    };
+    settings: {
+      duration: number;
+      defaultBetAmount: number;
+    };
+  };
 }
