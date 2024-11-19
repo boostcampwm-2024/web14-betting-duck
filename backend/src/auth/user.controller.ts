@@ -62,6 +62,7 @@ export class UserController {
     });
   }
 
+  @ApiOperation({ summary: "사용자 정보 조회" })
   @Get("/:userId")
   async getUserInfo(@Param("userId") userId: number, @Res() res: Response) {
     const result = await this.userService.getUserInfo(userId);
