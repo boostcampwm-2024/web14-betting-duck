@@ -1,6 +1,6 @@
 import React from "react";
 
-function DuckIcon({ ...props }: React.SVGProps<SVGSVGElement>) {
+const DuckIcon = React.memo(({ ...props }: React.SVGProps<SVGSVGElement>) => {
   return (
     <svg
       width={24}
@@ -35,6 +35,6 @@ function DuckIcon({ ...props }: React.SVGProps<SVGSVGElement>) {
       />
     </svg>
   );
-}
+});
 
 export { DuckIcon };
