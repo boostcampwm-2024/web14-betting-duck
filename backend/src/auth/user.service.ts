@@ -91,8 +91,9 @@ export class UserService {
     return { accessToken, nickname, role };
   }
 
-  async getUserInfo(userId: number) {
+  async getUserInfo(user: object, userId: number) {
     // TODO: 사용자 인증 필요, 자신의 정보만 조회 가능하도록
+    console.log(user);
     if (this.redisManager.findUser(String(userId))) {
       return await this.redisManager.getUser(String(userId));
     }
@@ -118,7 +119,9 @@ export class UserService {
   async checkNicknameExists(body: CheckNicknameExistsDto) {
     const { nickname } = requestNicknameExistsSchema.parse(body);
     return {
-      exists: await this.userRepository.findOneByNickname(nickname),
+      exists: (await this.userRepository.findOneByNickname(nickname))
+        ? true
+        : false,
     };
   }
 
