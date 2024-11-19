@@ -41,7 +41,7 @@ const BettingStatsDisplay = React.memo(
             </div>
           ))}
         </div>
-        <div className="group relative mt-auto w-full max-w-[25cqw] truncate text-2xl font-extrabold">
+        <div className="group relative mt-auto w-full max-w-[25cqw] truncate text-end text-2xl font-extrabold">
           {content}
         </div>
       </div>
