@@ -91,6 +91,14 @@ export class UserService {
     return { accessToken, nickname, role };
   }
 
+  async getUserInfo(userId: number) {
+    // TODO: 사용자 인증 필요, 자신의 정보만 조회 가능하도록
+    if (this.redisManager.findUser(String(userId))) {
+      return await this.redisManager.getUser(String(userId));
+    }
+    return await this.userRepository.findOne(userId);
+  }
+
   async getGuestLoginActivity(req: Request) {
     const guestIdentifier = this.generateGuestIdentifier(req);
     const userInfo = await this.redisManager.getUser(guestIdentifier);
@@ -110,7 +118,7 @@ export class UserService {
   async checkNicknameExists(body: CheckNicknameExistsDto) {
     const { nickname } = requestNicknameExistsSchema.parse(body);
     return {
-      exists: await this.redisManager.checkNicknameExists(nickname),
+      exists: await this.userRepository.findOneByNickname(nickname),
     };
   }
 
