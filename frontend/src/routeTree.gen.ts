@@ -14,6 +14,7 @@ import { Route as rootRoute } from "./routes/__root";
 import { Route as WaitingRoomImport } from "./routes/waiting-room";
 import { Route as MyPageImport } from "./routes/my-page";
 import { Route as LoginImport } from "./routes/login";
+import { Route as DemoLoginImport } from "./routes/demo-login";
 import { Route as CreateVoteImport } from "./routes/create-vote";
 import { Route as ChatImport } from "./routes/chat";
 import { Route as BettingPageImport } from "./routes/betting-page";
@@ -37,6 +38,12 @@ const MyPageRoute = MyPageImport.update({
 const LoginRoute = LoginImport.update({
   id: "/login",
   path: "/login",
+  getParentRoute: () => rootRoute,
+} as any);
+
+const DemoLoginRoute = DemoLoginImport.update({
+  id: "/demo-login",
+  path: "/demo-login",
   getParentRoute: () => rootRoute,
 } as any);
 
@@ -102,6 +109,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof CreateVoteImport;
       parentRoute: typeof rootRoute;
     };
+    "/demo-login": {
+      id: "/demo-login";
+      path: "/demo-login";
+      fullPath: "/demo-login";
+      preLoaderRoute: typeof DemoLoginImport;
+      parentRoute: typeof rootRoute;
+    };
     "/login": {
       id: "/login";
       path: "/login";
@@ -140,6 +154,7 @@ export interface FileRoutesByFullPath {
   "/betting-page": typeof BettingPageRoute;
   "/chat": typeof ChatRoute;
   "/create-vote": typeof CreateVoteRoute;
+  "/demo-login": typeof DemoLoginRoute;
   "/login": typeof LoginRoute;
   "/my-page": typeof MyPageRoute;
   "/waiting-room": typeof WaitingRoomRoute;
@@ -151,6 +166,7 @@ export interface FileRoutesByTo {
   "/betting-page": typeof BettingPageRoute;
   "/chat": typeof ChatRoute;
   "/create-vote": typeof CreateVoteRoute;
+  "/demo-login": typeof DemoLoginRoute;
   "/login": typeof LoginRoute;
   "/my-page": typeof MyPageRoute;
   "/waiting-room": typeof WaitingRoomRoute;
@@ -163,6 +179,7 @@ export interface FileRoutesById {
   "/betting-page": typeof BettingPageRoute;
   "/chat": typeof ChatRoute;
   "/create-vote": typeof CreateVoteRoute;
+  "/demo-login": typeof DemoLoginRoute;
   "/login": typeof LoginRoute;
   "/my-page": typeof MyPageRoute;
   "/waiting-room": typeof WaitingRoomRoute;
@@ -176,6 +193,7 @@ export interface FileRouteTypes {
     | "/betting-page"
     | "/chat"
     | "/create-vote"
+    | "/demo-login"
     | "/login"
     | "/my-page"
     | "/waiting-room"
@@ -186,6 +204,7 @@ export interface FileRouteTypes {
     | "/betting-page"
     | "/chat"
     | "/create-vote"
+    | "/demo-login"
     | "/login"
     | "/my-page"
     | "/waiting-room"
@@ -196,6 +215,7 @@ export interface FileRouteTypes {
     | "/betting-page"
     | "/chat"
     | "/create-vote"
+    | "/demo-login"
     | "/login"
     | "/my-page"
     | "/waiting-room"
@@ -208,6 +228,7 @@ export interface RootRouteChildren {
   BettingPageRoute: typeof BettingPageRoute;
   ChatRoute: typeof ChatRoute;
   CreateVoteRoute: typeof CreateVoteRoute;
+  DemoLoginRoute: typeof DemoLoginRoute;
   LoginRoute: typeof LoginRoute;
   MyPageRoute: typeof MyPageRoute;
   WaitingRoomRoute: typeof WaitingRoomRoute;
@@ -219,6 +240,7 @@ const rootRouteChildren: RootRouteChildren = {
   BettingPageRoute: BettingPageRoute,
   ChatRoute: ChatRoute,
   CreateVoteRoute: CreateVoteRoute,
+  DemoLoginRoute: DemoLoginRoute,
   LoginRoute: LoginRoute,
   MyPageRoute: MyPageRoute,
   WaitingRoomRoute: WaitingRoomRoute,
@@ -239,6 +261,7 @@ export const routeTree = rootRoute
         "/betting-page",
         "/chat",
         "/create-vote",
+        "/demo-login",
         "/login",
         "/my-page",
         "/waiting-room",
@@ -256,6 +279,9 @@ export const routeTree = rootRoute
     },
     "/create-vote": {
       "filePath": "create-vote.tsx"
+    },
+    "/demo-login": {
+      "filePath": "demo-login.tsx"
     },
     "/login": {
       "filePath": "login.tsx"
