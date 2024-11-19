@@ -13,6 +13,8 @@ export default {
           "linear-gradient(180deg, #8D93FF 0%, #4B78F7 10%, #4B78F7 90%, #8D93FF 100%)",
         "gradient-losing-button":
           "linear-gradient(180deg, #FFAAD8 0%, #DE3390 10%, #DE3390 90%, #FFAAD8 100%)",
+        "gradient-primary-button":
+          "linear-gradient(180deg, oklch(75.42% 0.0296 303.78 / 50%) 0%, oklch(49.07% 0.2412 292.58) 7%, oklch(49.07% 0.2412 292.58) 93%, oklch(75.42% 0.0296 303.78 / 50%) 100%)",
       },
       maxHeight: {
         layout: "780px",
@@ -47,7 +49,7 @@ export default {
           background: "#D9E3F3",
         },
         primary: {
-          DEFAULT: "#6E29DA",
+          DEFAULT: "#6D28D9",
           hover: "#4B0AAF",
           disabled: "#D3B7FF",
         },
