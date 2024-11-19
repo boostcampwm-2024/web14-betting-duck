@@ -46,7 +46,7 @@ export class UserService {
         userId: String(user.id),
         nickname: user.nickname,
         role: role,
-        duck: String(user.duck),
+        duck: user.duck,
       });
 
       const payload = {
@@ -78,7 +78,7 @@ export class UserService {
         userId: guestIdentifier,
         nickname: nickname,
         role: role,
-        duck: "300",
+        duck: 300,
       });
     }
 
