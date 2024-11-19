@@ -7,9 +7,11 @@ import {
   Req,
   Res,
   Param,
+  UseGuards,
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { ApiBody, ApiOperation } from "@nestjs/swagger";
+import { JwtAuthGuard } from "../utils/guards/http-authenticated.guard";
 import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
@@ -33,6 +35,12 @@ export class UserController {
   @Post("/signin")
   async signIn(@Body() body: SignInUserRequestDto, @Res() res: Response) {
     const result = await this.userService.signIn(body);
+    res.cookie("access_token", result.accessToken, {
+      httpOnly: true, // JavaScript에서 접근할 수 없도록 설정 (보안 목적)
+      maxAge: 1000 * 60 * 60, // 쿠키의 유효 기간 (1시간)
+      secure: false, // HTTPS를 통해서만 전송되도록 설정 (프로덕션에서 추천)
+      // sameSite: "strict", // CSRF 공격 방지를 위한 설정
+    });
     return res.status(HttpStatus.CREATED).json({
       status: HttpStatus.OK,
       data: {
@@ -53,6 +61,12 @@ export class UserController {
   })
   async guestSignIn(@Req() req: Request, @Res() res: Response) {
     const result = await this.userService.guestSignIn(req);
+    res.cookie("access_token", result.accessToken, {
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60,
+      secure: false,
+      // sameSite: "strict",
+    });
     return res.status(HttpStatus.CREATED).json({
       status: HttpStatus.OK,
       data: {
@@ -63,9 +77,14 @@ export class UserController {
   }
 
   @ApiOperation({ summary: "사용자 정보 조회" })
+  @UseGuards(JwtAuthGuard)
   @Get("/:userId")
-  async getUserInfo(@Param("userId") userId: number, @Res() res: Response) {
-    const result = await this.userService.getUserInfo(userId);
+  async getUserInfo(
+    @Param("userId") userId: number,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    const result = await this.userService.getUserInfo(req["user"], userId);
     return res.status(HttpStatus.CREATED).json({
       status: HttpStatus.OK,
       data: {
