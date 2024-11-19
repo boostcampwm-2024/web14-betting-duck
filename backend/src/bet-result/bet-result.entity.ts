@@ -15,7 +15,7 @@ export class BetResult extends BaseEntity {
   @PrimaryGeneratedColumn("increment")
   id: number;
 
-  @OneToOne(() => BetRoom, (betRoom) => betRoom.betResults)
+  @OneToOne(() => BetRoom, (betRoom) => betRoom.betResult)
   @JoinColumn()
   betRoom: BetRoom;
 
