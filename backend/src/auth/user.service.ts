@@ -119,7 +119,9 @@ export class UserService {
   async checkNicknameExists(body: CheckNicknameExistsDto) {
     const { nickname } = requestNicknameExistsSchema.parse(body);
     return {
-      exists: await this.userRepository.findOneByNickname(nickname),
+      exists: (await this.userRepository.findOneByNickname(nickname))
+        ? true
+        : false,
     };
   }
 
