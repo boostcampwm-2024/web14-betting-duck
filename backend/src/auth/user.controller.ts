@@ -1,4 +1,13 @@
-import { Body, Controller, HttpStatus, Post, Req, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Get,
+  Post,
+  Req,
+  Res,
+  Param,
+} from "@nestjs/common";
 import { Request, Response } from "express";
 import { ApiBody, ApiOperation } from "@nestjs/swagger";
 import { UserService } from "./user.service";
@@ -44,6 +53,18 @@ export class UserController {
   })
   async guestSignIn(@Req() req: Request, @Res() res: Response) {
     const result = await this.userService.guestSignIn(req);
+    return res.status(HttpStatus.CREATED).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
+        ...result,
+      },
+    });
+  }
+
+  @Get("/:userId")
+  async getUserInfo(@Param("userId") userId: number, @Res() res: Response) {
+    const result = await this.userService.getUserInfo(userId);
     return res.status(HttpStatus.CREATED).json({
       status: HttpStatus.OK,
       data: {
