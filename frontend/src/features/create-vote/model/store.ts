@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { PredictionData } from "./types";
-import { createPrediction } from "./api";
-import { formatPredictionData } from "./helpers/formatData";
+// import { createPrediction } from "./api";
+// import { formatPredictionData } from "./helpers/formatData";
 
 function usePredictionStore() {
   const [formState, setFormState] = useState<PredictionData>({
@@ -68,21 +68,21 @@ function usePredictionStore() {
   };
 
   const submitPrediction = async () => {
-    const requestData = formatPredictionData(formState);
-    try {
-      const result = await createPrediction(requestData);
-      setFormState({
-        title: "",
-        winCase: "",
-        loseCase: "",
-        timer: 1,
-        defaultBetAmount: 100,
-      });
-      console.log(result);
-    } catch (error) {
-      // TODO: error 처리 로직 좀 다듬어야 함
-      console.error("승부예측 정보 전송 오류:", error);
-    }
+    // const requestData = formatPredictionData(formState);
+    // try {
+    //   const result = await createPrediction(requestData);
+    //   setFormState({
+    //     title: "",
+    //     winCase: "",
+    //     loseCase: "",
+    //     timer: 1,
+    //     defaultBetAmount: 100,
+    //   });
+    //   console.log(result);
+    // } catch (error) {
+    //   // TODO: error 처리 로직 좀 다듬어야 함
+    //   console.error("승부예측 정보 전송 오류:", error);
+    // }
   };
 
   return {
