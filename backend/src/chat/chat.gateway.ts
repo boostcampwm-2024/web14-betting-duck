@@ -17,8 +17,8 @@ import {
   leaveRoomRequestType,
 } from "@shared/schemas/shared";
 import { UseFilters, UseGuards } from "@nestjs/common";
-import { GlobalWsExceptionFilter } from "src/utils/filters/global-ws-exception-filter";
-import { AuthenticatedGuard } from "src/utils/guards/authenticated-guard";
+import { GlobalWsExceptionFilter } from "src/utils/filters/global-ws-exception.filter";
+import { AuthenticatedGuard } from "src/utils/guards/ws-authenticated.guard";
 
 @UseFilters(new GlobalWsExceptionFilter())
 @WebSocketGateway({ namespace: "api/chat", cors: true })
@@ -52,7 +52,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleMessage(client: Socket, payload: sendMessageRequestType) {
     const { sender, message, channel } =
       sendMessageRequestSchema.parse(payload);
-    console.log(sender, message, channel);
     const roomId = channel.roomId;
     this.server.to(roomId).emit("message", {
       sender,

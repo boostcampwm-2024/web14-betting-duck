@@ -46,7 +46,7 @@ export class UserService {
         userId: String(user.id),
         nickname: user.nickname,
         role: role,
-        duck: String(user.duck),
+        duck: user.duck,
       });
 
       const payload = {
@@ -78,7 +78,7 @@ export class UserService {
         userId: guestIdentifier,
         nickname: nickname,
         role: role,
-        duck: "300",
+        duck: 300,
       });
     }
 
@@ -89,6 +89,15 @@ export class UserService {
     const accessToken = await this.jwtService.sign(payload);
 
     return { accessToken, nickname, role };
+  }
+
+  async getUserInfo(user: object, userId: number) {
+    // TODO: 사용자 인증 필요, 자신의 정보만 조회 가능하도록
+    console.log(user);
+    if (this.redisManager.findUser(String(userId))) {
+      return await this.redisManager.getUser(String(userId));
+    }
+    return await this.userRepository.findOne(userId);
   }
 
   async getGuestLoginActivity(req: Request) {
@@ -110,7 +119,9 @@ export class UserService {
   async checkNicknameExists(body: CheckNicknameExistsDto) {
     const { nickname } = requestNicknameExistsSchema.parse(body);
     return {
-      exists: await this.redisManager.checkNicknameExists(nickname),
+      exists: (await this.userRepository.findOneByNickname(nickname))
+        ? true
+        : false,
     };
   }
 

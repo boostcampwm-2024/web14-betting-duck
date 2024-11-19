@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Post,
   Patch,
+  Get,
   Res,
   Param,
 } from "@nestjs/common";
@@ -105,6 +106,30 @@ export class BetRoomController {
       return res.status(error.status || HttpStatus.INTERNAL_SERVER_ERROR).json({
         status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
         data: { message: error.message },
+      });
+    }
+  }
+
+  @Get("/:betRoomId")
+  async getBetRoom(
+    @Param("betRoomId") betRoomId: string,
+    @Res() res: Response,
+  ) {
+    try {
+      const betRoomData = await this.betRoomService.findBetRoomById(betRoomId);
+      return res.status(HttpStatus.OK).json({
+        status: HttpStatus.OK,
+        data: {
+          channel: betRoomData,
+          message: "OK",
+        },
+      });
+    } catch (error) {
+      return res.status(error.status || HttpStatus.INTERNAL_SERVER_ERROR).json({
+        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        data: {
+          message: error.message || "Internal Server Error",
+        },
       });
     }
   }

@@ -10,6 +10,7 @@ import { AppService } from "./app.service";
 import { ChatModule } from "./chat/chat.module";
 import { BetModule } from "./bet/bet.module";
 import { BetRoomModule } from "./bet-room/bet-room.module";
+import { BetResultModule } from "./bet-result/bet-result.module";
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { BetRoomModule } from "./bet-room/bet-room.module";
     ChatModule,
     BetModule,
     BetRoomModule,
+    BetResultModule,
   ],
   controllers: [AppController],
   providers: [AppService],
