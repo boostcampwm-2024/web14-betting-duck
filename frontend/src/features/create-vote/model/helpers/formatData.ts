@@ -1,18 +1,22 @@
 import { PredictionData, PredictionRequest } from "../types";
 
-export function formatPredictionData(
-  formState: PredictionData,
-): PredictionRequest {
+export function formatPredictionData({
+  title,
+  winCase,
+  loseCase,
+  timer,
+  coin,
+}: PredictionData): PredictionRequest {
   return {
     channel: {
-      title: formState.title,
+      title: title,
       options: {
-        option1: formState.winCase,
-        option2: formState.loseCase,
+        option1: winCase,
+        option2: loseCase,
       },
       settings: {
-        duration: formState.timer * 60,
-        defaultBetAmount: formState.defaultBetAmount,
+        duration: timer * 60,
+        defaultBetAmount: coin,
       },
     },
   };
