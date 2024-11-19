@@ -130,6 +130,16 @@ export class BetRoomService {
     return updateResult;
   }
 
+  async findBetRoomById(betRoomId: string) {
+    const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+    if (!betRoom) {
+      throw new NotFoundException(
+        `해당하는 베팅방이 존재하지 않습니다. Id: ${betRoomId}`,
+      );
+    }
+    return betRoom;
+  }
+
   private async getBettingTotals(betRoomId: string) {
     const channel = await this.redisManager.getChannelData(betRoomId);
     if (!channel) {
