@@ -1,6 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { PredictDetail } from "@/features/predict-detail";
 
 export const Route = createFileRoute("/login")({
-  component: PredictDetail,
+  component: Component,
 });
+
+function Component() {
+  return (
+    <div>
+      <h1>Login</h1>
+    </div>
+  );
+}
