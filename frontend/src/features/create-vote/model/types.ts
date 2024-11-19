@@ -3,7 +3,7 @@ export interface PredictionData {
   winCase: string;
   loseCase: string;
   timer: number;
-  defaultBetAmount: number;
+  coin: number;
 }
 
 export interface PredictionRequest {
@@ -18,4 +18,17 @@ export interface PredictionRequest {
       defaultBetAmount: number;
     };
   };
+}
+
+export type ValidationEventDetail = {
+  name: "title" | "winCase" | "loseCase" | "timer" | "coin";
+  isValid: boolean;
+};
+
+export type ValidationEvent = CustomEvent<ValidationEventDetail>;
+
+declare global {
+  interface WindowEventMap {
+    "form-validation": ValidationEvent;
+  }
 }
