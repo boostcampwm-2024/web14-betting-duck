@@ -137,7 +137,34 @@ export class BetRoomService {
         `해당하는 베팅방이 존재하지 않습니다. Id: ${betRoomId}`,
       );
     }
-    return betRoom;
+    return {
+      id: betRoom.id,
+      title: betRoom.title,
+      creator: {
+        id: betRoom.manager.id,
+      },
+      options: {
+        option1: {
+          name: betRoom.option1,
+        },
+        option2: {
+          name: betRoom.option2,
+        },
+      },
+      status: betRoom.status,
+      settings: {
+        defaultBetAmount: betRoom.defaultBetAmount,
+        duration: betRoom.timer,
+      },
+      metadata: {
+        createdAt: betRoom.createdAt,
+        startAt: betRoom.startTime,
+        endAt: betRoom.endTime,
+      },
+      urls: {
+        invite: betRoom.joinUrl,
+      },
+    };
   }
 
   private async getBettingTotals(betRoomId: string) {

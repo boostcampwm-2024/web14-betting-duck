@@ -116,45 +116,17 @@ export class BetRoomController {
     @Res() res: Response,
   ) {
     try {
-      const betRoom = await this.betRoomService.findBetRoomById(betRoomId);
-
+      const betRoomData = await this.betRoomService.findBetRoomById(betRoomId);
       return res.status(HttpStatus.OK).json({
         status: HttpStatus.OK,
         data: {
-          channel: {
-            id: betRoom.id,
-            title: betRoom.title,
-            creator: {
-              id: betRoom.manager.id,
-            },
-            options: {
-              option1: {
-                name: betRoom.option1,
-              },
-              option2: {
-                name: betRoom.option2,
-              },
-            },
-            status: betRoom.status,
-            settings: {
-              defaultBetAmount: betRoom.defaultBetAmount,
-              duration: betRoom.timer,
-            },
-            metadata: {
-              createdAt: betRoom.createdAt,
-              startAt: betRoom.startTime,
-              endAt: betRoom.endTime,
-            },
-            urls: {
-              invite: betRoom.joinUrl,
-            },
-          },
+          channel: betRoomData,
           message: "OK",
         },
       });
     } catch (error) {
-      return res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
+      return res.status(error.status || HttpStatus.INTERNAL_SERVER_ERROR).json({
+        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
         data: {
           message: error.message || "Internal Server Error",
         },
