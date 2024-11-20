@@ -6,7 +6,7 @@ import { ChatProvider } from "./provider/ChatProvider";
 function Chat() {
   return (
     <ChatProvider>
-      <div className="flex flex-col justify-end">
+      <div className="bg-layout-main flex flex-col justify-end pt-4">
         <ChatHeader />
         <ChatMessages />
         <ChatInput />

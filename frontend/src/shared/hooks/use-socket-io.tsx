@@ -57,6 +57,7 @@ export function useSocketIO(options: SocketOptions) {
 
   const initializeSocket = React.useCallback(() => {
     const socket = io(SOCKET_URL + options.url, {
+      withCredentials: true,
       reconnectionDelayMax: 10000,
       reconnectionAttempts: 10,
       reconnection: true,
