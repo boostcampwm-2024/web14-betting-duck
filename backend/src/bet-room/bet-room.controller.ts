@@ -5,26 +5,34 @@ import {
   Post,
   Patch,
   Get,
+  Req,
   Res,
   Param,
+  UseGuards,
 } from "@nestjs/common";
 import { BetRoomService } from "./bet-room.service";
 import { Response } from "express";
 import { CreateBetRoomDto } from "./dto/create-bet-room.dto";
 import { UpdateBetRoomDto } from "./dto/update-bet-room.dto";
+import { JwtUserAuthGuard } from "src/utils/guards/http-user-authenticated.guard";
+import { JwtGuestAuthGuard } from "src/utils/guards/http-guest-authenticated.guard";
 
 @Controller("/api/betrooms")
 export class BetRoomController {
   constructor(private betRoomService: BetRoomService) {}
 
+  @UseGuards(JwtUserAuthGuard)
   @Post()
   async createBetRoom(
     @Body() createBetRoomDto: CreateBetRoomDto,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
-      const newBetRoom =
-        await this.betRoomService.createBetRoom(createBetRoomDto);
+      const newBetRoom = await this.betRoomService.createBetRoom(
+        req["user"].id,
+        createBetRoomDto,
+      );
       return res.status(HttpStatus.CREATED).json({
         status: HttpStatus.CREATED,
         data: {
@@ -42,14 +50,20 @@ export class BetRoomController {
     }
   }
 
+  @UseGuards(JwtUserAuthGuard)
   @Patch("/:betRoomId")
   async updateBetRoom(
     @Param("betRoomId") betRoomId: string,
     @Body() updateBetRoomDto: UpdateBetRoomDto,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
-      await this.betRoomService.updateBetRoom(betRoomId, updateBetRoomDto);
+      await this.betRoomService.updateBetRoom(
+        req["user"].id,
+        betRoomId,
+        updateBetRoomDto,
+      );
       return res.status(HttpStatus.OK).json({
         status: HttpStatus.OK,
         data: {
@@ -65,13 +79,15 @@ export class BetRoomController {
     }
   }
 
+  @UseGuards(JwtUserAuthGuard)
   @Patch("/start/:betRoomId")
   async startBetRoom(
     @Param("betRoomId") betRoomId: string,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
-      await this.betRoomService.startBetRoom(betRoomId);
+      await this.betRoomService.startBetRoom(req["user"].id, betRoomId);
       return res.status(HttpStatus.OK).json({
         status: HttpStatus.OK,
         data: {
@@ -87,14 +103,20 @@ export class BetRoomController {
     }
   }
 
+  @UseGuards(JwtUserAuthGuard)
   @Patch("/end/:betRoomId")
   async finishBetRoom(
     @Param("betRoomId") betRoomId: string,
     @Body("winning_option") winningOption: "option1" | "option2",
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
-      await this.betRoomService.finishBetRoom(betRoomId, winningOption);
+      await this.betRoomService.finishBetRoom(
+        req["user"].id,
+        betRoomId,
+        winningOption,
+      );
       return res.status(HttpStatus.OK).json({
         status: HttpStatus.OK,
         data: {
@@ -110,6 +132,7 @@ export class BetRoomController {
     }
   }
 
+  @UseGuards(JwtGuestAuthGuard)
   @Get("/:betRoomId")
   async getBetRoom(
     @Param("betRoomId") betRoomId: string,

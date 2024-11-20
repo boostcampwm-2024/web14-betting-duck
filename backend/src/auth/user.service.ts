@@ -97,7 +97,7 @@ export class UserService {
     if (this.redisManager.findUser(String(userId))) {
       return await this.redisManager.getUser(String(userId));
     }
-    return await this.userRepository.findOne(userId);
+    return await this.userRepository.findOneById(userId);
   }
 
   async getGuestLoginActivity(req: Request) {

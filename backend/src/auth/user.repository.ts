@@ -29,8 +29,7 @@ export class UserRepository {
     }
   }
 
-  // 아이디로 유저 찾기
-  async findOne(id: number): Promise<User | undefined> {
+  async findOneById(id: number): Promise<User | undefined> {
     try {
       return await this.userRepository.findOne({ where: { id } });
     } catch {
@@ -38,7 +37,6 @@ export class UserRepository {
     }
   }
 
-  // 닉네임으로 유저 찾기
   async findOneByNickname(nickname: string): Promise<User | undefined> {
     try {
       return await this.userRepository.findOne({ where: { nickname } });

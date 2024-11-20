@@ -1,11 +1,20 @@
-import { Controller, HttpStatus, Get, Res, Param } from "@nestjs/common";
+import {
+  Controller,
+  HttpStatus,
+  Get,
+  Res,
+  Param,
+  UseGuards,
+} from "@nestjs/common";
 import { Response } from "express";
 import { BetResultService } from "./bet-result.service";
+import { JwtGuestAuthGuard } from "src/utils/guards/http-guest-authenticated.guard";
 
 @Controller("/api/betresults")
 export class BetResultController {
   constructor(private betResultService: BetResultService) {}
 
+  @UseGuards(JwtGuestAuthGuard)
   @Get("/:betRoomId")
   async getBetResult(
     @Param("betRoomId") betRoomId: string,

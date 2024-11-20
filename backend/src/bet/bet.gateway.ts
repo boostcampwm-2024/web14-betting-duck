@@ -19,6 +19,7 @@ import {
   joinBetRoomRequestSchema,
   joinBetRoomRequestType,
 } from "@shared/schemas/bet/socket/request";
+import * as jwt from "jsonwebtoken";
 
 @WebSocketGateway({ namespace: "api/betting", cors: true })
 export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -28,7 +29,23 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly redisManager: RedisManager) {}
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+    try {
+      const cookies = this.parseCookies(client.handshake.headers.cookie);
+      const accessToken = cookies["access_token"];
+      if (!accessToken) {
+        client.disconnect(true);
+        console.error("엑세스 토큰이 존재하지 않습니다.");
+        return;
+      }
+      const payload = this.verifyToken(accessToken);
+      client.data.userId = payload.id;
+      console.log(
+        `Client connected: ${client.id}, User ID: ${client.data.userId}`,
+      );
+    } catch (err) {
+      console.error("Connection error:", err.message);
+      client.disconnect(true);
+    }
   }
 
   //TODO: 여기서 유저가 베팅 이후에 방을 나간 경우 고려해야함
@@ -40,19 +57,19 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage("joinRoom")
   async handleJoinRoom(client: Socket, payload: joinRoomRequestType) {
-    //TODO: userID 토큰에서 뽑기
-    const userId = "8";
-    client.data.userId = userId;
-
-    const { sender, channel } = joinRoomRequestSchema.parse(payload);
-    const { nickname } = sender;
+    const userId = client.data.userId;
+    const { channel } = joinRoomRequestSchema.parse(payload);
+    const nickname = await this.redisManager.client.hget(
+      `user:${userId}`,
+      "nickname",
+    );
     const { roomId } = channel;
     client.join(roomId);
 
     const creatorID = await this.redisManager.client.get(
       `room:${roomId}:creator`,
     );
-    const owner = userId === creatorID ? 1 : 0;
+    const owner = userId === Number(creatorID) ? 1 : 0;
 
     await this.redisManager.setBettingUserOnJoin({
       userId,
@@ -69,7 +86,6 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage("leaveRoom")
   async handleLeaveRoom(client: Socket, payload: leaveRoomRequestType) {
     const userId = client.data.userId;
-    console.log("client.data.userId" + client.data.userId);
     const { roomId } = leaveRoomRequestSchema.parse(payload);
     client.leave(roomId);
 
@@ -89,8 +105,9 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (channel) {
       client.emit("fetchBetRoomInfo", { channel });
     } else {
-      client.emit("fetchBetRoomInfo", {
-        error: "해당하는 채널이 존재하지 않습니다.",
+      client.emit("error", {
+        event: "fetchBetRoomInfo",
+        message: "해당하는 채널이 존재하지 않습니다.",
       });
     }
   }
@@ -103,7 +120,10 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
     const userId = client.data.userId;
     if (!userId) {
-      client.emit("joinBet", { error: "인증되지 않은 사용자입니다." });
+      client.emit("error", {
+        event: "joinBet",
+        message: "인증되지 않은 사용자입니다.",
+      });
       return;
     }
     const userDuck = await this.redisManager.client.hget(
@@ -112,7 +132,10 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     if (!userDuck || Number(userDuck) < sender.betAmount) {
-      client.emit("joinBet", { error: "보유한 duck이 부족합니다." });
+      client.emit("error", {
+        event: "joinBet",
+        message: "보유한 duck이 부족합니다.",
+      });
       return;
     }
     //TODO: betAmount가 디폴트 값 이상인지 체크!
@@ -153,11 +176,15 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
           selectedOption: sender.selectOption,
         });
       } else {
-        client.emit("joinBet", { error: "해당하는 옵션이 존재하지 않습니다." });
+        client.emit("error", {
+          event: "joinBet",
+          message: "해당하는 옵션이 존재하지 않습니다.",
+        });
       }
     } else {
-      client.emit("joinBet", {
-        error: "해당하는 채널이 존재하지 않거나 활성 상태가 아닙니다.",
+      client.emit("error", {
+        event: "joinBet",
+        message: "해당하는 채널이 존재하지 않거나 활성 상태가 아닙니다.",
       });
     }
   }
@@ -177,5 +204,21 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
         await this.redisManager.client.del(key);
       }
     } while (cursor !== "0");
+  }
+
+  private parseCookies(cookieHeader?: string): Record<string, string> {
+    if (!cookieHeader) return {};
+    return cookieHeader.split(";").reduce(
+      (cookies, cookie) => {
+        const [key, value] = cookie.split("=").map((part) => part.trim());
+        cookies[key] = decodeURIComponent(value);
+        return cookies;
+      },
+      {} as Record<string, string>,
+    );
+  }
+
+  private verifyToken(token: string) {
+    return jwt.verify(token, process.env.JWT_SECRET || "secret");
   }
 }

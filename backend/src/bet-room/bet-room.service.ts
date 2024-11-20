@@ -24,10 +24,9 @@ export class BetRoomService {
     private betGateway: BetGateway,
   ) {}
 
-  async createBetRoom(createBetRoomDto: CreateBetRoomDto) {
-    //TODO: JWT 토큰에서 추출
-    const creatorID = 8;
-    const manager = await this.userRepository.findOne(creatorID);
+  async createBetRoom(userId: number, createBetRoomDto: CreateBetRoomDto) {
+    const creatorID = userId;
+    const manager = await this.userRepository.findOneById(creatorID);
     if (!manager) {
       throw new NotFoundException("해당하는 유저를 찾을 수 없습니다.");
     }
@@ -53,10 +52,10 @@ export class BetRoomService {
   }
 
   async updateBetRoom(
+    userId: number,
     betRoomId: string,
     updateBetRoomDto: UpdateBetRoomDto,
   ): Promise<void> {
-    const userId = 8;
     this.assertBetRoomAccess(betRoomId, userId);
 
     const updatedFields: Partial<BetRoom> = {};
@@ -75,9 +74,7 @@ export class BetRoomService {
     await this.betRoomRepository.update(betRoomId, updatedFields);
   }
 
-  async startBetRoom(betRoomId: string) {
-    //TODO: JWT 토큰에서 추출
-    const userId = 8;
+  async startBetRoom(userId: number, betRoomId: string) {
     this.assertBetRoomAccess(betRoomId, userId);
 
     const updateResult = await this.betRoomRepository.update(betRoomId, {
@@ -89,9 +86,11 @@ export class BetRoomService {
     return updateResult;
   }
 
-  async finishBetRoom(betRoomId: string, winningOption: "option1" | "option2") {
-    //TODO: JWT 토큰에서 추출
-    const userId = 8;
+  async finishBetRoom(
+    userId: number,
+    betRoomId: string,
+    winningOption: "option1" | "option2",
+  ) {
     this.assertBetRoomAccess(betRoomId, userId);
 
     const updateResult = await this.betRoomRepository.update(betRoomId, {
