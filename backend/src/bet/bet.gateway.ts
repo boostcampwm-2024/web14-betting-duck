@@ -105,8 +105,9 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (channel) {
       client.emit("fetchBetRoomInfo", { channel });
     } else {
-      client.emit("fetchBetRoomInfo", {
-        error: "해당하는 채널이 존재하지 않습니다.",
+      client.emit("error", {
+        event: "fetchBetRoomInfo",
+        message: "해당하는 채널이 존재하지 않습니다.",
       });
     }
   }
@@ -119,7 +120,10 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
     const userId = client.data.userId;
     if (!userId) {
-      client.emit("joinBet", { error: "인증되지 않은 사용자입니다." });
+      client.emit("error", {
+        event: "joinBet",
+        message: "인증되지 않은 사용자입니다.",
+      });
       return;
     }
     const userDuck = await this.redisManager.client.hget(
@@ -128,7 +132,10 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     if (!userDuck || Number(userDuck) < sender.betAmount) {
-      client.emit("joinBet", { error: "보유한 duck이 부족합니다." });
+      client.emit("error", {
+        event: "joinBet",
+        message: "보유한 duck이 부족합니다.",
+      });
       return;
     }
     //TODO: betAmount가 디폴트 값 이상인지 체크!
@@ -169,11 +176,15 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
           selectedOption: sender.selectOption,
         });
       } else {
-        client.emit("joinBet", { error: "해당하는 옵션이 존재하지 않습니다." });
+        client.emit("error", {
+          event: "joinBet",
+          message: "해당하는 옵션이 존재하지 않습니다.",
+        });
       }
     } else {
-      client.emit("joinBet", {
-        error: "해당하는 채널이 존재하지 않거나 활성 상태가 아닙니다.",
+      client.emit("error", {
+        event: "joinBet",
+        message: "해당하는 채널이 존재하지 않거나 활성 상태가 아닙니다.",
       });
     }
   }
