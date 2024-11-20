@@ -39,7 +39,6 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       const payload = this.verifyToken(accessToken);
       client.data.userId = payload.id;
-
       console.log(
         `Client connected: ${client.id}, User ID: ${client.data.userId}`,
       );
