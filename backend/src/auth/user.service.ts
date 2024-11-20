@@ -34,17 +34,21 @@ export class UserService {
     await this.userRepository.createUser(user);
   }
 
-  async signIn(
-    body: SignInUserRequestDto,
-  ): Promise<{ accessToken: string; nickname: string; role: string }> {
-    const { nickname, password } = requestSignInSchema.parse(body);
+  async signIn(body: SignInUserRequestDto): Promise<{
+    accessToken: string;
+    email: string;
+    nickname: string;
+    role: string;
+  }> {
+    const { email, password } = requestSignInSchema.parse(body);
     const role = "user";
-    const user = await this.userRepository.findOneByNickname(nickname);
+    const user = await this.userRepository.findOneByEmail(email);
+    const nickname = user.nickname;
 
     if (user && (await bcrypt.compare(password, user.password))) {
       await this.redisManager.setUser({
         userId: String(user.id),
-        nickname: user.nickname,
+        nickname: nickname,
         role: role,
         duck: user.duck,
       });
@@ -55,7 +59,7 @@ export class UserService {
       };
       const accessToken = await this.jwtService.sign(payload);
 
-      return { accessToken, nickname, role };
+      return { accessToken, email, nickname, role };
     } else {
       throw new UnauthorizedException("login failed");
     }

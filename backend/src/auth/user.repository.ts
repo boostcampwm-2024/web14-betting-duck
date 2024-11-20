@@ -37,9 +37,19 @@ export class UserRepository {
     }
   }
 
+  // 이메일로 유저 찾기
   async findOneByNickname(nickname: string): Promise<User | undefined> {
     try {
       return await this.userRepository.findOne({ where: { nickname } });
+    } catch {
+      throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
+    }
+  }
+
+  // 이메일로 유저 찾기
+  async findOneByEmail(email: string): Promise<User | undefined> {
+    try {
+      return await this.userRepository.findOne({ where: { email } });
     } catch {
       throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
     }
