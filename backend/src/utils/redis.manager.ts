@@ -42,20 +42,6 @@ export class RedisManager {
     return exists === 1;
   }
 
-  // 시간 복잡도가 이게 맞나요..?
-  async checkNicknameExists(nickname: string): Promise<boolean> {
-    const keys = await this.client.keys("*");
-
-    for (const key of keys) {
-      const value = await this.client.hget(key, "nickname");
-      if (value === nickname) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
   async setBettingUserOnJoin({
     userId,
     nickname,
@@ -193,6 +179,26 @@ export class RedisManager {
       cursor = nextCursor;
       if (keys.length > 0) {
         await this.client.unlink(...keys);
+      }
+    } while (cursor !== "0");
+  }
+
+  async removeUserFromAllRooms(userId: string) {
+    let cursor = "0";
+    do {
+      const [nextCursor, keys] = await this.client.scan(
+        cursor,
+        "MATCH",
+        `room:*:user:${userId}`,
+        "COUNT",
+        10,
+      );
+      cursor = nextCursor;
+      for (const key of keys) {
+        const betAmount = await this.client.hget(key, "betAmount");
+        if (!betAmount) {
+          await this.client.del(key);
+        }
       }
     } while (cursor !== "0");
   }
