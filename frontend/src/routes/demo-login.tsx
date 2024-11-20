@@ -124,7 +124,7 @@ function DemoLogin() {
           })
           .then((json) => {
             const { data } = json;
-            document.cookie = `accessToken=${encodeURIComponent(data.accessToken)}; path=/; SameSite=Strict; Secure`;
+            // document.cookie = `accessToken=${encodeURIComponent(data.accessToken)}; path=/; SameSite=Strict; Secure`;
             navigate({
               to: "/betting-page",
               search: {

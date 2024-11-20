@@ -39,13 +39,15 @@ function BettingPage() {
     onConnect: () => {
       console.log("Betting Page에서 소켓이 연결 되었습니다.");
     },
-    onDisconnect: () => {
+    onDisconnect: (reason) => {
+      console.log(reason);
       console.log("Betting Page에서 소켓이 연결이 끊겼습니다.");
     },
     onError: (error) => {
       console.log("Betting Page에서 소켓 에러가 발생했습니다.", error);
     },
   });
+
   const bettingData: BettingRoom = {
     title: "KBO 우승은 KIA다!",
     timeRemaining: 445,
@@ -82,12 +84,10 @@ function BettingPage() {
   React.useEffect(() => {
     if (!socket.isConnected) return;
     if (roomIdRef.current) return;
-    document.cookie = `nickname=${encodeURIComponent(nickname)}; path=/; SameSite=Lax`;
     fetch("/api/betrooms", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Accept-Cookie": "HttpOnly;Secure;SameSite=Strict",
       },
       credentials: "include",
       body: JSON.stringify({
@@ -120,41 +120,6 @@ function BettingPage() {
       socket.off("joinRoom");
     };
   }, [socket, nickname]);
-  // if (!socket.isConnected) return;
-  // useEffectOnce(() => {
-
-  //   fetch("/api/betrooms", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       channel: {
-  //         title: "기아 vs 삼성 승부 예측",
-  //         options: {
-  //           option1: "기아",
-  //           option2: "삼성",
-  //         },
-  //         settings: {
-  //           duration: 120,
-  //           defaultBetAmount: 100,
-  //         },
-  //       },
-  //     }),
-  //   })
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       console.log(data);
-  //       socket.emit("joinRoom", {
-  //         sender: {
-  //           nickname: "김덕배",
-  //         },
-  //         channel: {
-  //           roomId: data.data.roomId,
-  //         },
-  //       });
-  //     });
-  // });
 
   return (
     <div
@@ -165,7 +130,6 @@ function BettingPage() {
     >
       <button
         onClick={() => {
-          console.log(roomIdRef.current);
           socket.emit("joinRoom", {
             sender: {
               nickname: "김덕배",
@@ -186,6 +150,22 @@ function BettingPage() {
         }}
       >
         나가기
+      </button>
+      <button
+        onClick={() => {
+          socket.emit("leaveRoom", {
+            roomId: roomIdRef.current,
+          });
+        }}
+      >
+        나가기
+      </button>
+      <button
+        onClick={() => {
+          socket.reconnect();
+        }}
+      >
+        재연결 시도
       </button>
       <div className="flex h-full flex-col">
         <BettingHeader
