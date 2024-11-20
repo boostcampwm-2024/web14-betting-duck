@@ -14,6 +14,9 @@ import { LinkIcon } from "./LinkIcon";
 import { WaitingRoomIcon } from "./WatingRoomIcon";
 import { CopyIcon } from "./CopyIcon";
 import { DuckCoinIcon } from "./DuckCoinIcon";
+import MainLogoIcon from "./MainLogoIcon";
+import { LoginIDIcon } from "./LoginIDIcon";
+import { LoginPasswordIcon } from "./LoginPasswordIcon";
 
 export {
   TrophyIcon,
@@ -32,4 +35,7 @@ export {
   TimerIcon,
   TextIcon,
   DuckIcon,
+  MainLogoIcon,
+  LoginIDIcon,
+  LoginPasswordIcon,
 };
