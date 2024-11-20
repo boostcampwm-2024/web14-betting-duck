@@ -36,17 +36,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: Socket) {
     try {
-      const authorizationHeader = client.handshake.headers.authorization;
-      if (!authorizationHeader) {
-        client.emit("error", {
-          event: "handleConnection",
-          message: "Authorization 헤더가 존재하지 않습니다.",
-        });
-        client.disconnect(true);
-        console.error("");
-        return;
-      }
-      const accessToken = authorizationHeader.split(" ")[1];
+      const accessToken = client.handshake.auth.token;
       if (!accessToken) {
         client.emit("error", {
           event: "handleConnection",
