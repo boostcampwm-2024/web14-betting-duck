@@ -23,10 +23,7 @@ import { JwtUtils } from "src/utils/jwt.utils";
 
 @WebSocketGateway({
   namespace: "api/betting",
-  cors: {
-    origin: ["http://localhost:3000", "http://175.45.205.245"],
-    credentials: true,
-  },
+  cors: true,
 })
 export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
@@ -39,15 +36,21 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: Socket) {
     try {
-      const cookies = this.jwtUtils.parseCookies(
-        client.handshake.headers.cookie,
-      );
-      const accessToken = cookies["access_token"];
+      const authorizationHeader = client.handshake.headers.authorization;
+      if (!authorizationHeader) {
+        client.emit("error", {
+          event: "handleConnection",
+          message: "Authorization 헤더가 존재하지 않습니다.",
+        });
+        client.disconnect(true);
+        console.error("");
+        return;
+      }
+      const accessToken = authorizationHeader.split(" ")[1];
       if (!accessToken) {
         client.emit("error", {
           event: "handleConnection",
           message: "엑세스 토큰이 존재하지 않습니다.",
-          accessToken: accessToken,
         });
         client.disconnect(true);
         return;
