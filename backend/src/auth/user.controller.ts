@@ -81,11 +81,6 @@ export class UserController {
   @Get("/token")
   async getAccessToken(@Req() req: Request, @Res() res: Response) {
     const accessToken = req.cookies["access_token"];
-    if (!accessToken) {
-      return res
-        .status(404)
-        .json({ message: "쿠키에 포함되어 있는 토큰이 존재하지 않습니다." });
-    }
     return res.status(HttpStatus.OK).json({
       status: HttpStatus.OK,
       data: {
