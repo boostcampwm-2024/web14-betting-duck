@@ -12,6 +12,7 @@ import {
 import { Request, Response } from "express";
 import { ApiBody, ApiOperation } from "@nestjs/swagger";
 import { JwtUserAuthGuard } from "src/utils/guards/http-user-authenticated.guard";
+import { JwtGuestAuthGuard } from "src/utils/guards/http-guest-authenticated.guard";
 import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
@@ -72,6 +73,24 @@ export class UserController {
       data: {
         message: "OK",
         ...result,
+      },
+    });
+  }
+
+  @UseGuards(JwtGuestAuthGuard)
+  @Get("/token")
+  async getAccessToken(@Req() req: Request, @Res() res: Response) {
+    const accessToken = req.cookies["access_token"];
+    if (!accessToken) {
+      return res
+        .status(404)
+        .json({ message: "쿠키에 포함되어 있는 토큰이 존재하지 않습니다." });
+    }
+    return res.status(HttpStatus.OK).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
+        accessToken: accessToken,
       },
     });
   }
