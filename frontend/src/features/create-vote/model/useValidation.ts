@@ -10,6 +10,15 @@ export function useValidation() {
   );
 
   useEffect(() => {
+    const initialValidInputs = new Set<string>();
+
+    initialValidInputs.add("timer");
+    initialValidInputs.add("coin");
+
+    setValidInputs(initialValidInputs);
+  }, []);
+
+  useEffect(() => {
     const handleValidation = (e: ValidationEvent) => {
       const { name, isValid } = e.detail;
 
@@ -20,7 +29,7 @@ export function useValidation() {
         } else {
           next.delete(name);
         }
-        return next;
+        return new Set(next);
       });
     };
 
@@ -30,10 +39,10 @@ export function useValidation() {
   }, []);
 
   const isFormValid = useMemo(() => {
-    return (
-      requiredInputs.size === validInputs.size &&
-      [...requiredInputs].every((input) => validInputs.has(input))
-    );
+    if (requiredInputs.size !== validInputs.size) {
+      return false;
+    }
+    return [...requiredInputs].every((input) => validInputs.has(input));
   }, [validInputs, requiredInputs]);
 
   return { isFormValid };
