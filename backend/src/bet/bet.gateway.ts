@@ -44,8 +44,12 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
       const accessToken = cookies["access_token"];
       if (!accessToken) {
+        client.emit("error", {
+          event: "handleConnection",
+          message: "엑세스 토큰이 존재하지 않습니다.",
+          accessToken: accessToken,
+        });
         client.disconnect(true);
-        console.error("엑세스 토큰이 존재하지 않습니다.");
         return;
       }
       const payload = this.jwtUtils.verifyToken(accessToken);
@@ -54,7 +58,10 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
         `Client connected: ${client.id}, User ID: ${client.data.userId}`,
       );
     } catch (err) {
-      console.error("Connection error:", err.message);
+      client.emit("error", {
+        event: "handleConnection",
+        message: "Connection error: " + err.message,
+      });
       client.disconnect(true);
     }
   }
