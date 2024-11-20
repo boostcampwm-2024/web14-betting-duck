@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { ApiBody, ApiOperation } from "@nestjs/swagger";
-import { JwtAuthGuard } from "../utils/guards/http-authenticated.guard";
+import { JwtUserAuthGuard } from "src/utils/guards/http-user-authenticated.guard";
 import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
@@ -77,7 +77,7 @@ export class UserController {
   }
 
   @ApiOperation({ summary: "사용자 정보 조회" })
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtUserAuthGuard)
   @Get("/:userId")
   async getUserInfo(
     @Param("userId") userId: number,
