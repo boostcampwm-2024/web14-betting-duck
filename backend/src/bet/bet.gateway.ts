@@ -45,7 +45,9 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   handleConnection(client: Socket) {
     try {
-      const accessToken = client.handshake.auth.token;
+      const accessToken =
+        client.handshake.auth.accessToken || client.handshake.headers.token;
+
       if (!accessToken) {
         client.emit("error", {
           event: "handleConnection",
@@ -57,6 +59,8 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const payload = this.jwtUtils.verifyToken(accessToken);
       client.data.userId =
         typeof payload.id === "number" ? String(payload.id) : payload.id;
+      client.data.userRole = payload.role;
+
       console.log(
         `Client connected: ${client.id}, User ID: ${client.data.userId}`,
       );
@@ -78,6 +82,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage("joinRoom")
   async handleJoinRoom(client: Socket, payload: joinRoomRequestType) {
     const userId = client.data.userId;
+    const userRole = client.data.userRole;
     const { channel } = joinRoomRequestSchema.parse(payload);
     const nickname = await this.redisManager.client.hget(
       `user:${userId}`,
@@ -97,6 +102,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       joinAt: new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString(),
       roomId,
       owner: owner,
+      role: userRole,
     });
 
     const users = await this.redisManager.getRoomUsersNicknameAndJoinAt(roomId);
@@ -139,6 +145,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       channel.roomId,
     );
     const userId = client.data.userId;
+    const userRole = client.data.userRole;
 
     if (!this.validateUserId(client, userId)) {
       return;
@@ -175,13 +182,16 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
           betAmount: sender.betAmount,
           selectedOption: sender.selectOption,
         });
-        this.saveBetHistory(
-          client,
-          Number(userId),
-          channel.roomId,
-          sender.betAmount,
-          sender.selectOption,
-        );
+
+        if (userRole === "user") {
+          this.saveBetHistory(
+            client,
+            Number(userId),
+            channel.roomId,
+            sender.betAmount,
+            sender.selectOption,
+          );
+        }
       } else {
         client.emit("error", {
           event: "joinBet",

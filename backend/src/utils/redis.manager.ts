@@ -48,17 +48,20 @@ export class RedisManager {
     joinAt,
     owner,
     roomId,
+    role,
   }: {
     userId: string;
     nickname: string;
     joinAt: string;
     owner: number;
     roomId: string;
+    role: string;
   }) {
     await this.client.hset(`room:${roomId}:user:${userId}`, {
       nickname,
       joinAt,
       owner,
+      role,
     });
   }
 
