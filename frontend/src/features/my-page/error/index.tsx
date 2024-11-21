@@ -1,7 +1,6 @@
 import { Image } from "@/shared/components/Image";
 import pondImage from "@/assets/images/pond.png";
 import { DuckCoinIcon } from "@/shared/icons";
-import React from "react";
 
 function ErrorMyPage() {
   return (
