@@ -1,4 +1,4 @@
-import { Dialog, DialogTrigger, DialogContent } from "@/shared/ui/Dialog";
+import { Dialog, DialogTrigger, DialogContent } from "@/shared/ui/dialog";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 const user = undefined;
