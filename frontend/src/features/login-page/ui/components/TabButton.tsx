@@ -11,7 +11,7 @@ function TabButton({ label, tab, activeTab, onClick }: TabButtonProps) {
   return (
     <button
       className={cn(
-        "z-10 flex-1 px-6 py-1 transition-colors duration-300",
+        "text-md z-10 flex-1 px-6 py-1 transition-colors duration-300",
         activeTab === tab ? "text-white" : "text-[#7A8495]",
       )}
       onClick={() => onClick(tab)}
