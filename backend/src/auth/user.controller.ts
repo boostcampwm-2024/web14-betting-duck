@@ -90,6 +90,18 @@ export class UserController {
     });
   }
 
+  @Get("/redistest")
+  async redisTest(@Req() req: Request, @Res() res: Response) {
+    const result = await this.userService.redisTest();
+    return res.status(HttpStatus.CREATED).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
+        ...result,
+      },
+    });
+  }
+
   @ApiOperation({ summary: "사용자 정보 조회" })
   @UseGuards(JwtGuestAuthGuard)
   @Get("/userInfo")

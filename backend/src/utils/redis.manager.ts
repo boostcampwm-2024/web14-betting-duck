@@ -1,13 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import { RedisService } from "@liaoliaots/nestjs-redis";
 import { Redis } from "ioredis"; // ioredis를 사용하여 타입 지정
+import { randomUUID } from "crypto";
 
 @Injectable()
 export class RedisManager {
   public client: Redis;
+  public publisher: Redis;
 
   constructor(private readonly redisService: RedisService) {
     this.client = this.redisService.getOrThrow("default");
+    this.publisher = this.redisService.getOrThrow("default");
   }
 
   async getUser(userId: string) {
@@ -204,5 +207,70 @@ export class RedisManager {
         }
       }
     } while (cursor !== "0");
+  }
+
+  async _xadd(streamKey: string, entryID: string, ...dataArr: string[]) {
+    if (entryID === "*") entryID = randomUUID();
+    if (dataArr.length % 2 !== 0) {
+      console.error("Data should be in key-value pairs");
+      return;
+    }
+
+    const entryKey = `stream:${streamKey}:${entryID}`;
+
+    const data = dataArr.reduce(
+      (acc, curr, index) => {
+        if (index % 2 === 0) acc[curr as string] = dataArr[index + 1];
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
+    // TODO: transaction 시작
+    await this.client.lpush(streamKey, entryKey);
+    await this.client.hset(entryKey, data);
+    await this.client.hset(entryKey, {
+      event_status: "pending",
+      event_retries: 0,
+    });
+    console.log("New message in stream:", streamKey);
+    await this.publisher.publish("stream", streamKey);
+  }
+
+  async _xread(count: number, streamKey: string) {
+    const messages = [];
+
+    for (let i = 0; i < count; i++) {
+      const entryID = await this.client.rpop(streamKey);
+      if (!entryID) break;
+
+      const fields = await this.client.hgetall(entryID);
+      messages.push([entryID, fields]);
+    }
+
+    return [[streamKey, messages]];
+  }
+
+  // async _xack(streamKey: string, groupName: string, entryID: string) {}
+
+  async addStreamEntry() {
+    try {
+      const streamName = "mystream";
+      const messageId = "*"; // Redis에서 메시지 ID를 자동으로 생성하도록 '*' 사용
+      const fields = {
+        userId: "12345",
+        action: "login",
+      };
+
+      // 스트림에 항목 추가
+      const id = await this.client.xadd(
+        streamName,
+        messageId,
+        ...Object.entries(fields).flat(),
+      );
+      console.log(`Added entry with ID: ${id}`);
+    } catch (error) {
+      console.error("Error adding to stream:", error);
+    }
   }
 }
