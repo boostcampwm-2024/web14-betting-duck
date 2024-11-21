@@ -1,5 +1,5 @@
 import React from "react";
-import { InputField } from "./Input";
+import { InputField } from "../../../../shared/components/input/InputField";
 import { TextIcon } from "@/shared/icons";
 import { useTitleInput } from "@/features/create-vote/model/useTitleInput";
 

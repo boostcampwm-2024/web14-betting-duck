@@ -1,3 +1,4 @@
+import { LoginPage } from "@/features/login-page";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/login")({
@@ -5,9 +6,5 @@ export const Route = createFileRoute("/login")({
 });
 
 function Component() {
-  return (
-    <div>
-      <h1>Login</h1>
-    </div>
-  );
+  return <LoginPage />;
 }
