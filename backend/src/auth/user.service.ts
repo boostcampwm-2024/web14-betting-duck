@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+} from "@nestjs/common";
 import { Request } from "express";
 import { RedisManager } from "src/utils/redis.manager";
 import { UserRepository } from "./user.repository";
@@ -34,17 +38,22 @@ export class UserService {
     await this.userRepository.createUser(user);
   }
 
-  async signIn(
-    body: SignInUserRequestDto,
-  ): Promise<{ accessToken: string; nickname: string; role: string }> {
-    const { nickname, password } = requestSignInSchema.parse(body);
+  async signIn(body: SignInUserRequestDto): Promise<{
+    accessToken: string;
+    email: string;
+    nickname: string;
+    role: string;
+  }> {
+    const { email, password } = requestSignInSchema.parse(body);
     const role = "user";
-    const user = await this.userRepository.findOneByNickname(nickname);
+    const user = await this.userRepository.findOneByEmail(email);
 
     if (user && (await bcrypt.compare(password, user.password))) {
+      const nickname = user.nickname;
+
       await this.redisManager.setUser({
         userId: String(user.id),
-        nickname: user.nickname,
+        nickname: nickname,
         role: role,
         duck: user.duck,
       });
@@ -55,7 +64,7 @@ export class UserService {
       };
       const accessToken = await this.jwtService.sign(payload);
 
-      return { accessToken, nickname, role };
+      return { accessToken, email, nickname, role };
     } else {
       throw new UnauthorizedException("login failed");
     }
@@ -91,13 +100,21 @@ export class UserService {
     return { accessToken, nickname, role };
   }
 
-  async getUserInfo(user: object, userId: number) {
+  async getUserInfo(currentUser: object, userId: number) {
     // TODO: 사용자 인증 필요, 자신의 정보만 조회 가능하도록
-    console.log(user);
-    if (this.redisManager.findUser(String(userId))) {
-      return await this.redisManager.getUser(String(userId));
+    console.log(currentUser);
+
+    const cachedUserInfo = await this.redisManager.getUser(String(userId));
+    if (cachedUserInfo?.nickname) {
+      return cachedUserInfo;
     }
-    return await this.userRepository.findOneById(userId);
+
+    const userInfo = await this.userRepository.findOneById(userId);
+    if (userInfo) {
+      return userInfo;
+    }
+
+    throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
   }
 
   async getGuestLoginActivity(req: Request) {
