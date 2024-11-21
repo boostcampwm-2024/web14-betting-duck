@@ -1,20 +1,49 @@
 import { CopyIcon, LinkIcon } from "@/shared/icons";
+import { ConfirmIcon } from "@/shared/icons/ConfirmIcon";
 import { cn } from "@/shared/misc";
+import React from "react";
 
 function ShareLinkCard() {
+  const [copied, setCopied] = React.useState(false);
+  const url = "https://github.com/boostcampwm-2024/web14-betting-duck";
+
+  async function handleCopyLink() {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 1500);
+    } catch (error) {
+      console.error("링크를 복사하는데 실패했습니다.", error);
+    }
+  }
+
   return (
     <div
-      className={cn(
-        "primary-container",
-        "flex w-full flex-row items-center justify-between gap-4",
-      )}
+      className={
+        "bg-secondary flex w-full flex-row items-center justify-between gap-4 rounded-lg px-4 py-3 shadow-inner"
+      }
     >
-      <LinkIcon />
-      <div className="scrollbar-thin scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400 max-w-[310px] overflow-x-scroll whitespace-nowrap">
-        https://github.com/boostcampwm-2024/web14-betting-duck
+      <LinkIcon className="text-secondary-hover" />
+      <div className="text-default text-md max-w-[310px] overflow-x-scroll whitespace-nowrap font-extrabold">
+        {url}
       </div>
-      <button className={cn("", "outline-none")}>
-        <CopyIcon />
+      <button
+        disabled={copied}
+        className={cn(
+          "hover:border-layout-main hover:bg-secondary-hover hover:text-layout-main rounded-md border border-transparent p-2 outline-none transition",
+          copied
+            ? "hover:text-layout-main rounded-md border border-transparent bg-green-500 p-2 text-green-100 outline-none transition hover:bg-green-500"
+            : "",
+        )}
+        onClick={handleCopyLink}
+      >
+        {copied ? (
+          <ConfirmIcon width={16} height={16} />
+        ) : (
+          <CopyIcon width={16} height={16} />
+        )}
       </button>
     </div>
   );
