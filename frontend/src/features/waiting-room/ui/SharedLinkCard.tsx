@@ -2,10 +2,12 @@ import { CopyIcon, LinkIcon } from "@/shared/icons";
 import { ConfirmIcon } from "@/shared/icons/ConfirmIcon";
 import { cn } from "@/shared/misc";
 import React from "react";
+import { useLocation } from "@tanstack/react-router";
 
 function ShareLinkCard() {
   const [copied, setCopied] = React.useState(false);
-  const url = "https://github.com/boostcampwm-2024/web14-betting-duck";
+  const location = useLocation();
+  const url = `${window.location.origin}${location.href}`;
 
   async function handleCopyLink() {
     try {

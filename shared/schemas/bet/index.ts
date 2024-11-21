@@ -9,9 +9,11 @@ import {
 import {
   responseFetchBetRoomInfoSchema,
   type responseFetchBetRoomInfoType,
+  responseBetRoomInfo,
 } from "./socket/response";
 
 export {
+  responseBetRoomInfo,
   betRequestSchema,
   betResponseSchema,
   fetchBetRoomInfoRequestSchema,

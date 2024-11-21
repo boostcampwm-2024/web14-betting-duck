@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { USER_ROLE } from "../../vars/user";
 
 const passwordStrength = (password: string) => {
   const hasNumber = /\d/.test(password);

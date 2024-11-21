@@ -1,7 +1,10 @@
 import { Dialog, DialogTrigger, DialogContent } from "@/shared/ui/dialog";
 import { EditIcon, InfoIcon } from "@/shared/icons";
+import { type WaitingRoomInfo } from ".";
 
-function VotingStatusCard() {
+function VotingStatusCard({ info }: { info: WaitingRoomInfo }) {
+  const { channel } = info;
+
   return (
     <div className="bg-primary text-secondary-default text-secondary flex w-full flex-col gap-2 rounded-lg p-3 shadow-md">
       <div className="flex flex-row items-center justify-between">
@@ -25,7 +28,7 @@ function VotingStatusCard() {
           </DialogContent>
         </Dialog>
       </div>
-      <h1 className="text-xl font-extrabold">KBO 우승은 KIA다 !!</h1>
+      <h1 className="text-xl font-extrabold">{channel.title}</h1>
     </div>
   );
 }

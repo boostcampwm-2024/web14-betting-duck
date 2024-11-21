@@ -1,15 +1,13 @@
 import { useNavigate } from "@tanstack/react-router";
 
-function ErrorComponent({
-  error,
-  to,
+function Unauthorized({
   children,
-  feature = "기능",
+  returnToken,
+  error,
 }: {
-  error: Error;
-  to: string;
   children: React.ReactNode;
-  feature?: string;
+  returnToken: string | null;
+  error: Error;
 }) {
   const navigate = useNavigate();
   return (
@@ -27,11 +25,11 @@ function ErrorComponent({
         </div>
         <div className="text-layout-main pt-16">
           <p className="text-lg font-normal">
-            {feature}을 이용하기 위해서는 로그인이 필요합니다!
+            방에 참여하기 위해서는 로그인이 필요합니다!
           </p>
           <p>
             회원가입이 귀찮으시다면{" "}
-            <span className="bg-layout-main text-default mx-1 rounded-sm px-1 py-1 text-lg font-extrabold">
+            <span className="bg-layout-main text-default mx-1 rounded-sm px-1 py-1 text-xl font-extrabold">
               비회원
             </span>{" "}
             로그인을 해주세요!
@@ -41,7 +39,10 @@ function ErrorComponent({
           className="text-decoration-none text-layout-main inline-block w-full cursor-pointer rounded-[15px] border border-[rgba(255,255,255,0.1)] bg-[oklch(49.07%_0.2412_292.58/30%)] px-8 py-4 text-[14px] uppercase tracking-[2px] backdrop-blur-[30px]"
           onClick={() => {
             navigate({
-              to,
+              to: "/login",
+              search: {
+                returnToken,
+              },
             });
           }}
         >
@@ -53,4 +54,4 @@ function ErrorComponent({
   );
 }
 
-export { ErrorComponent };
+export { Unauthorized };
