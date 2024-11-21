@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { ApiBody, ApiOperation } from "@nestjs/swagger";
-import { JwtUserAuthGuard } from "src/utils/guards/http-user-authenticated.guard";
+// import { JwtUserAuthGuard } from "src/utils/guards/http-user-authenticated.guard";
 import { JwtGuestAuthGuard } from "src/utils/guards/http-guest-authenticated.guard";
 import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
@@ -91,14 +91,10 @@ export class UserController {
   }
 
   @ApiOperation({ summary: "사용자 정보 조회" })
-  @UseGuards(JwtUserAuthGuard)
-  @Get("/:userId")
-  async getUserInfo(
-    @Param("userId") userId: number,
-    @Req() req: Request,
-    @Res() res: Response,
-  ) {
-    const result = await this.userService.getUserInfo(req["user"], userId);
+  @UseGuards(JwtGuestAuthGuard)
+  @Get("/userInfo")
+  async getUserInfo(@Req() req: Request, @Res() res: Response) {
+    const result = await this.userService.getUserInfo(req);
     return res.status(HttpStatus.CREATED).json({
       status: HttpStatus.OK,
       data: {
@@ -128,6 +124,25 @@ export class UserController {
     @Res() res: Response,
   ) {
     const result = await this.userService.checkNicknameExists(body);
+    return res.status(HttpStatus.CREATED).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
+        ...result,
+      },
+    });
+  }
+
+  // 테스트용 API
+  @ApiOperation({ summary: "특정 사용자 duck 업데이트" })
+  @UseGuards(JwtGuestAuthGuard)
+  @Get("/updateDuck/:duck")
+  async updateDuck(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param("duck") duck: number,
+  ) {
+    const result = await this.userService.updateDuck(req, duck);
     return res.status(HttpStatus.CREATED).json({
       status: HttpStatus.OK,
       data: {

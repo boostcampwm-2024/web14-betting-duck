@@ -100,9 +100,10 @@ export class UserService {
     return { accessToken, nickname, role };
   }
 
-  async getUserInfo(currentUser: object, userId: number) {
+  async getUserInfo(req: Request) {
     // TODO: 사용자 인증 필요, 자신의 정보만 조회 가능하도록
-    console.log(currentUser);
+    console.log(req["user"]);
+    const userId = req["user"].id;
 
     const cachedUserInfo = await this.redisManager.getUser(String(userId));
     if (cachedUserInfo?.nickname) {
@@ -151,5 +152,26 @@ export class UserService {
     const clientIp =
       request.headers["x-forwarded-for"] || request.connection.remoteAddress;
     return "guest-" + clientIp;
+  }
+
+  // 테스트용 메서드
+  async updateDuck(req: Request, duck: number) {
+    const userId = req["user"].id;
+    const role = req["user"].role;
+    const user = await this.redisManager.getUser(String(userId));
+    if (role === "user") await this.userRepository.update(userId, { duck });
+    // await this.redisManager.setUser({
+    //   ...user,
+    //   userId: userId,
+    // });
+    const newUserInfo = {
+      userId: userId,
+      nickname: user.nickname,
+      role: user.role,
+      duck: duck,
+    };
+    await this.redisManager.setUser(newUserInfo);
+
+    return newUserInfo;
   }
 }
