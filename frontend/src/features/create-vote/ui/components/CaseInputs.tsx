@@ -1,5 +1,5 @@
 import React from "react";
-import { InputField } from "./Input";
+import { InputField } from "../../../../shared/components/input/InputField";
 import { DuckIcon } from "@/shared/icons";
 import { useCaseInput } from "@/features/create-vote/model/useCaseInput";
 
