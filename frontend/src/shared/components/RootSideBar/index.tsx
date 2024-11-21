@@ -2,7 +2,6 @@ import React from "react";
 import {
   LoginIcon,
   UserIcon,
-  ChatIcon,
   CreateVoteIcon,
   WaitingRoomIcon,
 } from "@/shared/icons";
@@ -20,9 +19,8 @@ type NavItemType = {
 const navItems = {
   top: [
     { icon: UserIcon, label: "my", href: "/my-page" },
-    { icon: ChatIcon, label: "chat", href: "/chat" },
     { icon: CreateVoteIcon, label: "create vote", href: "/create-vote" },
-    { icon: WaitingRoomIcon, label: "waiting room", href: "/waiting-room" },
+    { icon: WaitingRoomIcon, label: "voting", href: "/voting" },
   ],
   bottom: [{ icon: LoginIcon, label: "login", href: "/login" }],
 };
@@ -33,7 +31,7 @@ function changeNavigatorPosition(href: string) {
     nextPosition = 9.9;
   } else {
     const index = navItems.top.findIndex((item) => item.href === href);
-    nextPosition = index === 3 ? 3.2 : index;
+    nextPosition = index === 2 ? 2.2 : index;
   }
   document.documentElement.style.setProperty(
     "--navigator-position",
