@@ -32,7 +32,7 @@ export class BetRoomService {
     }
     const roomUUID = uuidv4();
     //TODO: 도메인 주소 변경
-    const joinUrl = `http://bettingduck.com/room/${roomUUID}`;
+    const joinUrl = `http://175.45.205.245/voting/${roomUUID}/waiting`;
 
     const betRoomData = {
       id: roomUUID,

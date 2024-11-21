@@ -46,7 +46,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   handleConnection(client: Socket) {
     try {
       const accessToken =
-        client.handshake.auth.accessToken || client.handshake.headers.token;
+        client.handshake.auth.token || client.handshake.headers.token;
 
       if (!accessToken) {
         client.emit("error", {
