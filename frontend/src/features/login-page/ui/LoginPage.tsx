@@ -1,7 +1,8 @@
 import { InputField } from "@/shared/components/input/InputField";
-import { LoginIDIcon, MainLogoIcon, LoginPasswordIcon } from "@/shared/icons";
+import { LoginIDIcon, LoginPasswordIcon } from "@/shared/icons";
 import { cn } from "@/shared/misc";
 import React, { useState } from "react";
+import mainLogo from "@/assets/images/main-logo.png";
 
 function LoginPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register" | "guest">(
@@ -26,14 +27,11 @@ function LoginPage() {
 
   return (
     <div className="bg-layout-main flex w-full flex-col items-center p-8">
-      <div className="mt-8 text-center">
+      <div className="mt-4 text-center">
         <h1 className="text-default text-xl font-extrabold">로그인</h1>
-        <p className="text-default mb-8">오리를 구매해서 페이지를 꾸며보세요</p>
+        <p className="text-default">오리를 구매해서 페이지를 꾸며보세요</p>
       </div>
-      <div className="mb-6">
-        <MainLogoIcon />
-      </div>
-
+      <img src={mainLogo} alt="Main Logo" className="mb-3" />
       <div className="bg-layout-sidebar relative flex w-[90%] overflow-hidden rounded-full text-[#7A8495] shadow-inner">
         <div
           className={cn(
