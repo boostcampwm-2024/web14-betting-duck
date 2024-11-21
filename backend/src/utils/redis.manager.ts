@@ -48,17 +48,20 @@ export class RedisManager {
     joinAt,
     owner,
     roomId,
+    role,
   }: {
     userId: string;
     nickname: string;
     joinAt: string;
     owner: number;
     roomId: string;
+    role: string;
   }) {
     await this.client.hset(`room:${roomId}:user:${userId}`, {
       nickname,
       joinAt,
       owner,
+      role,
     });
   }
 
@@ -124,7 +127,7 @@ export class RedisManager {
     return await this.client.get(`room:${roomId}:status`);
   }
 
-  async updateBetOption(roomId: string, option: string, betAmount: number) {
+  async updateBetting(roomId: string, option: string, betAmount: number) {
     await Promise.all([
       this.client.hincrby(`room:${roomId}:${option}`, "currentBets", betAmount),
       this.client.hincrby(`room:${roomId}:${option}`, "participants", 1),

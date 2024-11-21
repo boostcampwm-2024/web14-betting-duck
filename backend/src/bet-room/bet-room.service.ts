@@ -251,18 +251,31 @@ export class BetRoomService {
 
       const userUpdates = keys.map(async (key) => {
         const userData = await this.redisManager.client.hgetall(key);
-        const userId = Number(key.split(":").pop());
-        const { betAmount, selectedOption, duck } = userData;
+
+        const userIdMatch = key.match(/user:(.+)$/);
+        const userId = userIdMatch ? userIdMatch[1] : null;
+
+        const duck = await this.redisManager.client.hget(
+          `user:${userId}`,
+          "duck",
+        );
+        const { betAmount, selectedOption, role } = userData;
 
         const isWinner = selectedOption === winningOption;
         const duckChange = isWinner ? Number(betAmount) * winningOdds : 0;
         const updatedDuck = duck
           ? Number(duck) - Number(betAmount) + duckChange
           : duckChange;
-        // DB 업데이트 (배팅 결과 처리)
-        await this.userRepository.update(userId, {
+
+        await this.redisManager.client.hset(`user:${userId}`, {
           duck: updatedDuck,
         });
+
+        if (role === "user") {
+          await this.userRepository.update(Number(userId), {
+            duck: updatedDuck,
+          });
+        }
       });
 
       await Promise.all(userUpdates);
