@@ -1,4 +1,4 @@
-import { Dialog, DialogTrigger, DialogContent } from "@/shared/ui/Dialog";
+import { Dialog, DialogTrigger, DialogContent } from "@/shared/ui/dialog";
 
 function PredictButton() {
   return (
