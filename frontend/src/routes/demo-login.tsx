@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useNavigate } from "@tanstack/react-router";
+import React from "react";
 
 export const Route = createFileRoute("/demo-login")({
   component: Component,
@@ -102,27 +103,32 @@ function DemoSignup() {
 
 function DemoLogin() {
   const navigate = useNavigate();
+  const [email, setEmail] = React.useState("abc@naver.com");
+  const [password, setPassword] = React.useState("abc1234");
+
   return (
     <form
       onSubmit={async (e) => {
         e.preventDefault();
 
         const formData = new FormData(e.target as HTMLFormElement);
-        const nickname = formData.get("nickname") as string;
+        const email = formData.get("email") as string;
         const password = formData.get("password") as string;
+        console.log({ email, password });
 
         fetch("/api/users/signin", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ nickname, password }),
+          body: JSON.stringify({ email, password }),
         })
           .then((res) => res.json())
           .then((json) => {
+            console.log(json);
             const { data } = json;
             navigate({
-              to: "/betting-page",
+              to: "/my-page",
               search: {
                 nickname: decodeURIComponent(data.nickname),
               },
@@ -135,15 +141,17 @@ function DemoLogin() {
       }}
     >
       <div>
-        <label htmlFor="demo-signin-nickname" className="text-default">
-          닉네임
+        <label htmlFor="demo-signin-email" className="text-default">
+          이메일
           <input
-            id="demo-signin-nickname"
-            name="nickname"
-            type={"text"}
+            id="demo-signin-email"
+            name="email"
+            type={"email"}
             className="bg-layout-background text-default"
-            autoComplete="username"
+            autoComplete="email"
             minLength={1}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </label>
@@ -158,6 +166,8 @@ function DemoLogin() {
             autoComplete="current-password"
             minLength={4}
             className="bg-layout-background text-default"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </label>
