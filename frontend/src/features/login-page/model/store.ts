@@ -1,13 +1,19 @@
 import { GuestLoginRequest, LoginRequest, SignupRequest } from "./types";
 import { guestlogin, login, signup } from "./api";
+import { useState } from "react";
 
 function useAuthStore() {
+  const [error, setError] = useState<string | null>(null);
+
   const handleLogin = async (data: LoginRequest) => {
+    setError(null);
     try {
       const response = await login(data);
       console.log(response);
     } catch (err) {
-      console.error("로그인 실패", err);
+      if (err instanceof Error) {
+        setError(err.message);
+      }
     }
   };
 
@@ -16,7 +22,7 @@ function useAuthStore() {
       const response = await signup(data);
       console.log(response);
     } catch (err) {
-      console.error("회원가입 실패", err);
+      console.log(err);
     }
   };
 
@@ -29,7 +35,7 @@ function useAuthStore() {
     }
   };
 
-  return { handleLogin, handleSignup, handleGuestLogin };
+  return { error, handleLogin, handleSignup, handleGuestLogin };
 }
 
 export { useAuthStore };
