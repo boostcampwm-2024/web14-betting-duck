@@ -36,6 +36,7 @@ function BettingPage() {
   const roomIdRef = React.useRef<string | null>(null);
   const socket = useSocketIO({
     url: "/api/betting",
+    accessToken: "",
     onConnect: () => {
       console.log("Betting Page에서 소켓이 연결 되었습니다.");
     },
@@ -47,7 +48,6 @@ function BettingPage() {
       console.log("Betting Page에서 소켓 에러가 발생했습니다.", error);
     },
   });
-
   const bettingData: BettingRoom = {
     title: "KBO 우승은 KIA다!",
     timeRemaining: 445,
@@ -130,6 +130,7 @@ function BettingPage() {
     >
       <button
         onClick={() => {
+          console.log(roomIdRef.current);
           socket.emit("joinRoom", {
             sender: {
               nickname: "김덕배",
@@ -150,22 +151,6 @@ function BettingPage() {
         }}
       >
         나가기
-      </button>
-      <button
-        onClick={() => {
-          socket.emit("leaveRoom", {
-            roomId: roomIdRef.current,
-          });
-        }}
-      >
-        나가기
-      </button>
-      <button
-        onClick={() => {
-          socket.reconnect();
-        }}
-      >
-        재연결 시도
       </button>
       <div className="flex h-full flex-col">
         <BettingHeader

@@ -1,14 +1,17 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { RootHeader } from "@/shared/components/RootHeader";
 import { RootSideBar } from "@/shared/components/RootSideBar";
+import { UserProvider } from "@/app/provider/UserProvider";
 
 export const Route = createRootRoute({
   component: () => (
-    <RootLayout>
-      <RootHeader />
-      <RootSideBar />
-      <Outlet />
-    </RootLayout>
+    <UserProvider>
+      <RootLayout>
+        <RootHeader />
+        <RootSideBar />
+        <Outlet />
+      </RootLayout>
+    </UserProvider>
   ),
 });
 
