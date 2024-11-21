@@ -20,6 +20,7 @@ import {
   joinBetRoomRequestType,
 } from "@shared/schemas/bet/socket/request";
 import { JwtUtils } from "src/utils/jwt.utils";
+import { BetService } from "./bet.service";
 
 interface Channel {
   creator: string;
@@ -39,6 +40,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly redisManager: RedisManager,
     private readonly jwtUtils: JwtUtils,
+    private readonly betService: BetService,
   ) {}
 
   handleConnection(client: Socket) {
@@ -173,7 +175,13 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
           betAmount: sender.betAmount,
           selectedOption: sender.selectOption,
         });
-        //TODO: RDB에 배팅 내역 저장 로직 추가
+        this.saveBetHistory(
+          client,
+          Number(userId),
+          channel.roomId,
+          sender.betAmount,
+          sender.selectOption,
+        );
       } else {
         client.emit("error", {
           event: "joinBet",
@@ -231,5 +239,23 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       option2: updatedOption2,
     };
     return updatedChannel;
+  }
+
+  private async saveBetHistory(
+    client: Socket,
+    userId: number,
+    roomId: string,
+    betAmount: number,
+    selectOption: "option1" | "option2",
+  ) {
+    try {
+      await this.betService.saveBet(userId, roomId, betAmount, selectOption);
+    } catch (error) {
+      client.emit("error", {
+        event: "joinBet",
+        message: "베팅 내역 저장 중 오류가 발생했습니다. " + error.message,
+      });
+      return;
+    }
   }
 }
