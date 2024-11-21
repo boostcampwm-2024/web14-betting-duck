@@ -1,4 +1,3 @@
-import { cn } from "@/shared/misc";
 import React from "react";
 
 function ChatError() {
@@ -21,10 +20,7 @@ function ChatError() {
           className="absolute -bottom-[16px] left-0 h-[1px] w-full"
         />
       </div>
-      <div
-        id="message-container"
-        className={cn("message-container mt-4 overflow-y-scroll")}
-      >
+      <div id="message-container" className={"mt-4 overflow-y-scroll"}>
         <div className="relative w-full">
           <div className="absolute inset-x-0 px-3 py-4">
             <div className="flex flex-col space-y-4"></div>
