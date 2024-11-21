@@ -7,10 +7,12 @@ import { randomUUID } from "crypto";
 export class RedisManager {
   public client: Redis;
   public publisher: Redis;
+  public consumer: Redis;
 
   constructor(private readonly redisService: RedisService) {
     this.client = this.redisService.getOrThrow("default");
     this.publisher = this.redisService.getOrThrow("default");
+    this.consumer = this.redisService.getOrThrow("default");
   }
 
   async getUser(userId: string) {
@@ -237,40 +239,87 @@ export class RedisManager {
     await this.publisher.publish("stream", streamKey);
   }
 
-  async _xread(count: number, streamKey: string) {
-    const messages = [];
+  async _xread(count: number, streamKey: string, blockTime: number) {
+    const readStream = async (
+      signal: AbortSignal,
+      count: number,
+      streamKey: string,
+    ): Promise<[string, [string, Record<string, string>][]]> => {
+      const entries: [string, Record<string, string>][] = [];
+      let processedCount = 0;
 
-    for (let i = 0; i < count; i++) {
-      const entryID = await this.client.rpop(streamKey);
-      if (!entryID) break;
+      while (processedCount < count && !signal.aborted) {
+        let entryKey = await this.client.lpop(streamKey);
 
-      const fields = await this.client.hgetall(entryID);
-      messages.push([entryID, fields]);
-    }
+        if (!entryKey) {
+          await new Promise<void>((resolve) => {
+            const abortHandler = () => {
+              signal.removeEventListener("abort", abortHandler);
+              resolve();
+            };
 
-    return [[streamKey, messages]];
+            const handleMessage = (
+              channel: string,
+              messageStreamKey: string,
+            ) => {
+              if (messageStreamKey === streamKey) {
+                this.consumer.off("message", handleMessage);
+                signal.removeEventListener("abort", abortHandler);
+                resolve();
+              }
+            };
+
+            signal.addEventListener("abort", abortHandler);
+            this.consumer.on("message", handleMessage);
+          });
+
+          if (signal.aborted) {
+            return [streamKey, entries];
+          }
+
+          entryKey = await this.client.lpop(streamKey);
+        }
+
+        if (entryKey) {
+          const fields = await this.client.hgetall(entryKey);
+          entries.push([entryKey, fields]);
+        }
+
+        processedCount++;
+      }
+
+      return [streamKey, entries];
+    };
+
+    return new Promise<[string, [string, Record<string, string>][]]>(
+      (resolve, reject) => {
+        const controller = new AbortController();
+        const { signal } = controller;
+
+        readStream(signal, count, streamKey).then(resolve).catch(reject);
+
+        setTimeout(() => {
+          controller.abort();
+          console.log("Operation timed out");
+        }, blockTime);
+      },
+    );
   }
+
+  // 개선 이전의 _xread 메서드
+  // async _xread(count: number, streamKey: string) {
+  //   const messages = [];
+
+  //   for (let i = 0; i < count; i++) {
+  //     const entryID = await this.client.rpop(streamKey);
+  //     if (!entryID) break;
+
+  //     const fields = await this.client.hgetall(entryID);
+  //     messages.push([entryID, fields]);
+  //   }
+
+  //   return [[streamKey, messages]];
+  // }
 
   // async _xack(streamKey: string, groupName: string, entryID: string) {}
-
-  async addStreamEntry() {
-    try {
-      const streamName = "mystream";
-      const messageId = "*"; // Redis에서 메시지 ID를 자동으로 생성하도록 '*' 사용
-      const fields = {
-        userId: "12345",
-        action: "login",
-      };
-
-      // 스트림에 항목 추가
-      const id = await this.client.xadd(
-        streamName,
-        messageId,
-        ...Object.entries(fields).flat(),
-      );
-      console.log(`Added entry with ID: ${id}`);
-    } catch (error) {
-      console.error("Error adding to stream:", error);
-    }
-  }
 }
