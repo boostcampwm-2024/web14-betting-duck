@@ -9,7 +9,7 @@ interface MessageProps {
 
 function MessageList({ children }: MessageProps) {
   // const { socket } = useChat();
-  // const messageEndRef = React.useRef<HTMLDivElement>(null);
+  const messageEndRef = React.useRef<HTMLDivElement>(null);
   // const [messageHeights, setMessageHeights] = React.useState(
   //   new Map<string, number>(),
   // );
@@ -46,25 +46,10 @@ function MessageList({ children }: MessageProps) {
     }, SCROLL_TIMEOUT);
   }, [isScrolling]);
 
-  // ResizeObserver 설정
-  // React.useEffect(() => {
-  //   heightObserverRef.current = new ResizeObserver((entries) => {
-  //     entries.forEach((entry) => {
-  //       const messageId = entry.target.getAttribute("data-message-id");
-  //       if (messageId) {
-  //         setMessageHeights((prev) => {
-  //           const newHeights = new Map(prev);
-  //           newHeights.set(messageId, entry.contentRect.height);
-  //           return newHeights;
-  //         });
-  //       }
-  //     });
-  //   });
-
-  //   return () => {
-  //     heightObserverRef.current?.disconnect();
-  //   };
-  // }, []);
+  React.useEffect(() => {
+    if (!messageEndRef.current) return;
+    messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+  }, [children]);
 
   // IntersectionObserver 설정
   React.useEffect(() => {
@@ -185,6 +170,7 @@ function MessageList({ children }: MessageProps) {
                 {child}
               </div>
             ))}
+            <div ref={messageEndRef} />
           </div>
         </div>
       </div>
