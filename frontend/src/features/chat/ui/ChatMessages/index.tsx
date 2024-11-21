@@ -64,10 +64,16 @@ function ChatMessages() {
     ({ sender, message, color, radius }: Message, index: number) => (
       <div key={sender.nickname + index} className="flex justify-end">
         <div
-          className={`max-w-[80%] ${radius} flex items-center gap-4 bg-white p-3 shadow-sm`}
+          className={`max-w-[80%] ${radius} flex flex-row items-start gap-4 bg-white p-3 shadow-sm`}
         >
-          <div className={`${color} text-md font-bold`}>{sender.nickname}</div>
-          <div className="text-gray-700">{message}</div>
+          <div>
+            <span
+              className={`${color} text-md mr-3 whitespace-nowrap font-bold`}
+            >
+              {sender.nickname}
+            </span>
+            <span className="break-words text-gray-700">{message}</span>
+          </div>
         </div>
       </div>
     ),
