@@ -21,6 +21,13 @@ import {
 } from "@shared/schemas/bet/socket/request";
 import { JwtUtils } from "src/utils/jwt.utils";
 
+interface Channel {
+  creator: string;
+  status: string;
+  option1: Record<string, string>;
+  option2: Record<string, string>;
+}
+
 @WebSocketGateway({
   namespace: "api/betting",
   cors: true,
@@ -46,7 +53,8 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
       const payload = this.jwtUtils.verifyToken(accessToken);
-      client.data.userId = payload.id;
+      client.data.userId =
+        typeof payload.id === "number" ? String(payload.id) : payload.id;
       console.log(
         `Client connected: ${client.id}, User ID: ${client.data.userId}`,
       );
@@ -79,7 +87,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const creatorID = await this.redisManager.client.get(
       `room:${roomId}:creator`,
     );
-    const owner = userId === Number(creatorID) ? 1 : 0;
+    const owner = userId === creatorID ? 1 : 0;
 
     await this.redisManager.setBettingUserOnJoin({
       userId,
@@ -129,26 +137,13 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       channel.roomId,
     );
     const userId = client.data.userId;
-    if (!userId) {
-      client.emit("error", {
-        event: "joinBet",
-        message: "인증되지 않은 사용자입니다.",
-      });
-      return;
-    }
-    const userDuck = await this.redisManager.client.hget(
-      `user:${userId}`,
-      "duck",
-    );
 
-    if (!userDuck || Number(userDuck) < sender.betAmount) {
-      client.emit("error", {
-        event: "joinBet",
-        message: "보유한 duck이 부족합니다.",
-      });
+    if (!this.validateUserId(client, userId)) {
       return;
     }
-    //TODO: betAmount가 디폴트 값 이상인지 체크!
+    if (!this.validateUserDuck(client, userId, sender.betAmount)) {
+      return;
+    }
 
     if (targetChannel && targetChannel.status === "active") {
       const selectedOption =
@@ -157,34 +152,28 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
           : targetChannel.option2;
 
       if (selectedOption) {
-        await this.redisManager.updateBetOption(
+        await this.redisManager.updateBetting(
           channel.roomId,
           sender.selectOption,
           sender.betAmount,
         );
 
-        const [updatedOption1, updatedOption2] = await Promise.all([
-          this.redisManager.client.hgetall(`room:${channel.roomId}:option1`),
-          this.redisManager.client.hgetall(`room:${channel.roomId}:option2`),
-        ]);
-
-        const updatedChannel = {
-          creator: targetChannel.creator,
-          status: targetChannel.status,
-          option1: updatedOption1,
-          option2: updatedOption2,
-        };
+        const updatedChannel = await this.getUpdatedChannel(
+          channel.roomId,
+          targetChannel,
+        );
 
         this.server.to(channel.roomId).emit("fetchBetRoomInfo", {
           channel: updatedChannel,
         });
-        //TODO: RDB에 배팅 내역 저장 로직 추가
+
         await this.redisManager.setBettingUserOnBet({
           userId,
           roomId: channel.roomId,
           betAmount: sender.betAmount,
           selectedOption: sender.selectOption,
         });
+        //TODO: RDB에 배팅 내역 저장 로직 추가
       } else {
         client.emit("error", {
           event: "joinBet",
@@ -197,5 +186,50 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
         message: "해당하는 채널이 존재하지 않거나 활성 상태가 아닙니다.",
       });
     }
+  }
+
+  private async validateUserId(client: Socket, userId: string | undefined) {
+    if (!userId) {
+      client.emit("error", {
+        event: "joinBet",
+        message: "인증되지 않은 사용자입니다.",
+      });
+      return false;
+    }
+    return true;
+  }
+
+  private async validateUserDuck(
+    client: Socket,
+    userId: string,
+    betAmount: number,
+  ) {
+    const userDuck = await this.redisManager.client.hget(
+      `user:${userId}`,
+      "duck",
+    );
+    if (!userDuck || Number(userDuck) < betAmount) {
+      client.emit("error", {
+        event: "joinBet",
+        message: "보유한 duck이 부족합니다.",
+      });
+      return false;
+    }
+    return true;
+  }
+
+  private async getUpdatedChannel(roomId: string, targetChannel: Channel) {
+    const [updatedOption1, updatedOption2] = await Promise.all([
+      this.redisManager.client.hgetall(`room:${roomId}:option1`),
+      this.redisManager.client.hgetall(`room:${roomId}:option2`),
+    ]);
+
+    const updatedChannel = {
+      creator: targetChannel.creator,
+      status: targetChannel.status,
+      option1: updatedOption1,
+      option2: updatedOption2,
+    };
+    return updatedChannel;
   }
 }
