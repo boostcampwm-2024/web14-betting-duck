@@ -66,7 +66,7 @@ function ChatMessages() {
         <div
           className={`max-w-[80%] ${radius} flex flex-row items-start gap-4 bg-white p-3 shadow-sm`}
         >
-          <div>
+          <div className="max-w-[300px]">
             <span
               className={`${color} text-md mr-3 whitespace-nowrap font-bold`}
             >
