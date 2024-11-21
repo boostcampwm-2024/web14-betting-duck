@@ -118,16 +118,6 @@ export function useSocketIO(options: SocketOptions) {
       .catch((error) => {
         console.error(error);
       });
-
-    // const accessToken = options.accessToken;
-    // if (!accessToken)
-    //   throw new Error("Access token 이 없어 소켓을 연결할 수 없습니다!");
-    // initializeSocket(accessToken);
-
-    // return () => {
-    //   socketRef.current?.disconnect();
-    //   socketRef.current = undefined;
-    // };
   });
 
   /**
