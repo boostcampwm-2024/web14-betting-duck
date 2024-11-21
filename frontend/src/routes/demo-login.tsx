@@ -1,3 +1,4 @@
+import { useUser } from "@/shared/hooks/use-user";
 import { createFileRoute } from "@tanstack/react-router";
 import { useNavigate } from "@tanstack/react-router";
 import React from "react";
@@ -105,6 +106,7 @@ function DemoLogin() {
   const navigate = useNavigate();
   const [email, setEmail] = React.useState("abc@naver.com");
   const [password, setPassword] = React.useState("abc1234");
+  const { refreshUserInfo } = useUser();
 
   return (
     <form
@@ -127,12 +129,15 @@ function DemoLogin() {
           .then((json) => {
             console.log(json);
             const { data } = json;
-            navigate({
-              to: "/my-page",
-              search: {
-                nickname: decodeURIComponent(data.nickname),
-              },
-            });
+
+            refreshUserInfo().then(() =>
+              navigate({
+                to: "/my-page",
+                search: {
+                  nickname: decodeURIComponent(data.nickname),
+                },
+              }),
+            );
           })
           .catch((error) => {
             console.error(error);
