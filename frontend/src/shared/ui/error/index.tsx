@@ -13,7 +13,7 @@ function ErrorComponent({
 }) {
   const navigate = useNavigate();
   return (
-    <div className="bg-layout-main relative flex flex-col justify-end pt-4">
+    <div className="bg-layout-main relative flex h-full w-full flex-col justify-end pt-4">
       <div
         className="text-layout-main absolute left-0 top-0 z-50 flex h-full w-full flex-col items-center justify-center gap-16 px-8"
         style={{
@@ -30,7 +30,7 @@ function ErrorComponent({
             {feature}을 이용하기 위해서는 로그인이 필요합니다!
           </p>
           <p>
-            로그인 이 귀찮으시다면{" "}
+            회원가입이 귀찮으시다면{" "}
             <span className="bg-layout-main text-default mx-1 rounded-sm px-1 py-1 text-lg font-extrabold">
               비회원
             </span>{" "}
@@ -48,7 +48,7 @@ function ErrorComponent({
           로그인 하러 가기
         </button>
       </div>
-      {children}
+      <div className="h-full w-full">{children}</div>
     </div>
   );
 }
