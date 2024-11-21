@@ -1,37 +1,85 @@
+import { UserInfo } from "@/app/provider/UserProvider";
 import { useChat } from "@/features/chat/hook/use-chat";
+import { useUser } from "@/shared/hooks/use-user";
 import React from "react";
+
+function generateRandomNickname(userInfo: UserInfo) {
+  const adjectives = [
+    "춤추는",
+    "잠든",
+    "꿈꾸는",
+    "웃는",
+    "날아가는",
+    "바쁜",
+    "느린",
+    "귀여운",
+    "신비한",
+    "힙한",
+    "멋진",
+    "똑똑한",
+    "용감한",
+    "아기",
+    "행복한",
+  ];
+
+  const nouns = [
+    "우주인",
+    "마법사",
+    "요정",
+    "용",
+    "음악가",
+    "과학자",
+    "탐험가",
+    "화가",
+    "요리사",
+    "작가",
+    "도둑",
+    "기사",
+    "해적",
+    "수호자",
+    "악당",
+  ];
+
+  if (!userInfo.nickname) {
+    const randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+    return `${randomAdj} ${randomNoun}`;
+  }
+
+  return userInfo.nickname;
+}
 
 function InputBar() {
   const [isComposing, setComposing] = React.useState(false);
   const [text, setText] = React.useState("");
   const { socket } = useChat();
+  const { userInfo } = useUser();
 
   function handleInput(e: React.FormEvent<HTMLPreElement>) {
     if (!isComposing) {
-      setText(e.currentTarget.textContent ?? text);
+      const content = e.currentTarget.textContent ?? "";
+      setText(content);
     }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLPreElement>) {
-    if (e.shiftKey && e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      return;
-    }
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (text.length > 0 && socket.isConnected) {
+
+      if (!isComposing && text.trim().length > 0 && socket.isConnected) {
         socket.emit("sendMessage", {
           sender: {
-            nickname: "nickname",
+            nickname: generateRandomNickname(userInfo),
           },
           channel: {
             roomId: "123",
           },
-          message: text,
+          message: text.trim(),
         });
+
+        setText("");
         e.currentTarget.textContent = "";
       }
-      return;
     }
   }
 
@@ -45,8 +93,9 @@ function InputBar() {
           onKeyDown={handleKeyDown}
           onCompositionStart={() => setComposing(true)}
           onCompositionEnd={(e) => {
+            const content = e.currentTarget.textContent ?? "";
+            setText(content);
             setComposing(false);
-            setText(e.currentTarget.textContent ?? text);
           }}
         />
       </div>
