@@ -14,11 +14,15 @@ import { LinkIcon } from "./LinkIcon";
 import { WaitingRoomIcon } from "./WatingRoomIcon";
 import { CopyIcon } from "./CopyIcon";
 import { DuckCoinIcon } from "./DuckCoinIcon";
+import { InfoIcon } from "./InfoIcon";
+import { EditIcon } from "./EditIcon";
 import MainLogoIcon from "./MainLogoIcon";
 import { LoginIDIcon } from "./LoginIDIcon";
 import { LoginPasswordIcon } from "./LoginPasswordIcon";
 
 export {
+  EditIcon,
+  InfoIcon,
   TrophyIcon,
   PeoplesIcon,
   DuckCoinIcon,

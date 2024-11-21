@@ -102,10 +102,9 @@ function DemoSignup() {
 
 function DemoLogin() {
   const navigate = useNavigate();
-
   return (
     <form
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
 
         const formData = new FormData(e.target as HTMLFormElement);
@@ -119,21 +118,19 @@ function DemoLogin() {
           },
           body: JSON.stringify({ nickname, password }),
         })
-          .then((res) => {
-            return res.json();
-          })
+          .then((res) => res.json())
           .then((json) => {
             const { data } = json;
-            // document.cookie = `accessToken=${encodeURIComponent(data.accessToken)}; path=/; SameSite=Strict; Secure`;
             navigate({
               to: "/betting-page",
               search: {
-                nickname: data.nickname,
+                nickname: decodeURIComponent(data.nickname),
               },
             });
           })
           .catch((error) => {
             console.error(error);
+            throw new Error("로그인에 실패했습니다.");
           });
       }}
     >

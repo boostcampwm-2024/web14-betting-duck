@@ -1,9 +1,11 @@
 import React from "react";
 import { io, Socket } from "socket.io-client";
 import { config } from "@shared/config/environment";
+import { useEffectOnce } from "./use-effect-once";
 
 interface SocketOptions {
   url: string;
+  accessToken?: string;
   onConnect?: () => void;
   onDisconnect?: (reason: Socket.DisconnectReason) => void;
   onError?: (error: Error) => void;
@@ -19,18 +21,6 @@ interface SocketState {
 }
 
 const SOCKET_URL = config.socketUrl;
-
-function useEffectOnce(callback: () => void) {
-  const isUsedRef = React.useRef(false);
-  const callbackRef = React.useRef(callback);
-
-  React.useEffect(() => {
-    if (!isUsedRef.current) {
-      isUsedRef.current = true;
-      callbackRef.current();
-    }
-  }, []);
-}
 
 /**
  * 기본적으로 소켓을 연결 했을 경우 기본적으로 수행되어야 하는 메서드가 등록 되어 있습니다.
@@ -55,62 +45,89 @@ export function useSocketIO(options: SocketOptions) {
     error: null,
   });
 
-  const initializeSocket = React.useCallback(() => {
-    const socket = io(SOCKET_URL + options.url, {
-      withCredentials: true,
-      reconnectionDelayMax: 10000,
-      reconnectionAttempts: 10,
-      reconnection: true,
-      transports: ["websocket"],
-    });
+  const initializeSocket = React.useCallback(
+    (accessToken: string) => {
+      const socket = io(SOCKET_URL + options.url, {
+        withCredentials: true,
+        reconnectionDelayMax: 10000,
+        reconnectionAttempts: 10,
+        reconnection: true,
+        transports: ["websocket"],
+        auth: {
+          token: accessToken,
+        },
+      });
 
-    socketRef.current = socket;
-    socket.on("connect", () => {
-      setSocketState((prev) => ({
-        ...prev,
-        isConnected: true,
-        isReconnecting: false,
-        reconnectAttempt: 0,
-        error: null,
-      }));
-      options.onConnect?.();
-    });
+      socketRef.current = socket;
+      socket.on("connect", () => {
+        setSocketState((prev) => ({
+          ...prev,
+          isConnected: true,
+          isReconnecting: false,
+          reconnectAttempt: 0,
+          error: null,
+        }));
+        options.onConnect?.();
+      });
 
-    socket.on("disconnect", (reason) => {
-      setSocketState((prev) => ({
-        ...prev,
-        isConnected: false,
-        error: null,
-      }));
-      options.onDisconnect?.(reason);
-    });
+      socket.on("disconnect", (reason) => {
+        setSocketState((prev) => ({
+          ...prev,
+          isConnected: false,
+          error: null,
+        }));
+        options.onDisconnect?.(reason);
+      });
 
-    socket.on("reconnect_attempt", (attempt) => {
-      setSocketState((prev) => ({
-        ...prev,
-        isReconnecting: true,
-        reconnectAttempt: attempt,
-        error: null,
-      }));
-      options.onReconnectAttempt?.(attempt);
-    });
+      socket.on("reconnect_attempt", (attempt) => {
+        setSocketState((prev) => ({
+          ...prev,
+          isReconnecting: true,
+          reconnectAttempt: attempt,
+          error: null,
+        }));
+        options.onReconnectAttempt?.(attempt);
+      });
 
-    socket.on("error", (error: Error) => {
-      setSocketState((prev) => ({
-        ...prev,
-        error,
-      }));
-      options.onError?.(error);
-    });
-  }, [options]);
+      socket.on("error", (error: Error) => {
+        setSocketState((prev) => ({
+          ...prev,
+          error,
+        }));
+        options.onError?.(error);
+      });
+    },
+    [options],
+  );
 
   useEffectOnce(() => {
-    initializeSocket();
+    fetch("/api/users/token")
+      .then((res) => res.json())
+      .then((json) => {
+        const { accessToken } = json.data;
+        if (!accessToken)
+          throw new Error("Access token 이 없어 소켓을 연결할 수 없습니다!");
 
-    return () => {
-      socketRef.current?.disconnect();
-      socketRef.current = undefined;
-    };
+        initializeSocket(accessToken);
+
+        return () => {
+          socketRef.current?.disconnect();
+          socketRef.current = undefined;
+        };
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    // const accessToken = options.accessToken;
+    // if (!accessToken)
+    //   throw new Error("Access token 이 없어 소켓을 연결할 수 없습니다!");
+    // initializeSocket(accessToken);
+
+    // return () => {
+    //   socketRef.current?.disconnect();
+    //   socketRef.current = undefined;
+    // };
   });
 
   /**
