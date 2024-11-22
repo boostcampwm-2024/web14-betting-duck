@@ -33,3 +33,6 @@
 |-- | -- | -- | --
 [[BE] J184 이석호](https://github.com/LLagoon3) | [[BE] J221 정동교](https://github.com/dngyj) | [[FE] J230 정지호](https://github.com/stop0ho) | [[FE] J262 최정민](https://github.com/sunub)
 
+## 프로젝트 아키텍쳐 다이어그램
+
+![architecture](https://github.com/user-attachments/assets/588a32c9-44fd-4b4c-ac8b-598d35e1a752)
