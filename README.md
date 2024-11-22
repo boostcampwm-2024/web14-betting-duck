@@ -79,8 +79,7 @@ WEB14-BOOSTPROJECT/
 ```
 
 ## 프로젝트 아키텍쳐 다이어그램
-
-![architecture](https://github.com/user-attachments/assets/588a32c9-44fd-4b4c-ac8b-598d35e1a752)
+<img width="1143" alt="스크린샷 2024-11-22 오후 5 46 16" src="https://github.com/user-attachments/assets/390d5666-92c4-49ec-8559-6bb349091dd6">
 
 ## 팀 소개
 
