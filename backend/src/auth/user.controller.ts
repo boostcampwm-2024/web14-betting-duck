@@ -17,6 +17,7 @@ import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
 import { CheckNicknameExistsDto } from "./dto/check-nickname-exists.dto";
+import { UpgradeGuestRequestDto } from "./dto/upgrade-guest.dto";
 
 @Controller("/api/users")
 export class UserController {
@@ -146,6 +147,17 @@ export class UserController {
         ...result,
       },
     });
+  }
+
+  @ApiOperation({ summary: "비회원을 회원으로 업그레이드" })
+  @UseGuards(JwtGuestAuthGuard)
+  @Post("/upgradeguest")
+  async upgradeGuest(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() body: UpgradeGuestRequestDto,
+  ) {
+    await this.userService.upgradeGuest(req, res, body);
   }
 
   // 테스트용 API

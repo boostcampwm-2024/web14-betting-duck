@@ -14,10 +14,12 @@ import {
   requestSignInSchema,
   requestGuestSignInSchema,
   requestNicknameExistsSchema,
+  requestUpgradeGuest,
 } from "@shared/schemas/users/request";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
 import { CheckNicknameExistsDto } from "./dto/check-nickname-exists.dto";
+import { UpgradeGuestRequestDto } from "./dto/upgrade-guest.dto";
 
 @Injectable()
 export class UserService {
@@ -103,10 +105,10 @@ export class UserService {
 
   async signOut(req: Request, res: Response) {
     // TODO : 로그아웃 시에도 IP 검증 필요?
-    const user = req["user"];
+    const userInfo = req["user"];
 
-    if (user.role === "guest") {
-      await this.redisManager.deleteUser(String(user.id));
+    if (userInfo.role === "guest") {
+      await this.redisManager.deleteUser(String(userInfo.id));
     }
 
     res.clearCookie("access_token");
@@ -159,6 +161,30 @@ export class UserService {
     }
 
     return { exists: false };
+  }
+
+  // 구현 중
+  async upgradeGuest(
+    req: Request,
+    res: Response,
+    body: UpgradeGuestRequestDto,
+  ) {
+    const userInfo = req["user"];
+    const { duck } = await this.redisManager.getUser(userInfo.id);
+
+    const { email, nickname, password } = requestUpgradeGuest.parse(body);
+    const hashedPassword = await this.hashPassword(password);
+
+    const user = {
+      email,
+      nickname,
+      password: hashedPassword,
+      duck: parseInt(duck),
+    };
+
+    await this.userRepository.createUser(user);
+
+    // TODO : 로그인까지 한번에 해결하는 것이 좋을까?
   }
 
   private async hashPassword(password: string): Promise<string> {
