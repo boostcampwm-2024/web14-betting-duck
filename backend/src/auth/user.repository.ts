@@ -22,7 +22,11 @@ export class UserRepository {
       await this.userRepository.save(newUser);
     } catch (error) {
       if (error.code === "23505") {
-        throw new ConflictException("이미 등록된 이메일입니다.");
+        if (error.detail.includes("email")) {
+          throw new ConflictException("이미 등록된 이메일입니다.");
+        } else if (error.detail.includes("nickname")) {
+          throw new ConflictException("이미 등록된 닉네임입니다.");
+        }
       } else {
         throw new InternalServerErrorException();
       }
