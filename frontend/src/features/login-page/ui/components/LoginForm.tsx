@@ -37,6 +37,8 @@ function LoginForm() {
   useEffect(() => {
     if (email.length > 0 && password.length > 0) {
       setIsValid(true);
+    } else {
+      setIsValid(false);
     }
   }, [email, password]);
 
