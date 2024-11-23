@@ -78,6 +78,18 @@ export class UserController {
   }
 
   @UseGuards(JwtGuestAuthGuard)
+  @Get("/signout")
+  async signOut(@Req() req: Request, @Res() res: Response) {
+    await this.userService.signOut(req, res);
+    return res.status(HttpStatus.OK).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
+      },
+    });
+  }
+
+  @UseGuards(JwtGuestAuthGuard)
   @Get("/token")
   async getAccessToken(@Req() req: Request, @Res() res: Response) {
     const accessToken = req.cookies["access_token"];

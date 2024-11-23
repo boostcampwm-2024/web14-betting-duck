@@ -42,6 +42,10 @@ export class RedisManager {
     return exists === 1;
   }
 
+  async deleteUser(userId: string) {
+    await this.client.del(userId);
+  }
+
   async nickNameExists(nickname: string) {
     let cursor = "0";
     let isExist = false;

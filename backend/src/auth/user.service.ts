@@ -4,7 +4,7 @@ import {
   NotFoundException,
   ConflictException,
 } from "@nestjs/common";
-import { Request } from "express";
+import { Request, Response } from "express";
 import { RedisManager } from "src/utils/redis.manager";
 import { UserRepository } from "./user.repository";
 import * as bcrypt from "bcryptjs";
@@ -99,6 +99,17 @@ export class UserService {
     const accessToken = await this.jwtService.sign(payload);
 
     return { accessToken, nickname, role };
+  }
+
+  async signOut(req: Request, res: Response) {
+    // TODO : 로그아웃 시에도 IP 검증 필요?
+    const user = req["user"];
+
+    if (user.role === "guest") {
+      await this.redisManager.deleteUser(String(user.id));
+    }
+
+    res.clearCookie("access_token");
   }
 
   async getUserInfo(req: Request) {
