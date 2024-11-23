@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   NotFoundException,
+  ConflictException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { RedisManager } from "src/utils/redis.manager";
@@ -80,7 +81,7 @@ export class UserService {
     if (await this.redisManager.findUser(guestIdentifier)) {
       const userInfo = await this.redisManager.getUser(guestIdentifier);
       if (userInfo.nickname !== nickname) {
-        throw new UnauthorizedException("Already signed in");
+        throw new ConflictException("Already signed in");
       }
     } else {
       await this.redisManager.setUser({
