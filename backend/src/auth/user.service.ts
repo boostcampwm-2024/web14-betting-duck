@@ -136,11 +136,17 @@ export class UserService {
 
   async checkNicknameExists(body: CheckNicknameExistsDto) {
     const { nickname } = requestNicknameExistsSchema.parse(body);
-    return {
-      exists: (await this.userRepository.findOneByNickname(nickname))
-        ? true
-        : false,
-    };
+
+    const [existsInDB, existsInCache] = await Promise.all([
+      this.userRepository.findOneByNickname(nickname),
+      this.redisManager.nickNameExists(nickname),
+    ]);
+
+    if (existsInDB || existsInCache) {
+      return { exists: true };
+    }
+
+    return { exists: false };
   }
 
   private async hashPassword(password: string): Promise<string> {
