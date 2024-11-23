@@ -158,13 +158,16 @@ export class BetRoomController {
     }
   }
 
-  @UseGuards(JwtGuestAuthGuard)
+  @UseGuards(JwtUserAuthGuard)
   @Delete("/:betRoomId")
   async deleteBetRoom(
     @Param("betRoomId") betRoomId: string,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
+      const userId = req["user"].id;
+      await this.betRoomService.deleteBetRoom(betRoomId, userId);
       return res.status(HttpStatus.OK).json({
         status: HttpStatus.OK,
         data: {

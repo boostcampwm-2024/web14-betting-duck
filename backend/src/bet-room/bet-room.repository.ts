@@ -39,4 +39,12 @@ export class BetRoomRepository {
       );
     }
   }
+
+  async delete(betRoomId: string): Promise<void> {
+    try {
+      await this.betRoomRepository.delete(betRoomId);
+    } catch {
+      throw new InternalServerErrorException("베팅 방 삭제에 실패했습니다");
+    }
+  }
 }
