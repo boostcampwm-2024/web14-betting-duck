@@ -5,10 +5,33 @@ import { messageResponseSchema } from "@betting-duck/shared";
 
 interface Message {
   message: string;
+  color: string;
+  radius: string;
   sender: {
     nickname: string;
   };
 }
+
+const randomColor = () => {
+  const colors = [
+    "text-pink-500",
+    "text-purple-500",
+    "text-blue-500",
+    "text-orange-500",
+    "text-red-500",
+  ];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
+
+const randomRadius = () => {
+  const radiuses = [
+    "rounded-tl-lg rounded-bl-lg",
+    "rounded-tl-lg rounded-bl-lg rounded-br-lg",
+    "rounded-tl-lg rounded-bl-lg rounded-bl-lg",
+    "rounded-tl-lg rounded-bl-lg rounded-bl-lg",
+  ];
+  return radiuses[Math.floor(Math.random() * radiuses.length)];
+};
 
 function ChatMessages() {
   const { socket } = useChat();
@@ -17,11 +40,19 @@ function ChatMessages() {
   React.useEffect(() => {
     socket.on("message", (data) => {
       const message = messageResponseSchema.safeParse(data);
+      const color = randomColor();
+      const radius = randomRadius();
       if (!message.success) {
         console.error(message.error.errors);
         return;
       }
-      setMessages((prev) => [...prev, message.data]);
+      const newMessage = {
+        message: message.data.message,
+        sender: message.data.sender,
+        color,
+        radius,
+      };
+      setMessages((prev) => [...prev, newMessage]);
     });
 
     return () => {
@@ -30,17 +61,20 @@ function ChatMessages() {
   }, [socket]);
 
   const renderMessage = React.useCallback(
-    ({ sender, message }: Message, index: number) => (
-      <div
-        key={`message-${index}-${sender.nickname}`}
-        className={`rounded-lg p-3 font-bold ${
-          sender.nickname === "User A"
-            ? "ml-auto max-w-[80%] rounded-r-lg rounded-t-lg bg-purple-100"
-            : "mr-auto max-w-[80%] bg-blue-200"
-        }`}
-      >
-        <div className="text-sm font-semibold">{sender.nickname}</div>
-        <div>{message}</div>
+    ({ sender, message, color, radius }: Message, index: number) => (
+      <div key={sender.nickname + index} className="flex justify-end">
+        <div
+          className={`max-w-[80%] ${radius} flex flex-row items-start gap-4 bg-white p-3 shadow-sm`}
+        >
+          <div className="max-w-[300px]">
+            <span
+              className={`${color} text-md mr-3 whitespace-nowrap font-bold`}
+            >
+              {sender.nickname}
+            </span>
+            <span className="break-words text-gray-700">{message}</span>
+          </div>
+        </div>
       </div>
     ),
     [],

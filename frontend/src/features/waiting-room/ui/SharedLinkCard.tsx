@@ -9,9 +9,30 @@ function ShareLinkCard() {
   const location = useLocation();
   const url = `${window.location.origin}${location.href}`;
 
+  function copyfallback() {
+    const textArea = document.createElement("textarea");
+    textArea.value = url;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      document.execCommand("copy");
+    } catch (err) {
+      console.error("링크를 복사하는데 실패했습니다", err);
+    }
+    textArea.remove();
+  }
+
   async function handleCopyLink() {
     try {
-      await navigator.clipboard.writeText(url);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        copyfallback();
+      }
       setCopied(true);
       setTimeout(() => {
         setCopied(false);

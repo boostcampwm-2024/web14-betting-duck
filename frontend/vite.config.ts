@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
 
   return {
-    base: "./",
+    base: "/",
     plugins: [react(), TanStackRouterVite()],
     server: {
       port: 3000,
@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
           secure: false,
         },
       },
+      middlewareMode: true,
     },
     publicDir: "public",
     resolve: {
@@ -73,6 +74,7 @@ export default defineConfig(({ mode }) => {
           },
         },
       },
+      cssCodeSplit: true,
     },
     optimizeDeps: {
       include: ["react", "react-dom"],
