@@ -2,24 +2,40 @@ import { InputField } from "@/shared/components/input/InputField";
 import { LoginIDIcon, LoginPasswordIcon } from "@/shared/icons";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../../model/store";
-import { validateEmail, validatePassword } from "../../model/validation";
 import { Warning } from "./Warning";
+import { useNavigate } from "@tanstack/react-router";
+import { useUser } from "@/shared/hooks/use-user";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isValid, setIsValid] = useState(false);
+  const navigate = useNavigate();
+  const { refreshUserInfo } = useUser();
 
-  const { handleLogin, error } = useAuthStore();
+  const { error, handleLogin } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: 로그인 로직
-    await handleLogin({ email, password });
+
+    const result = await handleLogin({ email, password });
+    if (result.success) {
+      const { data } = result.data;
+      refreshUserInfo().then(() =>
+        navigate({
+          to: "/my-page",
+          search: {
+            nickname: decodeURIComponent(data.nickname),
+          },
+        }),
+      );
+    } else {
+      console.error("로그인 실패:", result.error);
+    }
   };
 
   useEffect(() => {
-    if (validateEmail(email) && validatePassword(password)) {
+    if (email.length > 0 && password.length > 0) {
       setIsValid(true);
     }
   }, [email, password]);

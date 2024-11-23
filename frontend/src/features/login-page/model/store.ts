@@ -9,12 +9,14 @@ function useAuthStore() {
     setError(null);
     try {
       const response = await login(data);
-      console.log(response);
+      return { success: true, data: response };
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
+        return { success: false, error: err.message };
       }
     }
+    return { success: false, error: "알 수 없는 오류가 발생했습니다." };
   };
 
   const handleSignup = async (data: SignupRequest) => {
