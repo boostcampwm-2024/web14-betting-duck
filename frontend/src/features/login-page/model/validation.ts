@@ -6,3 +6,8 @@ export const validatePassword = (password: string): boolean =>
 
 export const validateNickname = (nickname: string): boolean =>
   nickname.trim().length >= 1;
+
+export const validateConfirmPassword = (
+  password: string,
+  confirmPassword: string,
+): boolean => password.trim() === confirmPassword.trim();
