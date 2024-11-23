@@ -42,7 +42,7 @@ export class UserController {
       secure: false, // HTTPS를 통해서만 전송되도록 설정 (프로덕션에서 추천)
       // sameSite: "strict", // CSRF 공격 방지를 위한 설정
     });
-    return res.status(HttpStatus.CREATED).json({
+    return res.status(HttpStatus.OK).json({
       status: HttpStatus.OK,
       data: {
         message: "OK",
@@ -68,7 +68,7 @@ export class UserController {
       secure: false,
       // sameSite: "strict",
     });
-    return res.status(HttpStatus.CREATED).json({
+    return res.status(HttpStatus.OK).json({
       status: HttpStatus.OK,
       data: {
         message: "OK",
@@ -95,7 +95,7 @@ export class UserController {
   @Get("/userInfo")
   async getUserInfo(@Req() req: Request, @Res() res: Response) {
     const result = await this.userService.getUserInfo(req);
-    return res.status(HttpStatus.CREATED).json({
+    return res.status(HttpStatus.OK).json({
       status: HttpStatus.OK,
       data: {
         message: "OK",
@@ -105,10 +105,10 @@ export class UserController {
   }
 
   @ApiOperation({ summary: "비회원 로그인 이력 조회" })
-  @Post("/guestloginactivity")
+  @Get("/guestloginactivity")
   async guestLoginActivity(@Req() req: Request, @Res() res: Response) {
     const result = await this.userService.getGuestLoginActivity(req);
-    return res.status(HttpStatus.CREATED).json({
+    return res.status(HttpStatus.OK).json({
       status: HttpStatus.OK,
       data: {
         message: "OK",
@@ -124,10 +124,13 @@ export class UserController {
     @Res() res: Response,
   ) {
     const result = await this.userService.checkNicknameExists(body);
-    return res.status(HttpStatus.CREATED).json({
-      status: HttpStatus.OK,
+    const status = result.exists
+      ? HttpStatus.OK
+      : HttpStatus.NON_AUTHORITATIVE_INFORMATION;
+    return res.status(status).json({
+      status: status,
       data: {
-        message: "OK",
+        message: result.exists ? "OK" : "NON_AUTHORITATIVE_INFORMATION",
         ...result,
       },
     });

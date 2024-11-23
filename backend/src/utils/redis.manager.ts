@@ -42,6 +42,26 @@ export class RedisManager {
     return exists === 1;
   }
 
+  async nickNameExists(nickname: string) {
+    let cursor = "0";
+    let isExist = false;
+
+    do {
+      const result = await this.client.scan(cursor, "MATCH", "user:guest-*");
+      cursor = result[0];
+      const keys = result[1];
+      for (const key of keys) {
+        const userNickname = await this.client.hget(key, "nickname");
+        if (userNickname === nickname) {
+          isExist = true;
+          break;
+        }
+      }
+    } while (cursor !== "0" && !isExist);
+
+    return isExist;
+  }
+
   async setBettingUserOnJoin({
     userId,
     nickname,

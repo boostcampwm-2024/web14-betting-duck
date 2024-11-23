@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   NotFoundException,
+  ConflictException,
 } from "@nestjs/common";
 import { Request } from "express";
 import { RedisManager } from "src/utils/redis.manager";
@@ -80,7 +81,7 @@ export class UserService {
     if (await this.redisManager.findUser(guestIdentifier)) {
       const userInfo = await this.redisManager.getUser(guestIdentifier);
       if (userInfo.nickname !== nickname) {
-        throw new UnauthorizedException("Already signed in");
+        throw new ConflictException("Already signed in");
       }
     } else {
       await this.redisManager.setUser({
@@ -136,11 +137,17 @@ export class UserService {
 
   async checkNicknameExists(body: CheckNicknameExistsDto) {
     const { nickname } = requestNicknameExistsSchema.parse(body);
-    return {
-      exists: (await this.userRepository.findOneByNickname(nickname))
-        ? true
-        : false,
-    };
+
+    const [existsInDB, existsInCache] = await Promise.all([
+      this.userRepository.findOneByNickname(nickname),
+      this.redisManager.nickNameExists(nickname),
+    ]);
+
+    if (existsInDB || existsInCache) {
+      return { exists: true };
+    }
+
+    return { exists: false };
   }
 
   private async hashPassword(password: string): Promise<string> {
