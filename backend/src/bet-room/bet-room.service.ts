@@ -173,6 +173,10 @@ export class BetRoomService {
     if (betRoom && betRoom.status !== "waiting") {
       throw new ForbiddenException("베팅룸의 상태가 waiting이 아닙니다.");
     }
+    this.betGateway.server.to(betRoomId).emit("cancelWaitingRoom", {
+      message: "베팅이 취소되었습니다.",
+      roomId: betRoomId,
+    });
     await this.betRoomRepository.delete(betRoomId);
     await this.redisManager.deleteChannelData(betRoomId);
   }
