@@ -83,6 +83,10 @@ export class BetRoomService {
     });
 
     await this.redisManager.setRoomStatus(betRoomId, "active");
+    this.betGateway.server.to(betRoomId).emit("startBetting", {
+      message: "베팅이 시작되었습니다.",
+      roomId: betRoomId,
+    });
     return updateResult;
   }
 
