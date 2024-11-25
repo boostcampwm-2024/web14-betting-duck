@@ -82,7 +82,6 @@ export class UserService {
   ): Promise<{ accessToken: string; nickname: string; role: string }> {
     const { nickname } = requestGuestSignInSchema.parse(req.body);
     const regex = /^익명의[^\w\s]?/;
-    console.log(regex.test(nickname));
     if (!regex.test(nickname)) {
       throw new ConflictException("비회원 닉네임이 필요합니다.");
     }
@@ -93,9 +92,14 @@ export class UserService {
     if (await this.redisManager.findUser(guestIdentifier)) {
       const userInfo = await this.redisManager.getUser(guestIdentifier);
       if (userInfo.nickname !== nickname) {
-        throw new ConflictException("Already signed in");
+        throw new ConflictException("로그인 내역이 존재합니다.");
       }
     } else {
+      const userKey = await this.redisManager.nickNameExists(nickname);
+      console.log(userKey);
+      if (userKey && guestIdentifier !== userKey)
+        throw new ConflictException("이미 등록된 닉네임입니다.");
+
       await this.redisManager.setUser({
         userId: guestIdentifier,
         nickname: nickname,
