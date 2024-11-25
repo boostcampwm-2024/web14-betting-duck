@@ -288,6 +288,7 @@ export class RedisManager {
         if (!entryKey) {
           await new Promise<void>((resolve) => {
             const abortHandler = () => {
+              this.consumer.off("message", handleMessage);
               signal.removeEventListener("abort", abortHandler);
               resolve();
             };
