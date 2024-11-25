@@ -43,11 +43,14 @@ export class BetRoomService {
       timer: createBetRoomDto.channel.settings.duration,
       manager,
       joinUrl,
-      status: "waiting" as "waiting" | "active" | "finished",
+      status: "waiting" as "waiting" | "active" | "timeover" | "finished",
     };
+    await this.redisManager.initializeBetRoomOnCreated(
+      String(userId),
+      roomUUID,
+    );
     const createdRoom = await this.betRoomRepository.createBetRoom(betRoomData);
 
-    await this.redisManager.initializeBetRoom(roomUUID, String(manager.id));
     return createdRoom;
   }
 
@@ -77,16 +80,36 @@ export class BetRoomService {
   async startBetRoom(userId: number, betRoomId: string) {
     await this.assertBetRoomAccess(betRoomId, userId);
 
+    const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+    const duration = betRoom.timer;
+
+    const startTime = new Date(new Date().getTime());
+    const endTime = new Date(startTime.getTime() + Number(duration) * 1000);
+
     const updateResult = await this.betRoomRepository.update(betRoomId, {
       status: "active",
-      startTime: new Date(new Date().getTime()),
+      startTime: startTime,
+      endTime: endTime,
     });
 
-    await this.redisManager.setRoomStatus(betRoomId, "active");
+    await this.redisManager.initializeBetRoomOnStart(betRoomId);
+
     this.betGateway.server.to(betRoomId).emit("startBetting", {
       message: "베팅이 시작되었습니다.",
       roomId: betRoomId,
     });
+
+    setTimeout(
+      async () => {
+        await this.redisManager.setRoomStatus(betRoomId, "timeover");
+        this.betGateway.server.to(betRoomId).emit("timeover", {
+          message: "베팅 시간이 종료되었습니다.",
+          roomId: betRoomId,
+        });
+      },
+      Number(duration) * 1000,
+    );
+
     return updateResult;
   }
 
@@ -99,7 +122,6 @@ export class BetRoomService {
 
     const updateResult = await this.betRoomRepository.update(betRoomId, {
       status: "finished",
-      endTime: new Date(new Date().getTime()),
     });
     await this.redisManager.setRoomStatus(betRoomId, "finished");
 
@@ -273,12 +295,17 @@ export class BetRoomService {
 
         const userIdMatch = key.match(/user:(.+)$/);
         const userId = userIdMatch ? userIdMatch[1] : null;
+        const { owner, betAmount, selectedOption, role } = userData;
+
+        if (owner === "1" || !betAmount || !selectedOption) {
+          console.log("pass");
+          return;
+        }
 
         const duck = await this.redisManager.client.hget(
           `user:${userId}`,
           "duck",
         );
-        const { betAmount, selectedOption, role } = userData;
 
         const isWinner = selectedOption === winningOption;
         const duckChange = isWinner ? Number(betAmount) * winningOdds : 0;
