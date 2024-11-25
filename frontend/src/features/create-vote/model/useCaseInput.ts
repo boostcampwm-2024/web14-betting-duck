@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-export function useCaseInput() {
-  const [winValue, setWinValue] = useState("");
-  const [loseValue, setLoseValue] = useState("");
+export function useCaseInput(winIntialValue = "", loseInitialValue = "") {
+  const [winValue, setWinValue] = useState(winIntialValue);
+  const [loseValue, setLoseValue] = useState(loseInitialValue);
 
   useEffect(() => {
     window.dispatchEvent(
