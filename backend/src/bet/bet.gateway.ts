@@ -101,7 +101,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `room:${roomId}:creator`,
     );
     const owner = userId === creatorID ? 1 : 0;
-    console.log("creatorID: " + creatorID);
+
     await this.redisManager.setBettingUserOnJoin({
       userId,
       nickname,
