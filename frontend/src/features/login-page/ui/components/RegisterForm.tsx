@@ -11,7 +11,11 @@ import {
 import { Warning } from "./Warning";
 import { toaster } from "@/components/ui/toaster";
 
-function RegisterForm({ setActiveTab }) {
+interface RegisterFormProps {
+  setActiveTab: (tab: "login" | "register" | "guest") => void;
+}
+
+function RegisterForm({ setActiveTab }: RegisterFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
