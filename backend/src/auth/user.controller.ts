@@ -11,7 +11,6 @@ import {
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { ApiBody, ApiOperation } from "@nestjs/swagger";
-// import { JwtUserAuthGuard } from "src/utils/guards/http-user-authenticated.guard";
 import { JwtGuestAuthGuard } from "src/utils/guards/http-guest-authenticated.guard";
 import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
@@ -37,10 +36,10 @@ export class UserController {
   async signIn(@Body() body: SignInUserRequestDto, @Res() res: Response) {
     const result = await this.userService.signIn(body);
     res.cookie("access_token", result.accessToken, {
-      httpOnly: true, // JavaScript에서 접근할 수 없도록 설정 (보안 목적)
-      maxAge: 1000 * 60 * 60, // 쿠키의 유효 기간 (1시간)
-      secure: false, // HTTPS를 통해서만 전송되도록 설정 (프로덕션에서 추천)
-      // sameSite: "strict", // CSRF 공격 방지를 위한 설정
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24, //임시 개발 환경을 위한 설정
+      secure: false,
+      // sameSite: "strict",
     });
     return res.status(HttpStatus.OK).json({
       status: HttpStatus.OK,
@@ -64,7 +63,7 @@ export class UserController {
     const result = await this.userService.guestSignIn(req);
     res.cookie("access_token", result.accessToken, {
       httpOnly: true,
-      maxAge: 1000 * 60 * 60,
+      maxAge: 1000 * 60 * 60 * 24, //임시 개발 환경을 위한 설정
       secure: false,
       // sameSite: "strict",
     });
