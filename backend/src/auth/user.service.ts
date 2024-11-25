@@ -199,6 +199,12 @@ export class UserService {
     // TODO : 로그인까지 한번에 해결하는 것이 좋을까?
   }
 
+  async redisTest() {
+    await this.redisManager._xadd("test", "*", "field1", "value1");
+    // await this.redisManager.addStreamEntry();
+    return { status: "OK" };
+  }
+
   private async hashPassword(password: string): Promise<string> {
     const salt = await bcrypt.genSalt();
     return bcrypt.hash(password, salt);
