@@ -78,21 +78,18 @@ export class RedisManager {
   async setBettingUserOnJoin({
     userId,
     nickname,
-    joinAt,
     owner,
     roomId,
     role,
   }: {
     userId: string;
     nickname: string;
-    joinAt: string;
     owner: number;
     roomId: string;
     role: string;
   }) {
     await this.client.hset(`room:${roomId}:user:${userId}`, {
       nickname,
-      joinAt,
       owner,
       role,
     });
@@ -116,39 +113,18 @@ export class RedisManager {
   }
 
   async getBettingUser(userId: string, roomId: string) {
-    const [nickname, joinAt, betAmount, selectedOption, owner] =
-      await Promise.all([
-        this.client.hget(`room:${roomId}:user:${userId}`, "nickname"),
-        this.client.hget(`room:${roomId}:user:${userId}`, "joinAt"),
-        this.client.hget(`room:${roomId}:user:${userId}`, "betAmount"),
-        this.client.hget(`room:${roomId}:user:${userId}`, "selectedOption"),
-        this.client.hget(`room:${roomId}:user:${userId}`, "owner"),
-      ]);
-    return { nickname, joinAt, betAmount, selectedOption, owner };
+    const [nickname, betAmount, selectedOption, owner] = await Promise.all([
+      this.client.hget(`room:${roomId}:user:${userId}`, "nickname"),
+      this.client.hget(`room:${roomId}:user:${userId}`, "betAmount"),
+      this.client.hget(`room:${roomId}:user:${userId}`, "selectedOption"),
+      this.client.hget(`room:${roomId}:user:${userId}`, "owner"),
+    ]);
+    return { nickname, betAmount, selectedOption, owner };
   }
 
-  async getRoomUsersNicknameAndJoinAt(roomId: string) {
-    let cursor = "0";
-    const users: { nickname: string; joinAt: string }[] = [];
-
-    do {
-      const [nextCursor, keys] = await this.client.scan(
-        cursor,
-        "MATCH",
-        `room:${roomId}:user:*`,
-        "COUNT",
-        20,
-      );
-      cursor = nextCursor;
-
-      const fetchedUsers = await Promise.all(
-        keys.map(async (key) => {
-          const userData = await this.client.hgetall(key);
-          return { nickname: userData.nickname, joinAt: userData.joinAt };
-        }),
-      );
-      users.push(...fetchedUsers);
-    } while (cursor !== "0");
+  async getRoomUserNicknames(roomId: string) {
+    const key = `room:${roomId}:users`;
+    const users = await this.client.lrange(key, 0, -1);
     return users;
   }
 
@@ -221,26 +197,6 @@ export class RedisManager {
       cursor = nextCursor;
       if (keys.length > 0) {
         await this.client.unlink(...keys);
-      }
-    } while (cursor !== "0");
-  }
-
-  async removeUserFromAllRooms(userId: string) {
-    let cursor = "0";
-    do {
-      const [nextCursor, keys] = await this.client.scan(
-        cursor,
-        "MATCH",
-        `room:*:user:${userId}`,
-        "COUNT",
-        10,
-      );
-      cursor = nextCursor;
-      for (const key of keys) {
-        const betAmount = await this.client.hget(key, "betAmount");
-        if (!betAmount) {
-          await this.client.del(key);
-        }
       }
     } while (cursor !== "0");
   }
