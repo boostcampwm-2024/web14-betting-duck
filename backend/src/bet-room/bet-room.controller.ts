@@ -9,6 +9,7 @@ import {
   Res,
   Param,
   UseGuards,
+  Delete,
 } from "@nestjs/common";
 import { BetRoomService } from "./bet-room.service";
 import { Response } from "express";
@@ -144,6 +145,32 @@ export class BetRoomController {
         status: HttpStatus.OK,
         data: {
           channel: betRoomData,
+          message: "OK",
+        },
+      });
+    } catch (error) {
+      return res.status(error.status || HttpStatus.INTERNAL_SERVER_ERROR).json({
+        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        data: {
+          message: error.message || "Internal Server Error",
+        },
+      });
+    }
+  }
+
+  @UseGuards(JwtUserAuthGuard)
+  @Delete("/:betRoomId")
+  async deleteBetRoom(
+    @Param("betRoomId") betRoomId: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+      const userId = req["user"].id;
+      await this.betRoomService.deleteBetRoom(betRoomId, userId);
+      return res.status(HttpStatus.OK).json({
+        status: HttpStatus.OK,
+        data: {
           message: "OK",
         },
       });

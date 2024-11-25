@@ -1,26 +1,10 @@
 import React from "react";
 import { DialogContent } from "./content";
 import { DialogTrigger } from "./trigger";
-import useToggle from "../../hooks/use-trigger";
-
-type DialogContextType = {
-  isOpen: boolean;
-  toggleOpen: () => void;
-};
-
-const DialogContext = React.createContext<DialogContextType>({
-  isOpen: false,
-  toggleOpen: () => {},
-});
+import { DialogStateProvider, DialogContext } from "./context";
 
 function Dialog({ children }: { children: React.ReactNode }) {
-  const [isOpen, toggleOpen] = useToggle();
-
-  return (
-    <DialogContext.Provider value={{ isOpen, toggleOpen }}>
-      {children}
-    </DialogContext.Provider>
-  );
+  return <DialogStateProvider>{children}</DialogStateProvider>;
 }
 
 export { Dialog, DialogContent, DialogTrigger, DialogContext };

@@ -56,7 +56,7 @@ export class BetRoomService {
     betRoomId: string,
     updateBetRoomDto: UpdateBetRoomDto,
   ): Promise<void> {
-    this.assertBetRoomAccess(betRoomId, userId);
+    await this.assertBetRoomAccess(betRoomId, userId);
 
     const updatedFields: Partial<BetRoom> = {};
     if (updateBetRoomDto.channel?.title) {
@@ -75,7 +75,7 @@ export class BetRoomService {
   }
 
   async startBetRoom(userId: number, betRoomId: string) {
-    this.assertBetRoomAccess(betRoomId, userId);
+    await this.assertBetRoomAccess(betRoomId, userId);
 
     const updateResult = await this.betRoomRepository.update(betRoomId, {
       status: "active",
@@ -83,6 +83,10 @@ export class BetRoomService {
     });
 
     await this.redisManager.setRoomStatus(betRoomId, "active");
+    this.betGateway.server.to(betRoomId).emit("startBetting", {
+      message: "베팅이 시작되었습니다.",
+      roomId: betRoomId,
+    });
     return updateResult;
   }
 
@@ -91,7 +95,7 @@ export class BetRoomService {
     betRoomId: string,
     winningOption: "option1" | "option2",
   ) {
-    this.assertBetRoomAccess(betRoomId, userId);
+    await this.assertBetRoomAccess(betRoomId, userId);
 
     const updateResult = await this.betRoomRepository.update(betRoomId, {
       status: "finished",
@@ -166,6 +170,21 @@ export class BetRoomService {
     };
   }
 
+  async deleteBetRoom(betRoomId: string, userId: number): Promise<void> {
+    const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+    await this.assertBetRoomAccess(betRoomId, userId);
+
+    if (betRoom && betRoom.status !== "waiting") {
+      throw new ForbiddenException("베팅룸의 상태가 waiting이 아닙니다.");
+    }
+    this.betGateway.server.to(betRoomId).emit("cancelWaitingRoom", {
+      message: "베팅이 취소되었습니다.",
+      roomId: betRoomId,
+    });
+    await this.betRoomRepository.delete(betRoomId);
+    await this.redisManager.deleteChannelData(betRoomId);
+  }
+
   private async getBettingTotals(betRoomId: string) {
     const channel = await this.redisManager.getChannelData(betRoomId);
     if (!channel) {
@@ -210,7 +229,7 @@ export class BetRoomService {
       throw new NotFoundException("베팅 방을 찾을 수 없습니다.");
     }
     if (betRoom.manager.id !== userId) {
-      throw new ForbiddenException("베팅 방에 접근할 권한이 없습니다.");
+      throw new ForbiddenException("접근 권한이 없습니다.");
     }
   }
 

@@ -3,23 +3,21 @@ import {
   Column,
   Entity,
   PrimaryGeneratedColumn,
-  Unique,
   OneToMany,
   CreateDateColumn,
 } from "typeorm";
 import { Bet } from "src/bet/bet.entity";
 import { BetRoom } from "src/bet-room/bet-room.entity";
 
-@Entity()
-@Unique(["email", "nickname"])
+@Entity("users")
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn("increment")
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ unique: true })
   nickname: string;
 
   @Column()

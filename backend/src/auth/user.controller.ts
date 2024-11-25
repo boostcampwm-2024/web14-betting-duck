@@ -11,12 +11,11 @@ import {
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { ApiBody, ApiOperation } from "@nestjs/swagger";
-// import { JwtUserAuthGuard } from "src/utils/guards/http-user-authenticated.guard";
 import { JwtGuestAuthGuard } from "src/utils/guards/http-guest-authenticated.guard";
 import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
-import { CheckNicknameExistsDto } from "./dto/check-nickname-exists.dto";
+import { UpgradeGuestRequestDto } from "./dto/upgrade-guest.dto";
 
 @Controller("/api/users")
 export class UserController {
@@ -37,10 +36,10 @@ export class UserController {
   async signIn(@Body() body: SignInUserRequestDto, @Res() res: Response) {
     const result = await this.userService.signIn(body);
     res.cookie("access_token", result.accessToken, {
-      httpOnly: true, // JavaScript에서 접근할 수 없도록 설정 (보안 목적)
-      maxAge: 1000 * 60 * 60, // 쿠키의 유효 기간 (1시간)
-      secure: false, // HTTPS를 통해서만 전송되도록 설정 (프로덕션에서 추천)
-      // sameSite: "strict", // CSRF 공격 방지를 위한 설정
+      httpOnly: true,
+      maxAge: 1000 * 60 * 60 * 24, //임시 개발 환경을 위한 설정
+      secure: false,
+      // sameSite: "strict",
     });
     return res.status(HttpStatus.OK).json({
       status: HttpStatus.OK,
@@ -64,7 +63,7 @@ export class UserController {
     const result = await this.userService.guestSignIn(req);
     res.cookie("access_token", result.accessToken, {
       httpOnly: true,
-      maxAge: 1000 * 60 * 60,
+      maxAge: 1000 * 60 * 60 * 24, //임시 개발 환경을 위한 설정
       secure: false,
       // sameSite: "strict",
     });
@@ -78,6 +77,18 @@ export class UserController {
   }
 
   @UseGuards(JwtGuestAuthGuard)
+  @Get("/signout")
+  async signOut(@Req() req: Request, @Res() res: Response) {
+    await this.userService.signOut(req, res);
+    return res.status(HttpStatus.OK).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
+      },
+    });
+  }
+
+  @UseGuards(JwtGuestAuthGuard)
   @Get("/token")
   async getAccessToken(@Req() req: Request, @Res() res: Response) {
     const accessToken = req.cookies["access_token"];
@@ -86,6 +97,18 @@ export class UserController {
       data: {
         message: "OK",
         accessToken: accessToken,
+      },
+    });
+  }
+
+  @Get("/redistest")
+  async redisTest(@Req() req: Request, @Res() res: Response) {
+    const result = await this.userService.redisTest();
+    return res.status(HttpStatus.CREATED).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
+        ...result,
       },
     });
   }
@@ -118,12 +141,9 @@ export class UserController {
   }
 
   @ApiOperation({ summary: "닉네임 중복검사" })
-  @Post("/nicknameexists")
-  async guestExists(
-    @Body() body: CheckNicknameExistsDto,
-    @Res() res: Response,
-  ) {
-    const result = await this.userService.checkNicknameExists(body);
+  @Get("/exists/:nickname")
+  async guestExists(@Param("nickname") nickname: string, @Res() res: Response) {
+    const result = await this.userService.checkNicknameExists(nickname);
     const status = result.exists
       ? HttpStatus.OK
       : HttpStatus.NON_AUTHORITATIVE_INFORMATION;
@@ -134,6 +154,17 @@ export class UserController {
         ...result,
       },
     });
+  }
+
+  @ApiOperation({ summary: "비회원을 회원으로 업그레이드" })
+  @UseGuards(JwtGuestAuthGuard)
+  @Post("/upgradeguest")
+  async upgradeGuest(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() body: UpgradeGuestRequestDto,
+  ) {
+    await this.userService.upgradeGuest(req, res, body);
   }
 
   // 테스트용 API

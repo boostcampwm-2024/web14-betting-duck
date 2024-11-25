@@ -2,7 +2,7 @@ import { ProgressBar } from "@/shared/components/ProgressBar";
 import { TimerIcon } from "@/shared/icons";
 import { cn } from "@/shared/misc";
 import { BettingStatsDisplay } from "./ui/BettingStatsDisplay";
-import { PercentageDisplay } from "../betting-page/PercentageDisplay";
+import { PercentageDisplay } from "../betting-page/ui/PercentageDisplay";
 
 interface BettingRoom {
   title: string;

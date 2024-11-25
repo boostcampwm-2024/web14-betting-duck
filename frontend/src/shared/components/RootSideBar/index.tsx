@@ -20,19 +20,23 @@ const navItems = {
   top: [
     { icon: UserIcon, label: "my", href: "/my-page" },
     { icon: CreateVoteIcon, label: "create vote", href: "/create-vote" },
-    { icon: WaitingRoomIcon, label: "voting", href: "/voting" },
+    { icon: WaitingRoomIcon, label: "betting", href: "/betting" },
   ],
   bottom: [{ icon: LoginIcon, label: "login", href: "/login" }],
 };
 
 function changeNavigatorPosition(href: string) {
   let nextPosition = 0;
-  if (!navItems.top.some((item) => item.href == href)) {
+  if (href.includes("my-page")) {
+    nextPosition = 0;
+  } else if (href.includes("create-vote")) {
+    nextPosition = 1;
+  } else if (href.includes("betting") || href.includes("roomId")) {
+    nextPosition = 2.2;
+  } else if (href.includes("login")) {
     nextPosition = 9.9;
-  } else {
-    const index = navItems.top.findIndex((item) => item.href === href);
-    nextPosition = index === 2 ? 2.2 : index;
   }
+
   document.documentElement.style.setProperty(
     "--navigator-position",
     nextPosition.toString(),
@@ -51,9 +55,8 @@ function NavItems({ items }: { items: NavItemType[] }) {
 
 function RootSideBar() {
   const location = useLocation();
-
   React.useEffect(() => {
-    changeNavigatorPosition(location.pathname);
+    changeNavigatorPosition(location.href);
   }, [location]);
 
   return (

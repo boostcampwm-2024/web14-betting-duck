@@ -38,6 +38,4 @@ export const requestGuestSignInSchema = z.object({
 
 export const requestGuestLoginActivitySchema = z.object({});
 
-export const requestNicknameExistsSchema = z.object({
-  nickname: z.string().min(1, "닉네임은 1자 이상이어야 합니다."),
-});
+export const requestUpgradeGuest = requestSignUpSchema;

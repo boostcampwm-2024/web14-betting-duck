@@ -2,6 +2,8 @@ import React from "react";
 import { useChat } from "../../hook/use-chat";
 import { MessageList } from "./ui/MessageList";
 import { messageResponseSchema } from "@betting-duck/shared";
+import { useUserContext } from "@/shared/hooks/use-user-context";
+import Message from "./ui/Message";
 
 interface Message {
   message: string;
@@ -36,6 +38,8 @@ const randomRadius = () => {
 function ChatMessages() {
   const { socket } = useChat();
   const [messages, setMessages] = React.useState<Message[]>([]);
+  const isJoinedRef = React.useRef(false);
+  const { userInfo } = useUserContext();
 
   React.useEffect(() => {
     socket.on("message", (data) => {
@@ -60,25 +64,23 @@ function ChatMessages() {
     };
   }, [socket]);
 
-  const renderMessage = React.useCallback(
-    ({ sender, message, color, radius }: Message, index: number) => (
-      <div key={sender.nickname + index} className="flex justify-end">
-        <div
-          className={`max-w-[80%] ${radius} flex flex-row items-start gap-4 bg-white p-3 shadow-sm`}
-        >
-          <div className="max-w-[300px]">
-            <span
-              className={`${color} text-md mr-3 whitespace-nowrap font-bold`}
-            >
-              {sender.nickname}
-            </span>
-            <span className="break-words text-gray-700">{message}</span>
-          </div>
-        </div>
-      </div>
-    ),
-    [],
-  );
+  React.useEffect(() => {
+    if (!isJoinedRef.current && socket.isConnected && userInfo.nickname) {
+      socket.emit("sendMessage", {
+        sender: {
+          nickname: userInfo.nickname,
+        },
+        channel: {
+          roomId: userInfo.roomId ?? "123",
+        },
+        message: `${userInfo.nickname}님이 입장하셨습니다.`,
+      });
+
+      isJoinedRef.current = true;
+    }
+  }, [socket, userInfo]);
+
+  const renderMessage = React.useCallback(Message, []);
 
   return <MessageList>{messages.map(renderMessage)}</MessageList>;
 }

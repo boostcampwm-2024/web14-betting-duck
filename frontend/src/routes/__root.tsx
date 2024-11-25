@@ -1,9 +1,10 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { RootHeader } from "@/shared/components/RootHeader";
 import { RootSideBar } from "@/shared/components/RootSideBar";
 import { UserProvider } from "@/app/provider/UserProvider";
+import type { Auth } from "@/shared/lib/auth";
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<{ auth: Auth }>()({
   component: () => (
     <UserProvider>
       <RootLayout>

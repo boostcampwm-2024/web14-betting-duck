@@ -10,9 +10,11 @@ import {
   responseFetchBetRoomInfoSchema,
   type responseFetchBetRoomInfoType,
   responseBetRoomInfo,
+  channelSchema,
 } from "./socket/response";
 
 export {
+  channelSchema,
   responseBetRoomInfo,
   betRequestSchema,
   betResponseSchema,

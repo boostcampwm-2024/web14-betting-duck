@@ -1,6 +1,6 @@
 import { Chat } from "@/features/chat";
 import { ChatError } from "@/features/chat/ui/ChatError";
-import { ErrorComponent } from "@/shared/ui/error";
+import { ErrorComponent } from "@/shared/components/Error";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/chat")({
