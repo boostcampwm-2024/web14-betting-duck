@@ -41,7 +41,6 @@ export class UserRepository {
     }
   }
 
-  // 이메일로 유저 찾기
   async findOneByNickname(nickname: string): Promise<User | undefined> {
     try {
       return await this.userRepository.findOne({ where: { nickname } });
@@ -50,7 +49,6 @@ export class UserRepository {
     }
   }
 
-  // 이메일로 유저 찾기
   async findOneByEmail(email: string): Promise<User | undefined> {
     try {
       return await this.userRepository.findOne({ where: { email } });
