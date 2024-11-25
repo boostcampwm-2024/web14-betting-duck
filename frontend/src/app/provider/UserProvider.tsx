@@ -31,56 +31,15 @@ function UserProvider({ children }: { children: React.ReactNode }) {
     return defaultUserInfo;
   });
 
-  React.useEffect(() => {
-    const abortController = new AbortController();
-
-    fetch("/api/users/token", { signal: abortController.signal })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("토큰이 존재하지 않습니다.");
-        }
-        return fetch("/api/users/userInfo", { signal: abortController.signal });
-      })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            "토큰을 이용하여 사용자 정보를 불러오는데 실패 했습니다.",
-          );
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const { role, nickname, duck } = data.data as UserInfo;
-        updateUserInfo({ role, nickname, duck });
-      })
-      .catch((error) => {
-        if (error.name === "AbortError") {
-          return;
-        }
-        // 에러 발생 시 기본값으로 리셋
-        updateUserInfo(defaultUserInfo);
-        console.error("Failed to initialize user session:", error);
-      });
-
-    return () => {
-      abortController.abort();
-    };
-  }, []);
-
   const updateUserInfo = ({ ...info }: UserInfo) => {
-    console.log("updateUserInfo", info);
     setUserInfo((prev) => {
-      return {
+      const newUserInfo = {
         ...prev,
         ...info,
       };
+      sessionStorage.setItem("userInfo", JSON.stringify(newUserInfo));
+      return newUserInfo;
     });
-
-    if (info.role === "guest") {
-      sessionStorage.removeItem("userInfo");
-    } else {
-      sessionStorage.setItem("userInfo", JSON.stringify(info));
-    }
   };
 
   const refreshUserInfo = React.useCallback(async () => {
