@@ -51,11 +51,7 @@ export const Route = createFileRoute("/betting_/$roomId/vote")({
     if (error instanceof AccessError) {
       if (error.code === "UNAUTHORIZED") {
         return (
-          <Unauthorized
-            error={error}
-            returnToken={returnToken}
-            isBettingProgress={true}
-          >
+          <Unauthorized error={error} returnToken={returnToken}>
             <ErrorComponent error={error} />
           </Unauthorized>
         );
