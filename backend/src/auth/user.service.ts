@@ -13,12 +13,10 @@ import {
   requestSignUpSchema,
   requestSignInSchema,
   requestGuestSignInSchema,
-  requestNicknameExistsSchema,
   requestUpgradeGuest,
 } from "@shared/schemas/users/request";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
-import { CheckNicknameExistsDto } from "./dto/check-nickname-exists.dto";
 import { UpgradeGuestRequestDto } from "./dto/upgrade-guest.dto";
 
 @Injectable()
@@ -148,9 +146,7 @@ export class UserService {
     }
   }
 
-  async checkNicknameExists(body: CheckNicknameExistsDto) {
-    const { nickname } = requestNicknameExistsSchema.parse(body);
-
+  async checkNicknameExists(nickname: string) {
     const [existsInDB, existsInCache] = await Promise.all([
       this.userRepository.findOneByNickname(nickname),
       this.redisManager.nickNameExists(nickname),
@@ -204,10 +200,7 @@ export class UserService {
     const role = req["user"].role;
     const user = await this.redisManager.getUser(String(userId));
     if (role === "user") await this.userRepository.update(userId, { duck });
-    // await this.redisManager.setUser({
-    //   ...user,
-    //   userId: userId,
-    // });
+
     const newUserInfo = {
       userId: userId,
       nickname: user.nickname,

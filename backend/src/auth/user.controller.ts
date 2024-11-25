@@ -16,7 +16,6 @@ import { JwtGuestAuthGuard } from "src/utils/guards/http-guest-authenticated.gua
 import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
-import { CheckNicknameExistsDto } from "./dto/check-nickname-exists.dto";
 import { UpgradeGuestRequestDto } from "./dto/upgrade-guest.dto";
 
 @Controller("/api/users")
@@ -131,12 +130,9 @@ export class UserController {
   }
 
   @ApiOperation({ summary: "닉네임 중복검사" })
-  @Post("/nicknameexists")
-  async guestExists(
-    @Body() body: CheckNicknameExistsDto,
-    @Res() res: Response,
-  ) {
-    const result = await this.userService.checkNicknameExists(body);
+  @Get("/exists/:nickname")
+  async guestExists(@Param("nickname") nickname: string, @Res() res: Response) {
+    const result = await this.userService.checkNicknameExists(nickname);
     const status = result.exists
       ? HttpStatus.OK
       : HttpStatus.NON_AUTHORITATIVE_INFORMATION;
