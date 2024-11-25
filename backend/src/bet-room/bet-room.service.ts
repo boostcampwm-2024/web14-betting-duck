@@ -31,7 +31,7 @@ export class BetRoomService {
       throw new NotFoundException("해당하는 유저를 찾을 수 없습니다.");
     }
     const roomUUID = uuidv4();
-    //TODO: 도메인 주소 변경
+
     const joinUrl = `http://175.45.205.245/voting/${roomUUID}/waiting`;
 
     const betRoomData = {
