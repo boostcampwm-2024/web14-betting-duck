@@ -1,5 +1,5 @@
-import { useUser } from "@/shared/hooks/use-user";
-import { createFileRoute } from "@tanstack/react-router";
+import { useUserContext } from "@/shared/hooks/use-user-context";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useNavigate } from "@tanstack/react-router";
 import React from "react";
 
@@ -106,7 +106,11 @@ function DemoLogin() {
   const navigate = useNavigate();
   const [email, setEmail] = React.useState("abc@naver.com");
   const [password, setPassword] = React.useState("abc1234");
-  const { refreshUserInfo } = useUser();
+  const { refreshUserInfo } = useUserContext();
+  const search = useSearch({
+    from: "/login",
+  });
+  console.log(search);
 
   return (
     <form

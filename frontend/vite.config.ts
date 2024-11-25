@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
           secure: false,
         },
       },
-      middlewareMode: true,
+      middlewareMode: env.NODE_ENV === "development" ? false : true,
     },
     publicDir: "public",
     resolve: {

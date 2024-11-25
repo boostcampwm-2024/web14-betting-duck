@@ -1,13 +1,30 @@
 import React from "react";
 import { ChartTitle } from "./ui/ChatTitle";
 import { PredictButton } from "./ui/PredictButton";
+import { useLoaderData } from "@tanstack/react-router";
+import { channelSchema } from "@betting-duck/shared";
+import { z } from "zod";
+
+function bettingRoomTypeGuard(
+  data: unknown,
+): data is z.infer<typeof channelSchema> {
+  return channelSchema.safeParse(data).success;
+}
 
 function ChatHeader() {
+  const { bettingRoomInfo } = useLoaderData({
+    from: "/betting_/$roomId/vote",
+  });
+  const { channel } = bettingRoomInfo;
+  if (!bettingRoomTypeGuard(channel)) {
+    throw new Error("bettingRoomInfo가 channelSchema에 맞지 않습니다.");
+  }
+
   return (
     <React.Fragment>
       <div className="bg-layout-main relative flex h-fit w-full items-center px-4">
         <div className="bg-primary text-secondary font-nanum-eb shadow-long flex w-full flex-row items-center justify-between rounded-lg px-9 py-4">
-          <ChartTitle title="KBO 우승은 KIA다!!" />
+          <ChartTitle title={channel.title} />
           <PredictButton />
         </div>
         <div

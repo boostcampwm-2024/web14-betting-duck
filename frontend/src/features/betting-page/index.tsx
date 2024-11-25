@@ -1,12 +1,11 @@
 import { DuckCoinIcon } from "@/shared/icons";
-import { BettingStatsDisplay } from "./BettingStatsDisplay";
-import { PercentageDisplay } from "./PercentageDisplay";
-import { BettingForm } from "./BettingForm";
-import { BettingHeader } from "./BettingHeader";
+import { BettingStatsDisplay } from "./ui/BettingStatsDisplay";
+import { PercentageDisplay } from "./ui/PercentageDisplay";
+import { BettingForm } from "./ui/BettingForm";
+import { BettingHeader } from "./ui/BettingHeader";
 import { cn } from "@/shared/misc";
 import React from "react";
-import { useSocketIO } from "@/shared/hooks/use-socket-io";
-import { getRouteApi } from "@tanstack/react-router";
+import { useBettingContext } from "./hook/use-betting-context";
 
 interface BettingStats {
   coinAmount: number;
@@ -28,26 +27,10 @@ interface BettingRoom {
   };
 }
 
-const route = getRouteApi("/betting-page");
-
 function BettingPage() {
-  const { nickname } = route.useSearch();
-
   const roomIdRef = React.useRef<string | null>(null);
-  const socket = useSocketIO({
-    url: "/api/betting",
-    accessToken: "",
-    onConnect: () => {
-      console.log("Betting Page에서 소켓이 연결 되었습니다.");
-    },
-    onDisconnect: (reason) => {
-      console.log(reason);
-      console.log("Betting Page에서 소켓이 연결이 끊겼습니다.");
-    },
-    onError: (error) => {
-      console.log("Betting Page에서 소켓 에러가 발생했습니다.", error);
-    },
-  });
+  const { socket } = useBettingContext();
+
   const bettingData: BettingRoom = {
     title: "KBO 우승은 KIA다!",
     timeRemaining: 445,
@@ -70,7 +53,6 @@ function BettingPage() {
       },
     },
   };
-  React.useEffect(() => {}, []);
 
   React.useEffect(() => {
     socket.on("fetchRoomUsers", (data) => {
@@ -119,7 +101,7 @@ function BettingPage() {
     return () => {
       socket.off("joinRoom");
     };
-  }, [socket, nickname]);
+  }, [socket]);
 
   return (
     <div
@@ -128,30 +110,6 @@ function BettingPage() {
         "shadow-middle bg-layout-main h-full max-h-[430px] w-full min-w-[630px] rounded-lg border-2 p-6",
       )}
     >
-      <button
-        onClick={() => {
-          console.log(roomIdRef.current);
-          socket.emit("joinRoom", {
-            sender: {
-              nickname: "김덕배",
-            },
-            channel: {
-              roomId: roomIdRef.current,
-            },
-          });
-        }}
-      >
-        참여하기
-      </button>
-      <button
-        onClick={() => {
-          socket.emit("leaveRoom", {
-            roomId: roomIdRef.current,
-          });
-        }}
-      >
-        나가기
-      </button>
       <div className="flex h-full flex-col">
         <BettingHeader
           content={bettingData.title}

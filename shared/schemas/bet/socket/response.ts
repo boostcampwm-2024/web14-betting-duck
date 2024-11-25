@@ -60,6 +60,7 @@ type responseFetchBetRoomInfoType = z.infer<
 >;
 
 export {
+  channelSchema,
   responseFetchBetRoomInfoSchema,
   responseBetRoomInfo,
   type responseFetchBetRoomInfoType,

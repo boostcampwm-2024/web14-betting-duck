@@ -1,6 +1,6 @@
 import { UserInfo } from "@/app/provider/UserProvider";
 import { useChat } from "@/features/chat/hook/use-chat";
-import { useUser } from "@/shared/hooks/use-user";
+import { useUserContext } from "@/shared/hooks/use-user-context";
 import React from "react";
 
 function generateRandomNickname(userInfo: UserInfo) {
@@ -53,7 +53,7 @@ function InputBar() {
   const [isComposing, setComposing] = React.useState(false);
   const [text, setText] = React.useState("");
   const { socket } = useChat();
-  const { userInfo } = useUser();
+  const { userInfo } = useUserContext();
 
   function handleInput(e: React.FormEvent<HTMLPreElement>) {
     if (!isComposing) {
@@ -67,12 +67,13 @@ function InputBar() {
       e.preventDefault();
 
       if (!isComposing && text.trim().length > 0 && socket.isConnected) {
+        console.log(userInfo.roomId);
         socket.emit("sendMessage", {
           sender: {
             nickname: generateRandomNickname(userInfo),
           },
           channel: {
-            roomId: "123",
+            roomId: userInfo.roomId,
           },
           message: text.trim(),
         });

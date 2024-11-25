@@ -1,10 +1,10 @@
 import { Image } from "@/shared/components/Image";
 import pondImage from "@/assets/images/pond.png";
 import { DuckCoinIcon } from "@/shared/icons";
-import { useUser } from "@/shared/hooks/use-user";
+import { useUserContext } from "@/shared/hooks/use-user-context";
 
 function MyPage() {
-  const { userInfo } = useUser();
+  const { userInfo } = useUserContext();
   const { duck } = userInfo;
 
   return (

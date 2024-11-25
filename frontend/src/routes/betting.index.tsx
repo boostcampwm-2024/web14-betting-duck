@@ -1,10 +1,20 @@
 import React from "react";
 import { WaitingError } from "@/features/waiting-room/ui/WaitingError";
-import { useUser } from "@/shared/hooks/use-user";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useUserContext } from "@/shared/hooks/use-user-context";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { ROUTES } from "@/shared/config/route";
+import { responseBetRoomInfo } from "@betting-duck/shared";
 
-export const Route = createFileRoute("/voting/")({
+export const Route = createFileRoute("/betting/")({
   component: RouteComponent,
+  beforeLoad: async () => {
+    const response = await fetch("/api/users/token");
+    if (!response.ok)
+      throw redirect({
+        to: "/require-login",
+        search: { from: encodeURIComponent(ROUTES.BETTING) },
+      });
+  },
   errorComponent: ({ error }) => (
     <ErrorComponent error={error}>
       <WaitingError />
@@ -14,13 +24,33 @@ export const Route = createFileRoute("/voting/")({
 
 function RouteComponent() {
   const navigate = useNavigate();
-  const { userInfo } = useUser();
+  const { userInfo } = useUserContext();
   const { roomId } = userInfo;
-  if (!roomId) throw new Error("참여하고 있는 방이 없습니다.");
-  navigate({
-    to: `/voting/${roomId}/waiting`,
-  });
-  return "Hello /voting!";
+  if (!roomId) navigate({ to: "/require-roomId" });
+
+  React.useEffect(() => {
+    (async () => {
+      const response = await fetch(`/api/betrooms/${roomId}`);
+      if (!response.ok) throw new Error("방 정보를 가져오는데 실패했습니다.");
+      const { data } = await response.json();
+      const result = responseBetRoomInfo.safeParse(data);
+      if (!result.success)
+        throw new Error("방 정보를 파싱하는데 실패했습니다.");
+
+      const { channel } = result.data;
+      if (channel.status === "active") {
+        return navigate({
+          to: `/betting/${roomId}/vote`,
+        });
+      }
+
+      return navigate({
+        to: `/betting/${roomId}/waiting`,
+      });
+    })();
+  }, [roomId, navigate]);
+
+  return <WaitingError />;
 }
 
 function ErrorComponent({
