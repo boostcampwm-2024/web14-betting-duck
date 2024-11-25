@@ -9,8 +9,9 @@ import {
   validatePassword,
 } from "@/features/login-page/model/validation";
 import { Warning } from "./Warning";
+import { toaster } from "@/components/ui/toaster";
 
-function RegisterForm() {
+function RegisterForm({ setActiveTab }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
@@ -22,9 +23,21 @@ function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // // Toast 테스트용 코드
+    // toaster.create({
+    //   description: "회원가입 성공! 로그인하세요.",
+    //   type: "success",
+    // });
+    // setActiveTab("login");
+
+    // 찐또코드
     const result = await handleSignup({ email, nickname, password });
     if (result.success) {
-      alert("회원가입 성공! 로그인하세요.");
+      toaster.create({
+        description: "회원가입 성공! 로그인하세요.",
+        type: "success",
+      });
+      setActiveTab("login");
     } else {
       console.error("회원가입 실패:", result.error);
     }
@@ -62,7 +75,7 @@ function RegisterForm() {
         <div className="flex items-center shadow-md">
           <InputField
             id="nickname"
-            placeholder="닉네임을 입력해주세요."
+            placeholder="닉네임을 입력해주세요. (1글자 이상 10글자 이하)"
             name="nickname"
             value={nickname}
             type="text"
@@ -76,7 +89,7 @@ function RegisterForm() {
         <div className="flex items-center shadow-md">
           <InputField
             id="password"
-            placeholder="비밀번호를 입력해주세요."
+            placeholder="비밀번호를 입력해주세요. (영소문자 및 숫자 포함)"
             name="password"
             value={password}
             type="password"

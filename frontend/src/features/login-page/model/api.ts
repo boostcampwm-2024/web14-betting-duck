@@ -28,17 +28,12 @@ export const signup = async (data: SignupRequest) => {
   });
 
   const result = await response.json();
+  const resultMessage = result.data.message.message;
 
-  if (response.ok) {
-    return result;
-  }
-
-  if (response.status === 400) {
-    throw Error("올바르지 않은 형식입니다. 다시 입력해주세요.");
-  } else if (response.status === 409) {
-    throw Error("이미 등록된 이메일입니다. 다른 이메일을 입력해주세요.");
+  if (response.status === 400 || response.status === 409) {
+    throw Error(resultMessage);
   } else {
-    throw Error("오류가 발생했습니다. 다시 시도해주세요.");
+    throw Error(resultMessage);
   }
 };
 
