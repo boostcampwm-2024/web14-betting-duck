@@ -1,8 +1,15 @@
-import { Dialog, DialogTrigger, DialogContent } from "@/shared/ui/dialog";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+} from "@/shared/components/Dialog";
 import { EditIcon, InfoIcon } from "@/shared/icons";
-import { type WaitingRoomInfo } from ".";
+import { EditFormStatusForm } from "./EditFormStatusForm";
+import { useWaitingContext } from "../../hooks/use-waiting-context";
+import React from "react";
 
-function VotingStatusCard({ info }: { info: WaitingRoomInfo }) {
+const VotingStatusCard = React.memo(() => {
+  const { info } = useWaitingContext();
   const { channel } = info;
 
   return (
@@ -17,20 +24,15 @@ function VotingStatusCard({ info }: { info: WaitingRoomInfo }) {
             <EditIcon />
           </DialogTrigger>
           <DialogContent>
-            <div>
-              <div>투표 주제</div>
-              <div>우승팀 예측하기</div>
-            </div>
-            <div>
-              <div>투표 기간</div>
-              <div>2021.10.01 ~ 2021.10.08</div>
-            </div>
+            <EditFormStatusForm info={info} />
           </DialogContent>
         </Dialog>
       </div>
       <h1 className="text-xl font-extrabold">{channel.title}</h1>
     </div>
   );
-}
+});
+
+VotingStatusCard.displayName = "VotingStatusCard";
 
 export { VotingStatusCard };
