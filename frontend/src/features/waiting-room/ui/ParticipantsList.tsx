@@ -1,11 +1,31 @@
-import { useSocketIO } from "@/shared/hooks/use-socket-io";
 import waitingUserImage from "@assets/images/waiting-user.png";
 import React from "react";
+import { useWaitingContext } from "../hooks/use-waiting-context";
 
 type ParticipantInfo = {
   nickname: string;
   joinAt: string;
 };
+
+function isParticipantInfo(info: unknown): info is ParticipantInfo[] {
+  if (Array.isArray(info)) {
+    return info.every(
+      (item) =>
+        typeof item === "object" &&
+        item !== null &&
+        typeof (item as ParticipantInfo).nickname === "string" &&
+        typeof (item as ParticipantInfo).joinAt === "string",
+    );
+  }
+  return false;
+}
+
+function isUpdatedParticipantInfo(
+  prev: ParticipantInfo[],
+  next: ParticipantInfo[],
+) {
+  return next.some((info) => !prev.includes(info));
+}
 
 function User({ nickname }: { nickname: string }) {
   return (
@@ -25,57 +45,19 @@ function User({ nickname }: { nickname: string }) {
   );
 }
 
-function ParticipantsList({ roomId }: { roomId: string }) {
+function ParticipantsList() {
+  const { socket, roomId } = useWaitingContext();
   const [participants, setParticipants] = React.useState<ParticipantInfo[]>([]);
-  const prevParticipantsRef = React.useRef<Set<string>>(new Set());
-
-  const socket = useSocketIO({
-    url: "/api/betting",
-    onConnect: () => {
-      console.log("투표 대기 방에서 소켓 연결을 성공 했습니다.");
-    },
-    onDisconnect: (reason) => {
-      console.error("투표 대기 방에서 소켓이 끊어졌습니다.");
-      console.error(reason);
-    },
-    onError: (error) => {
-      console.error("투표 대기 방에서 소켓 에러가 발생했습니다.");
-      console.error(error);
-    },
-  });
+  const prevParticipantsRef = React.useRef<ParticipantInfo[]>([]);
 
   React.useEffect(() => {
-    if (!prevParticipantsRef.current) {
-      prevParticipantsRef.current = new Set<string>();
-    }
-
     socket.on("fetchRoomUsers", (data) => {
       if (
-        Array.isArray(data) &&
-        data.every(
-          (item) =>
-            typeof item.nickname === "string" &&
-            typeof item.joinAt === "string",
-        )
+        isParticipantInfo(data) &&
+        isUpdatedParticipantInfo(prevParticipantsRef.current, data)
       ) {
-        const newParticipants: ParticipantInfo[] = [];
-
-        data.forEach((item) => {
-          if (
-            prevParticipantsRef.current &&
-            !prevParticipantsRef.current.has(item.nickname)
-          ) {
-            prevParticipantsRef.current.add(item.nickname);
-            newParticipants.push({
-              nickname: item.nickname,
-              joinAt: item.joinAt,
-            });
-          }
-        });
-
-        if (newParticipants.length > 0) {
-          setParticipants((prev) => [...prev, ...newParticipants]);
-        }
+        setParticipants(data);
+        prevParticipantsRef.current = data;
       }
     });
 

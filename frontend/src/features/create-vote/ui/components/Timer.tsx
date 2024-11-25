@@ -2,8 +2,8 @@ import { ArrowDownIcon, ArrowUpIcon, TimerIcon } from "@/shared/icons";
 import React from "react";
 import { useTimer } from "@/features/create-vote/model/useTimer";
 
-const Timer = React.memo(() => {
-  const { value, incrementValue, decrementValue } = useTimer();
+const Timer = React.memo(({ initialValue = 1 }: { initialValue?: number }) => {
+  const { value, incrementValue, decrementValue } = useTimer(initialValue);
 
   return (
     <div className="bg-layout-sidebar flex w-1/2 items-center justify-between gap-1 rounded-lg pl-2 shadow-inner">

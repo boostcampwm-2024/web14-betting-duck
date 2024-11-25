@@ -2,8 +2,9 @@ import {
   Injectable,
   UnauthorizedException,
   NotFoundException,
+  ConflictException,
 } from "@nestjs/common";
-import { Request } from "express";
+import { Request, Response } from "express";
 import { RedisManager } from "src/utils/redis.manager";
 import { UserRepository } from "./user.repository";
 import * as bcrypt from "bcryptjs";
@@ -12,11 +13,11 @@ import {
   requestSignUpSchema,
   requestSignInSchema,
   requestGuestSignInSchema,
-  requestNicknameExistsSchema,
+  requestUpgradeGuest,
 } from "@shared/schemas/users/request";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
-import { CheckNicknameExistsDto } from "./dto/check-nickname-exists.dto";
+import { UpgradeGuestRequestDto } from "./dto/upgrade-guest.dto";
 
 @Injectable()
 export class UserService {
@@ -28,6 +29,12 @@ export class UserService {
 
   async signUp(body: SignUpUserRequestDto): Promise<void> {
     const { email, nickname, password } = requestSignUpSchema.parse(body);
+
+    const regex = /^익명의[^\w\s]?/;
+    if (regex.test(nickname)) {
+      throw new ConflictException("비회원 닉네임은 사용할 수 없습니다.");
+    }
+
     const hashedPassword = await this.hashPassword(password);
     const user = {
       email,
@@ -74,15 +81,25 @@ export class UserService {
     req: Request,
   ): Promise<{ accessToken: string; nickname: string; role: string }> {
     const { nickname } = requestGuestSignInSchema.parse(req.body);
+    const regex = /^익명의[^\w\s]?/;
+    if (!regex.test(nickname)) {
+      throw new ConflictException("비회원 닉네임이 필요합니다.");
+    }
+
     const role = "guest";
     const guestIdentifier = this.generateGuestIdentifier(req);
 
     if (await this.redisManager.findUser(guestIdentifier)) {
       const userInfo = await this.redisManager.getUser(guestIdentifier);
       if (userInfo.nickname !== nickname) {
-        throw new UnauthorizedException("Already signed in");
+        throw new ConflictException("로그인 내역이 존재합니다.");
       }
     } else {
+      const userKey = await this.redisManager.nickNameExists(nickname);
+      console.log(userKey);
+      if (userKey && guestIdentifier !== userKey)
+        throw new ConflictException("이미 등록된 닉네임입니다.");
+
       await this.redisManager.setUser({
         userId: guestIdentifier,
         nickname: nickname,
@@ -98,6 +115,17 @@ export class UserService {
     const accessToken = await this.jwtService.sign(payload);
 
     return { accessToken, nickname, role };
+  }
+
+  async signOut(req: Request, res: Response) {
+    // TODO : 로그아웃 시에도 IP 검증 필요?
+    const userInfo = req["user"];
+
+    if (userInfo.role === "guest") {
+      await this.redisManager.deleteUser(String(userInfo.id));
+    }
+
+    res.clearCookie("access_token");
   }
 
   async getUserInfo(req: Request) {
@@ -134,13 +162,41 @@ export class UserService {
     }
   }
 
-  async checkNicknameExists(body: CheckNicknameExistsDto) {
-    const { nickname } = requestNicknameExistsSchema.parse(body);
-    return {
-      exists: (await this.userRepository.findOneByNickname(nickname))
-        ? true
-        : false,
+  async checkNicknameExists(nickname: string) {
+    const [existsInDB, existsInCache] = await Promise.all([
+      this.userRepository.findOneByNickname(nickname),
+      this.redisManager.nickNameExists(nickname),
+    ]);
+
+    if (existsInDB || existsInCache) {
+      return { exists: true };
+    }
+
+    return { exists: false };
+  }
+
+  // 구현 중
+  async upgradeGuest(
+    req: Request,
+    res: Response,
+    body: UpgradeGuestRequestDto,
+  ) {
+    const userInfo = req["user"];
+    const { duck } = await this.redisManager.getUser(userInfo.id);
+
+    const { email, nickname, password } = requestUpgradeGuest.parse(body);
+    const hashedPassword = await this.hashPassword(password);
+
+    const user = {
+      email,
+      nickname,
+      password: hashedPassword,
+      duck: parseInt(duck),
     };
+
+    await this.userRepository.createUser(user);
+
+    // TODO : 로그인까지 한번에 해결하는 것이 좋을까?
   }
 
   async redisTest() {
@@ -166,10 +222,7 @@ export class UserService {
     const role = req["user"].role;
     const user = await this.redisManager.getUser(String(userId));
     if (role === "user") await this.userRepository.update(userId, { duck });
-    // await this.redisManager.setUser({
-    //   ...user,
-    //   userId: userId,
-    // });
+
     const newUserInfo = {
       userId: userId,
       nickname: user.nickname,

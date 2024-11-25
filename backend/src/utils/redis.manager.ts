@@ -47,6 +47,34 @@ export class RedisManager {
     return exists === 1;
   }
 
+  async deleteUser(userId: string) {
+    await this.client.del(userId);
+  }
+
+  async nickNameExists(nickname: string): Promise<string | null> {
+    let cursor = "0";
+
+    do {
+      const [nextCursor, keys] = await this.client.scan(
+        cursor,
+        "MATCH",
+        "user:guest-*",
+        "COUNT",
+        "100",
+      );
+      cursor = nextCursor;
+
+      for (const key of keys) {
+        const userInfo = await this.client.hgetall(key);
+        if (userInfo["nickname"] === nickname) {
+          return key;
+        }
+      }
+    } while (cursor !== "0");
+
+    return null;
+  }
+
   async setBettingUserOnJoin({
     userId,
     nickname,

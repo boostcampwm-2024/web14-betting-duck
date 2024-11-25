@@ -88,6 +88,12 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `user:${userId}`,
       "nickname",
     );
+    if (!nickname) {
+      client.emit("error", {
+        event: "joinRoom",
+        message: `닉네임을 조회할 수 없습니다. ${userId}`,
+      });
+    }
     const { roomId } = channel;
     client.join(roomId);
 
@@ -95,7 +101,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `room:${roomId}:creator`,
     );
     const owner = userId === creatorID ? 1 : 0;
-
+    console.log("creatorID: " + creatorID);
     await this.redisManager.setBettingUserOnJoin({
       userId,
       nickname,

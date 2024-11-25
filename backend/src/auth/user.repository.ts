@@ -22,7 +22,11 @@ export class UserRepository {
       await this.userRepository.save(newUser);
     } catch (error) {
       if (error.code === "23505") {
-        throw new ConflictException("이미 등록된 이메일입니다.");
+        if (error.detail.includes("email")) {
+          throw new ConflictException("이미 등록된 이메일입니다.");
+        } else if (error.detail.includes("nickname")) {
+          throw new ConflictException("이미 등록된 닉네임입니다.");
+        }
       } else {
         throw new InternalServerErrorException();
       }
@@ -37,7 +41,6 @@ export class UserRepository {
     }
   }
 
-  // 이메일로 유저 찾기
   async findOneByNickname(nickname: string): Promise<User | undefined> {
     try {
       return await this.userRepository.findOne({ where: { nickname } });
@@ -46,7 +49,6 @@ export class UserRepository {
     }
   }
 
-  // 이메일로 유저 찾기
   async findOneByEmail(email: string): Promise<User | undefined> {
     try {
       return await this.userRepository.findOne({ where: { email } });

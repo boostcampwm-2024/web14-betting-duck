@@ -1,5 +1,5 @@
 // import { LoginPage } from "@/features/login-page";
-import { useUser } from "@/shared/hooks/use-user";
+import { useUserContext } from "@/shared/hooks/use-user-context";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import React from "react";
 
@@ -7,9 +7,6 @@ export const Route = createFileRoute("/login")({
   component: Component,
 });
 
-// function Component() {
-//   return <LoginPage />;
-// }
 function Component() {
   return (
     <div className="flex gap-4">
@@ -106,10 +103,13 @@ function DemoSignup() {
 }
 
 function DemoLogin() {
+  const { auth } = Route.useRouteContext({
+    select: ({ auth }) => ({ auth, status: auth.status }),
+  });
   const navigate = useNavigate();
   const [email, setEmail] = React.useState("abc@naver.com");
   const [password, setPassword] = React.useState("abc1234");
-  const { refreshUserInfo } = useUser();
+  const { refreshUserInfo } = useUserContext();
 
   return (
     <form
@@ -133,6 +133,7 @@ function DemoLogin() {
             console.log(json);
             const { data } = json;
 
+            auth.login();
             refreshUserInfo().then(() =>
               navigate({
                 to: "/my-page",
