@@ -167,18 +167,24 @@ export class RedisManager {
     ]);
   }
 
-  async initializeBetRoom(roomUUID: string, creatorId: string) {
+  async initializeBetRoomOnCreated(userId: string, roomId: string) {
     await Promise.all([
-      this.client.hmset(`room:${roomUUID}:option1`, {
+      this.client.set(`room:${roomId}:creator`, userId),
+      this.client.set(`room:${roomId}:status`, "waiting"),
+    ]);
+  }
+
+  async initializeBetRoomOnStart(roomId: string) {
+    await Promise.all([
+      this.client.hmset(`room:${roomId}:option1`, {
         participants: 0,
         currentBets: 0,
       }),
-      this.client.hmset(`room:${roomUUID}:option2`, {
+      this.client.hmset(`room:${roomId}:option2`, {
         participants: 0,
         currentBets: 0,
       }),
-      this.client.set(`room:${roomUUID}:creator`, creatorId),
-      this.client.set(`room:${roomUUID}:status`, "waiting"),
+      this.client.set(`room:${roomId}:status`, "active"),
     ]);
   }
 
