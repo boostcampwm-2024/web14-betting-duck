@@ -29,6 +29,12 @@ export class UserService {
 
   async signUp(body: SignUpUserRequestDto): Promise<void> {
     const { email, nickname, password } = requestSignUpSchema.parse(body);
+
+    const regex = /^익명의[^\w\s]?/;
+    if (regex.test(nickname)) {
+      throw new ConflictException("비회원 닉네임은 사용할 수 없습니다.");
+    }
+
     const hashedPassword = await this.hashPassword(password);
     const user = {
       email,
@@ -75,6 +81,12 @@ export class UserService {
     req: Request,
   ): Promise<{ accessToken: string; nickname: string; role: string }> {
     const { nickname } = requestGuestSignInSchema.parse(req.body);
+    const regex = /^익명의[^\w\s]?/;
+    console.log(regex.test(nickname));
+    if (!regex.test(nickname)) {
+      throw new ConflictException("비회원 닉네임이 필요합니다.");
+    }
+
     const role = "guest";
     const guestIdentifier = this.generateGuestIdentifier(req);
 
