@@ -1,13 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import { RedisService } from "@liaoliaots/nestjs-redis";
 import { Redis } from "ioredis";
+import { randomUUID } from "crypto";
 
 @Injectable()
 export class RedisManager {
   public client: Redis;
+  public publisher: Redis;
+  public consumer: Redis;
 
   constructor(private readonly redisService: RedisService) {
     this.client = this.redisService.getOrThrow("default");
+    this.publisher = this.redisService.getOrThrow("default");
+    this.consumer = this.redisService.getOrThrow("default");
   }
 
   async getUser(userId: string) {
@@ -46,24 +51,28 @@ export class RedisManager {
     await this.client.del(userId);
   }
 
-  async nickNameExists(nickname: string) {
+  async nickNameExists(nickname: string): Promise<string | null> {
     let cursor = "0";
-    let isExist = false;
 
     do {
-      const result = await this.client.scan(cursor, "MATCH", "user:guest-*");
-      cursor = result[0];
-      const keys = result[1];
+      const [nextCursor, keys] = await this.client.scan(
+        cursor,
+        "MATCH",
+        "user:guest-*",
+        "COUNT",
+        "100",
+      );
+      cursor = nextCursor;
+
       for (const key of keys) {
-        const userNickname = await this.client.hget(key, "nickname");
-        if (userNickname === nickname) {
-          isExist = true;
-          break;
+        const userInfo = await this.client.hgetall(key);
+        if (userInfo["nickname"] === nickname) {
+          return key;
         }
       }
-    } while (cursor !== "0" && !isExist);
+    } while (cursor !== "0");
 
-    return isExist;
+    return null;
   }
 
   async setBettingUserOnJoin({
@@ -235,4 +244,116 @@ export class RedisManager {
       }
     } while (cursor !== "0");
   }
+
+  async _xadd(streamKey: string, entryID: string, ...dataArr: string[]) {
+    if (entryID === "*") entryID = randomUUID();
+    if (dataArr.length % 2 !== 0) {
+      console.error("Data should be in key-value pairs");
+      return;
+    }
+
+    const entryKey = `stream:${streamKey}:${entryID}`;
+
+    const data = dataArr.reduce(
+      (acc, curr, index) => {
+        if (index % 2 === 0) acc[curr as string] = dataArr[index + 1];
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
+    // TODO: transaction 시작
+    await this.client.lpush(streamKey, entryKey);
+    await this.client.hset(entryKey, data);
+    await this.client.hset(entryKey, {
+      event_status: "pending",
+      event_retries: 0,
+    });
+    console.log("New message in stream:", streamKey);
+    await this.publisher.publish("stream", streamKey);
+  }
+
+  async _xread(count: number, streamKey: string, blockTime: number) {
+    const readStream = async (
+      signal: AbortSignal,
+      count: number,
+      streamKey: string,
+    ): Promise<[string, [string, Record<string, string>][]]> => {
+      const entries: [string, Record<string, string>][] = [];
+      let processedCount = 0;
+
+      while (processedCount < count && !signal.aborted) {
+        let entryKey = await this.client.lpop(streamKey);
+
+        if (!entryKey) {
+          await new Promise<void>((resolve) => {
+            const abortHandler = () => {
+              signal.removeEventListener("abort", abortHandler);
+              resolve();
+            };
+
+            const handleMessage = (
+              channel: string,
+              messageStreamKey: string,
+            ) => {
+              if (messageStreamKey === streamKey) {
+                this.consumer.off("message", handleMessage);
+                signal.removeEventListener("abort", abortHandler);
+                resolve();
+              }
+            };
+
+            signal.addEventListener("abort", abortHandler);
+            this.consumer.on("message", handleMessage);
+          });
+
+          if (signal.aborted) {
+            return [streamKey, entries];
+          }
+
+          entryKey = await this.client.lpop(streamKey);
+        }
+
+        if (entryKey) {
+          const fields = await this.client.hgetall(entryKey);
+          entries.push([entryKey, fields]);
+        }
+
+        processedCount++;
+      }
+
+      return [streamKey, entries];
+    };
+
+    return new Promise<[string, [string, Record<string, string>][]]>(
+      (resolve, reject) => {
+        const controller = new AbortController();
+        const { signal } = controller;
+
+        readStream(signal, count, streamKey).then(resolve).catch(reject);
+
+        setTimeout(() => {
+          controller.abort();
+          console.log("Operation timed out");
+        }, blockTime);
+      },
+    );
+  }
+
+  // 개선 이전의 _xread 메서드
+  // async _xread(count: number, streamKey: string) {
+  //   const messages = [];
+
+  //   for (let i = 0; i < count; i++) {
+  //     const entryID = await this.client.rpop(streamKey);
+  //     if (!entryID) break;
+
+  //     const fields = await this.client.hgetall(entryID);
+  //     messages.push([entryID, fields]);
+  //   }
+
+  //   return [[streamKey, messages]];
+  // }
+
+  // async _xack(streamKey: string, groupName: string, entryID: string) {}
 }

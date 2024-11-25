@@ -6,12 +6,26 @@ interface DialogTriggerProps extends React.HTMLAttributes<HTMLButtonElement> {
   asChild?: boolean;
 }
 
-function DialogTrigger({ asChild, ...props }: DialogTriggerProps) {
-  const { toggleOpen } = React.useContext(DialogContext);
-  const Comp = asChild ? Slot : "button";
+const DialogTrigger = React.memo(
+  ({ asChild, ...props }: DialogTriggerProps) => {
+    const { toggleOpen } = React.useContext(DialogContext);
+    const Comp = asChild ? Slot : "button";
 
-  return <Comp onClick={toggleOpen} {...props} />;
-  return <Comp className="h-fit w-fit" onClick={toggleOpen} {...props} />;
-}
+    const handleClick = React.useCallback(
+      <T extends Element>(e: React.MouseEvent<T>) => {
+        e.preventDefault();
+        toggleOpen();
+        if (props.onClick) {
+          props.onClick(e as unknown as React.MouseEvent<HTMLButtonElement>);
+        }
+      },
+      [toggleOpen, props],
+    );
+
+    return <Comp className="h-fit w-fit" onClick={handleClick} {...props} />;
+  },
+);
+
+DialogTrigger.displayName = "DialogTrigger";
 
 export { DialogTrigger };

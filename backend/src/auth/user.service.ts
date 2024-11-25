@@ -29,6 +29,12 @@ export class UserService {
 
   async signUp(body: SignUpUserRequestDto): Promise<void> {
     const { email, nickname, password } = requestSignUpSchema.parse(body);
+
+    const regex = /^익명의[^\w\s]?/;
+    if (regex.test(nickname)) {
+      throw new ConflictException("비회원 닉네임은 사용할 수 없습니다.");
+    }
+
     const hashedPassword = await this.hashPassword(password);
     const user = {
       email,
@@ -75,15 +81,25 @@ export class UserService {
     req: Request,
   ): Promise<{ accessToken: string; nickname: string; role: string }> {
     const { nickname } = requestGuestSignInSchema.parse(req.body);
+    const regex = /^익명의[^\w\s]?/;
+    if (!regex.test(nickname)) {
+      throw new ConflictException("비회원 닉네임이 필요합니다.");
+    }
+
     const role = "guest";
     const guestIdentifier = this.generateGuestIdentifier(req);
 
     if (await this.redisManager.findUser(guestIdentifier)) {
       const userInfo = await this.redisManager.getUser(guestIdentifier);
       if (userInfo.nickname !== nickname) {
-        throw new ConflictException("Already signed in");
+        throw new ConflictException("로그인 내역이 존재합니다.");
       }
     } else {
+      const userKey = await this.redisManager.nickNameExists(nickname);
+      console.log(userKey);
+      if (userKey && guestIdentifier !== userKey)
+        throw new ConflictException("이미 등록된 닉네임입니다.");
+
       await this.redisManager.setUser({
         userId: guestIdentifier,
         nickname: nickname,
@@ -181,6 +197,12 @@ export class UserService {
     await this.userRepository.createUser(user);
 
     // TODO : 로그인까지 한번에 해결하는 것이 좋을까?
+  }
+
+  async redisTest() {
+    await this.redisManager._xadd("test", "*", "field1", "value1");
+    // await this.redisManager.addStreamEntry();
+    return { status: "OK" };
   }
 
   private async hashPassword(password: string): Promise<string> {

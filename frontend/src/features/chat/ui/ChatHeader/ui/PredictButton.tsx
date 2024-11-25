@@ -1,4 +1,9 @@
-import { Dialog, DialogTrigger, DialogContent } from "@/shared/ui/dialog";
+import { BettingPage } from "@/features/betting-page";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+} from "@/shared/components/Dialog";
 
 function PredictButton() {
   return (
@@ -9,9 +14,7 @@ function PredictButton() {
         </button>
       </DialogTrigger>
       <DialogContent>
-        <div>
-          <h1>Betting Page</h1>
-        </div>
+        <BettingPage />
       </DialogContent>
     </Dialog>
   );

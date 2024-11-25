@@ -1,4 +1,4 @@
-import { useUser } from "@/shared/hooks/use-user";
+import { useUserContext } from "@/shared/hooks/use-user-context";
 import { LogoIcon } from "@/shared/icons";
 import { Image } from "@/shared/components/Image";
 import waitingUserImage from "@assets/images/waiting-user.png";
@@ -20,7 +20,7 @@ function UserInfo({ nickname }: { nickname: string }) {
 }
 
 function RootHeader() {
-  const { userInfo } = useUser();
+  const { userInfo } = useUserContext();
   const { nickname } = userInfo;
 
   return (

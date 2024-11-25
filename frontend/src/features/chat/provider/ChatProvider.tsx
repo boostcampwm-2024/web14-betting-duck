@@ -1,4 +1,5 @@
 import { useSocketIO } from "@/shared/hooks/use-socket-io";
+import { useUserContext } from "@/shared/hooks/use-user-context";
 import React from "react";
 
 interface ChatContextType {
@@ -8,6 +9,7 @@ interface ChatContextType {
 const ChatContext = React.createContext<ChatContextType | null>(null);
 
 function ChatProvider({ children }: { children: React.ReactNode }) {
+  const { userInfo } = useUserContext();
   const socket = useSocketIO({
     url: "/api/chat",
     onConnect: () => {
@@ -20,25 +22,26 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     if (socket.isConnected) {
+      console.log(userInfo.roomId);
       socket.emit("joinRoom", {
         sender: {
-          nickname: "nickname",
+          nickname: userInfo.nickname,
         },
         channel: {
-          roomId: "123",
+          roomId: userInfo.roomId,
         },
-        message: "123 방에 nickname 님이 입장하셨습니다.",
+        message: `${userInfo.roomId} 방에 nickname 님이 입장하셨습니다.`,
       });
     }
 
     return () => {
       if (!socket.isConnected) {
         socket.emit("leaveRoom", {
-          roomId: "123",
+          roomId: userInfo.roomId,
         });
       }
     };
-  }, [socket]);
+  }, [socket, userInfo]);
 
   return (
     <ChatContext.Provider value={{ socket }}>{children}</ChatContext.Provider>

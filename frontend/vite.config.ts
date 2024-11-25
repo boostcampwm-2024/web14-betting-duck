@@ -2,6 +2,7 @@ import path from "path";
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -9,7 +10,14 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: "/",
-    plugins: [react(), TanStackRouterVite()],
+    css: {
+      preprocessorOptions: {
+        css: {
+          additionalData: `@import "@/src/index.css";`, // Tailwind를 상단에 로드
+        },
+      },
+    },
+    plugins: [react(), TanStackRouterVite(), tsconfigPaths()],
     server: {
       port: 3000,
       proxy: {
@@ -19,7 +27,7 @@ export default defineConfig(({ mode }) => {
           secure: false,
         },
       },
-      middlewareMode: true,
+      middlewareMode: env.NODE_ENV === "development" ? false : true,
     },
     publicDir: "public",
     resolve: {
