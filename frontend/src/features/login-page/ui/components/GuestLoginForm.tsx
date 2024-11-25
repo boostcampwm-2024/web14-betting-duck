@@ -1,11 +1,41 @@
 import { InputField } from "@/shared/components/input/InputField";
 import { LoginIDIcon } from "@/shared/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "../../model/store";
 
 function GuestLoginForm() {
   const [nickname, setNickname] = useState("");
   const { handleGuestLogin } = useAuthStore();
+  const [isSignedUp, setIsSignedUp] = useState(false);
+
+  useEffect(() => {
+    const checkSignupStatus = async () => {
+      try {
+        const response = await fetch("/api/users/guestloginactivity", {
+          method: "GET",
+        });
+
+        if (!response.ok) {
+          throw new Error("회원가입 상태 확인에 실패했습니다.");
+        }
+
+        const result = await response.json();
+        const isSigned = result.data.loggedInBefore;
+        setIsSignedUp(isSigned);
+        if (isSigned) {
+          setNickname(result.data.nickname);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error("오류 발생:", error.message);
+        } else {
+          console.error("알 수 없는 오류 발생:", error);
+        }
+      }
+    };
+
+    checkSignupStatus();
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +52,7 @@ function GuestLoginForm() {
             value={nickname}
             type="text"
             onChange={(e) => setNickname(e.target.value)}
+            readOnly={isSignedUp}
           >
             <LoginIDIcon />
           </InputField>

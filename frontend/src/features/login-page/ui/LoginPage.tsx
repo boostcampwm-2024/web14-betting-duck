@@ -7,6 +7,7 @@ import {
   RegisterForm,
   TabButton,
 } from "./components";
+import { Toaster } from "@/components/ui/toaster";
 
 function LoginPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register" | "guest">(
@@ -53,8 +54,10 @@ function LoginPage() {
         />
       </div>
       {activeTab === "login" && <LoginForm />}
-      {activeTab === "register" && <RegisterForm />}
+      {activeTab === "register" && <RegisterForm setActiveTab={setActiveTab} />}
+
       {activeTab === "guest" && <GuestLoginForm />}
+      <Toaster />
     </div>
   );
 }
