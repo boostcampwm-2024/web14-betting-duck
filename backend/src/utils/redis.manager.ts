@@ -11,8 +11,9 @@ export class RedisManager {
 
   constructor(private readonly redisService: RedisService) {
     this.client = this.redisService.getOrThrow("default");
-    this.publisher = this.redisService.getOrThrow("default");
-    this.consumer = this.redisService.getOrThrow("default");
+    this.publisher = this.redisService.getOrThrow("publisher");
+    this.consumer = this.redisService.getOrThrow("consumer");
+    this.consumer.subscribe("stream");
   }
 
   async getUser(userId: string) {
