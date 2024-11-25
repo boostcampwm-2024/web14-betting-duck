@@ -204,10 +204,7 @@ export class UserService {
     const role = req["user"].role;
     const user = await this.redisManager.getUser(String(userId));
     if (role === "user") await this.userRepository.update(userId, { duck });
-    // await this.redisManager.setUser({
-    //   ...user,
-    //   userId: userId,
-    // });
+
     const newUserInfo = {
       userId: userId,
       nickname: user.nickname,
