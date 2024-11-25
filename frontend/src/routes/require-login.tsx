@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ErrorComponent } from "@/shared/ui/error";
+import { ErrorComponent } from "@/shared/components/Error";
 import { CreateVoteError } from "@/features/create-vote/ui/error/CreateVoteError";
 import { z } from "zod";
 import { ErrorMyPage } from "@/features/my-page/error";

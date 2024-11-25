@@ -1,6 +1,6 @@
 import { CreateVotePage } from "@/features/create-vote";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { ErrorComponent } from "@/shared/ui/error";
+import { ErrorComponent } from "@/shared/components/Error";
 import { CreateVoteError } from "@/features/create-vote/ui/error/CreateVoteError";
 import { ROUTES } from "@/shared/config/route";
 

@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { ErrorComponent } from "@/shared/ui/error";
+import { ErrorComponent } from "@/shared/components/Error";
 import { MyPage } from "@/features/my-page";
 import { ErrorMyPage } from "@/features/my-page/error";
 import { ROUTES } from "@/shared/config/route";

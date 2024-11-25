@@ -4,7 +4,7 @@ import { WaitingError } from "@/features/waiting-room/ui/WaitingError";
 import { AccessError } from "@/features/waiting-room/error/AccessError";
 import { Unauthorized } from "@/features/waiting-room/error/Unauthorized";
 import { Forbidden } from "@/features/waiting-room/error/Forbidden";
-import { ErrorComponent } from "@/shared/ui/error";
+import { ErrorComponent } from "@/shared/components/Error";
 import { validateAccess } from "@/shared/lib/validateAccess";
 import { responseBetRoomInfo } from "@betting-duck/shared";
 
