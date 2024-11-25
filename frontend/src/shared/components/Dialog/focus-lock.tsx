@@ -2,11 +2,7 @@ import React from "react";
 import { useFocusLock } from "./hook";
 import { DialogContext } from ".";
 
-interface FocusLockProps {
-  children: React.ReactNode;
-}
-
-export const FocusLock: React.FC<FocusLockProps> = ({ children }) => {
+const FocusLock = React.memo(({ children }: { children: React.ReactNode }) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const { toggleOpen } = React.useContext(DialogContext);
   useFocusLock(containerRef, toggleOpen);
@@ -22,4 +18,8 @@ export const FocusLock: React.FC<FocusLockProps> = ({ children }) => {
       {children}
     </div>
   );
-};
+});
+
+FocusLock.displayName = "FocusLock";
+
+export { FocusLock };
