@@ -7,9 +7,11 @@ import { EditIcon, InfoIcon } from "@/shared/icons";
 import { EditFormStatusForm } from "./EditFormStatusForm";
 import { useWaitingContext } from "../../hooks/use-waiting-context";
 import React from "react";
+import { useUserContext } from "@/shared/hooks/use-user-context";
 
 const VotingStatusCard = React.memo(() => {
   const { info } = useWaitingContext();
+  const { userInfo } = useUserContext();
   const { channel } = info;
 
   return (
@@ -19,14 +21,16 @@ const VotingStatusCard = React.memo(() => {
           <InfoIcon />
           <span>투표 생성 정보</span>
         </div>
-        <Dialog>
-          <DialogTrigger>
-            <EditIcon />
-          </DialogTrigger>
-          <DialogContent>
-            <EditFormStatusForm info={info} />
-          </DialogContent>
-        </Dialog>
+        {userInfo.role === "admin" && (
+          <Dialog>
+            <DialogTrigger>
+              <EditIcon />
+            </DialogTrigger>
+            <DialogContent>
+              <EditFormStatusForm info={info} />
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
       <h1 className="text-xl font-extrabold">{channel.title}</h1>
     </div>
