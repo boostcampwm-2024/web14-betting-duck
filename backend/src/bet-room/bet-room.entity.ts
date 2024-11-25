@@ -39,8 +39,8 @@ export class BetRoom extends BaseEntity {
   @Column({ type: "timestamp", nullable: true })
   endTime: Date;
 
-  @Column({ type: "enum", enum: ["waiting", "active", "finished"] })
-  status: "waiting" | "active" | "finished";
+  @Column({ type: "enum", enum: ["waiting", "active", "timeover", "finished"] })
+  status: "waiting" | "active" | "timeover" | "finished";
 
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
