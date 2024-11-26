@@ -6,11 +6,13 @@ import { Repository } from "typeorm";
 
 @Injectable()
 export class DBManager {
+  private userStreamKey: string;
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private redisManager: RedisManager,
   ) {
+    this.userStreamKey = "stream:users";
     this.getUserFromStream();
   }
 
@@ -20,19 +22,23 @@ export class DBManager {
       params.push(key, value);
     });
 
-    this.redisManager._xadd("stream:users", "*", ...params);
+    this.redisManager._xadd(this.userStreamKey, "*", ...params);
   }
 
   async getUserFromStream() {
     console.log("---------------------");
-    const event = await this.redisManager._xread(1, "stream:users", 10000);
+    const event = await this.redisManager._xread(1, this.userStreamKey, 10000);
 
     event[1].forEach(async (entry) => {
-      const entryValue = entry[1];
-      console.log("user: ", entryValue);
-      delete entryValue.event_status;
-      delete entryValue.event_retries;
-      await this.userRepository.update(parseInt(entryValue.id), entryValue);
+      const [entryKey, fields] = entry;
+      console.log("user: ", fields);
+
+      delete fields.stream_key;
+      delete fields.event_status;
+      delete fields.event_retries;
+      await this.userRepository.update(parseInt(fields.id), fields);
+
+      this.redisManager._xack(this.userStreamKey, entryKey);
     });
 
     this.getUserFromStream();

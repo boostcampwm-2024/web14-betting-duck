@@ -223,6 +223,7 @@ export class RedisManager {
     await this.client.lpush(streamKey, entryKey);
     await this.client.hset(entryKey, data);
     await this.client.hset(entryKey, {
+      stream_key: streamKey,
       event_status: "pending",
       event_retries: 0,
     });
@@ -236,6 +237,7 @@ export class RedisManager {
       count: number,
       streamKey: string,
     ): Promise<[string, [string, Record<string, string>][]]> => {
+      const pelKey = `${streamKey}:pel`;
       const entries: [string, Record<string, string>][] = [];
       let processedCount = 0;
 
@@ -274,7 +276,12 @@ export class RedisManager {
 
         if (entryKey) {
           const fields = await this.client.hgetall(entryKey);
-          entries.push([entryKey, fields]);
+          if (fields.event_status === "pending") {
+            await this.client.sadd(pelKey, entryKey);
+            await this.client.hset(entryKey, "event_status", "processing");
+            await this.client.hincrby(entryKey, "event_retries", 1);
+            entries.push([entryKey, fields]);
+          }
         }
 
         processedCount++;
@@ -296,6 +303,12 @@ export class RedisManager {
         }, blockTime);
       },
     );
+  }
+
+  async _xack(streamKey: string, entryKey: string) {
+    const pelKey = `${streamKey}:pel`;
+    await this.client.srem(pelKey, entryKey);
+    await this.client.hset(entryKey, "event_status", "acknowledged");
   }
 
   // 개선 이전의 _xread 메서드
