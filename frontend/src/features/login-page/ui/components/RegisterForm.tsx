@@ -1,5 +1,5 @@
 import { InputField } from "@/shared/components/input/InputField";
-import { LoginIDIcon, LoginPasswordIcon } from "@/shared/icons";
+import { EmailIcon, LoginIDIcon, LoginPasswordIcon } from "@/shared/icons";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/features/login-page/model/store";
 import {
@@ -9,13 +9,13 @@ import {
   validatePassword,
 } from "@/features/login-page/model/validation";
 import { Warning } from "./Warning";
-import { toaster } from "@/components/ui/toaster";
 
 interface RegisterFormProps {
   setActiveTab: (tab: "login" | "register" | "guest") => void;
+  setSnackbarOpen: (open: boolean) => void;
 }
 
-function RegisterForm({ setActiveTab }: RegisterFormProps) {
+function RegisterForm({ setActiveTab, setSnackbarOpen }: RegisterFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
@@ -27,21 +27,10 @@ function RegisterForm({ setActiveTab }: RegisterFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // // Toast 테스트용 코드
-    // toaster.create({
-    //   description: "회원가입 성공! 로그인하세요.",
-    //   type: "success",
-    // });
-    // setActiveTab("login");
-
-    // 찐또코드
     const result = await handleSignup({ email, nickname, password });
     if (result.success) {
-      toaster.create({
-        description: "회원가입 성공! 로그인하세요.",
-        type: "success",
-      });
       setActiveTab("login");
+      setSnackbarOpen(true);
     } else {
       console.error("회원가입 실패:", result.error);
     }
@@ -73,7 +62,7 @@ function RegisterForm({ setActiveTab }: RegisterFormProps) {
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
           >
-            <LoginIDIcon />
+            <EmailIcon />
           </InputField>
         </div>
         <div className="flex items-center shadow-md">
