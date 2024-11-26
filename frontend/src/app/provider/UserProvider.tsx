@@ -1,3 +1,4 @@
+import { useSessionStorage } from "@/shared/hooks/use-session-storage";
 import React from "react";
 
 interface UserContextType {
@@ -23,24 +24,28 @@ const defaultUserInfo: UserInfo = {
 const UserContext = React.createContext<UserContextType | null>(null);
 
 function UserProvider({ children }: { children: React.ReactNode }) {
+  const { getSessionItem, setSessionItem } = useSessionStorage();
   const [userInfo, setUserInfo] = React.useState<UserInfo>(() => {
-    const userInfo = sessionStorage.getItem("userInfo");
+    const userInfo = getSessionItem("userInfo");
     if (userInfo) {
       return JSON.parse(userInfo);
     }
     return defaultUserInfo;
   });
 
-  const updateUserInfo = ({ ...info }: UserInfo) => {
-    setUserInfo((prev) => {
-      const newUserInfo = {
-        ...prev,
-        ...info,
-      };
-      sessionStorage.setItem("userInfo", JSON.stringify(newUserInfo));
-      return newUserInfo;
-    });
-  };
+  const updateUserInfo = React.useCallback(
+    (info: Partial<UserInfo>) => {
+      setUserInfo((prev) => {
+        const newUserInfo = {
+          ...prev,
+          ...info,
+        };
+        setSessionItem("userInfo", JSON.stringify(newUserInfo));
+        return newUserInfo;
+      });
+    },
+    [setSessionItem],
+  );
 
   const refreshUserInfo = React.useCallback(async () => {
     try {
@@ -55,15 +60,20 @@ function UserProvider({ children }: { children: React.ReactNode }) {
       updateUserInfo(defaultUserInfo);
       console.error("Failed to refresh user info:", error);
     }
-  }, []);
+  }, [updateUserInfo]);
+
+  const getSessionUserInfo = React.useCallback(() => {
+    const userInfo = getSessionItem("userInfo");
+    return userInfo;
+  }, [getSessionItem]);
 
   const value = React.useMemo(
     () => ({
-      userInfo,
+      userInfo: getSessionUserInfo() || userInfo,
       setUserInfo: updateUserInfo,
       refreshUserInfo,
     }),
-    [userInfo, refreshUserInfo],
+    [userInfo, refreshUserInfo, getSessionUserInfo, updateUserInfo],
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;

@@ -94,26 +94,3 @@ export {
   type BettingPool,
   type BettingSummary,
 };
-
-// 사용 예시:
-const examplePool: BettingPool = {
-  option1: {
-    totalAmount: 10000,
-    participants: 50,
-  },
-  option2: {
-    totalAmount: 5000,
-    participants: 30,
-  },
-};
-
-const odds = calculateOdds(examplePool);
-console.log("Betting Odds:", odds);
-
-const summary = getBettingSummary(examplePool);
-console.log("Betting Summary:", summary);
-
-// 특정 베팅의 잠재적 수익 계산
-const betAmount = 1000;
-const potentialWinnings = calculateWinnings(betAmount, odds.option1Multiplier);
-console.log(`Potential winnings for ${betAmount} points:`, potentialWinnings);
