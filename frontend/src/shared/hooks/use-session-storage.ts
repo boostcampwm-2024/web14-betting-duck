@@ -13,26 +13,50 @@ async function generateChecksum<T>(data: T): Promise<string> {
 }
 
 function useSessionStorage() {
-  const setSessionItem = (key: string, value: string) => {
-    const encryptData = btoa(
-      JSON.stringify({
-        value,
-        timestamp: new Date().getTime(),
-        checksum: generateChecksum(value),
-      }),
-    );
-    sessionStorage.setItem(key, encryptData);
+  // UTF-8 문자열을 Base64로 안전하게 인코딩하는 함수
+  const safeEncode = (str: string): string => {
+    try {
+      // UTF-8 문자열을 Base64로 안전하게 인코딩
+      return btoa(encodeURIComponent(str));
+    } catch (e) {
+      console.error("Encoding error:", e);
+      return "";
+    }
   };
 
-  const getSessionItem = (key: string) => {
-    const encryptData = sessionStorage.getItem(key);
-    if (!encryptData) return null;
-
+  // Base64로 인코딩된 문자열을 디코딩하는 함수
+  const safeDecode = (str: string): string => {
     try {
-      const decoded = JSON.parse(atob(encryptData));
+      return decodeURIComponent(atob(str));
+    } catch (e) {
+      console.error("Decoding error:", e);
+      return "";
+    }
+  };
 
-      if (generateChecksum(decoded.value) !== decoded.checksum) {
-        console.error("강제로 변경된 데이터가 있습니다.");
+  const setSessionItem = async (key: string, value: string) => {
+    try {
+      const data = {
+        value,
+        timestamp: new Date().getTime(),
+        checksum: await generateChecksum(value),
+      };
+      const encodedData = safeEncode(JSON.stringify(data));
+      sessionStorage.setItem(key, encodedData);
+    } catch (error) {
+      console.error("Error setting session item:", error);
+    }
+  };
+
+  const getSessionItem = async (key: string) => {
+    try {
+      const encodedData = sessionStorage.getItem(key);
+      if (!encodedData) return null;
+
+      const decoded = JSON.parse(safeDecode(encodedData));
+      const decodedChecksum = await generateChecksum(decoded.value);
+      if (decodedChecksum !== decoded.checksum) {
+        console.error("데이터 무결성 검증 실패");
         sessionStorage.removeItem(key);
         return null;
       }
@@ -44,7 +68,8 @@ function useSessionStorage() {
       }
 
       return decoded.value;
-    } catch {
+    } catch (error) {
+      console.error("Error getting session item:", error);
       return null;
     }
   };
