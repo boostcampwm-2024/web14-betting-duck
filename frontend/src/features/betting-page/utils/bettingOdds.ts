@@ -25,13 +25,16 @@ function calculateOdds(pool: BettingPool): BettingOdds {
 
   const effectivePool = totalPool * (1 - HOUSE_EDGE);
 
-  const option1Ratio = pool.option1.totalAmount / totalPool;
-  const option2Ratio = pool.option2.totalAmount / totalPool;
+  const option1Ratio =
+    pool.option1.totalAmount === 0 ? 0 : pool.option1.totalAmount / totalPool;
+  const option2Ratio =
+    pool.option2.totalAmount === 0 ? 0 : pool.option2.totalAmount / totalPool;
 
   const option1Multiplier =
     option1Ratio === 0
       ? 1
       : Math.max(1, effectivePool / pool.option1.totalAmount);
+
   const option2Multiplier =
     option2Ratio === 0
       ? 1
@@ -61,12 +64,14 @@ function getBettingSummary(pool: BettingPool) {
   return {
     totalParticipants,
     totalAmount,
-    option1Percentage: ((pool.option1.totalAmount / totalAmount) * 100).toFixed(
-      1,
-    ),
-    option2Percentage: ((pool.option2.totalAmount / totalAmount) * 100).toFixed(
-      1,
-    ),
+    option1Percentage: (totalAmount === 0
+      ? 0
+      : (pool.option1.totalAmount / totalAmount) * 100
+    ).toFixed(1),
+    option2Percentage: (totalAmount === 0
+      ? 0
+      : (pool.option2.totalAmount / totalAmount) * 100
+    ).toFixed(1),
     option1: {
       participants: pool.option1.participants,
       totalAmount: pool.option1.totalAmount,
