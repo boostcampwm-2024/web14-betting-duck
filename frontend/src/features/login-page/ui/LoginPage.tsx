@@ -24,9 +24,9 @@ function LoginPage() {
     reason?: string,
   ) => {
     if (reason === "clickaway") {
-      return; // Snackbar 클릭 방지
+      return;
     }
-    setSnackbarOpen(false); // Snackbar 닫기
+    setSnackbarOpen(false);
   };
 
   return (
