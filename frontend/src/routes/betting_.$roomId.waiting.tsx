@@ -7,18 +7,18 @@ import { Forbidden } from "@/features/waiting-room/error/Forbidden";
 import { ErrorComponent } from "@/shared/components/Error";
 import { validateAccess } from "@/shared/lib/validateAccess";
 import { responseBetRoomInfo } from "@betting-duck/shared";
+import { z } from "zod";
 
 async function getBettingRoomInfo(roomId: string) {
-  return fetch(`/api/betrooms/${roomId}`)
-    .then((res) => res.json())
-    .then(({ data }) => {
-      const result = responseBetRoomInfo.safeParse(data);
-      if (!result.success) {
-        console.error(result.error.errors);
-        return;
-      }
-      return result.data;
-    });
+  const response = await fetch(`/api/betrooms/${roomId}`);
+  const json = await response.json();
+  const { data } = json;
+  const result = responseBetRoomInfo.safeParse(data);
+  if (!result.success) {
+    console.error(result.error.errors);
+    throw new Error("배팅 룸 데이터를 불러오는데 실패했습니다.");
+  }
+  return result.data;
 }
 
 let returnToken = "";
@@ -31,13 +31,18 @@ export const Route = createFileRoute("/betting_/$roomId/waiting")({
     const abortController = new AbortController();
     await validateAccess(roomId, abortController.signal);
   },
-  loader: async ({ params }) => {
+  loader: async ({
+    params,
+  }): Promise<{
+    roomId: string;
+    bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
+  }> => {
     const { roomId } = params;
     returnToken = roomId;
 
     try {
-      const bettingRommInfo = await getBettingRoomInfo(roomId);
-      return { roomId, bettingRommInfo };
+      const bettingRoomInfo = await getBettingRoomInfo(roomId);
+      return { roomId, bettingRoomInfo };
     } catch (error) {
       if (error instanceof AccessError) {
         throw error;
