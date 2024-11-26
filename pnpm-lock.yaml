@@ -11092,7 +11092,7 @@ snapshots:
       ansi-styles: 6.2.1
       string-width: 5.1.2
       strip-ansi: 7.1.0
-
+      
   wrap-ansi@9.0.0:
     dependencies:
       ansi-styles: 6.2.1

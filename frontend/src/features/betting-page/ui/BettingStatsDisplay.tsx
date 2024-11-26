@@ -2,9 +2,10 @@ import React from "react";
 import { DuckCoinIcon, PeoplesIcon, TrophyIcon } from "@/shared/icons";
 
 interface BettingStats {
-  coinAmount: number;
-  bettingRate: string;
-  participant: number;
+  participants: number;
+  totalAmount: number;
+  multiplier: number;
+  returnRate: number;
 }
 
 const BettingStatsDisplay = React.memo(
@@ -21,9 +22,13 @@ const BettingStatsDisplay = React.memo(
 
     const bettingStats = React.useMemo(
       () => [
-        { icon: DuckCoinIcon, alt: "코인 아이콘", stat: stats.coinAmount },
-        { icon: TrophyIcon, alt: "트로피 아이콘", stat: stats.bettingRate },
-        { icon: PeoplesIcon, alt: "참여자 수 아이콘", stat: stats.participant },
+        { icon: DuckCoinIcon, alt: "코인 아이콘", stat: stats.totalAmount },
+        { icon: TrophyIcon, alt: "트로피 아이콘", stat: stats.multiplier },
+        {
+          icon: PeoplesIcon,
+          alt: "참여자 수 아이콘",
+          stat: stats.participants,
+        },
       ],
       [stats],
     );
