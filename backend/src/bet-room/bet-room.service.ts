@@ -13,6 +13,7 @@ import { RedisManager } from "src/utils/redis.manager";
 import { BetRoom } from "./bet-room.entity";
 import { BetResult } from "src/bet-result/bet-result.entity";
 import { BetGateway } from "src/bet/bet.gateway";
+import { BetRepository } from "src/bet/bet.repository";
 
 @Injectable()
 export class BetRoomService {
@@ -20,6 +21,7 @@ export class BetRoomService {
     private betRoomRepository: BetRoomRepository,
     private betResultRepository: BetResultRepository,
     private userRepository: UserRepository,
+    private betRepository: BetRepository,
     private redisManager: RedisManager,
     private betGateway: BetGateway,
   ) {}
@@ -152,7 +154,7 @@ export class BetRoomService {
       winningOdds: winningOdds,
     });
 
-    await this.settleBetRoom(betRoomId, winningOption, winningOdds);
+    await this.processBetRoomSettlement(betRoomId, winningOption, winningOdds);
     await this.redisManager.deleteChannelData(betRoomId);
 
     return updateResult;
@@ -277,7 +279,7 @@ export class BetRoomService {
     return winningOdds;
   }
 
-  private async settleBetRoom(
+  private async processBetRoomSettlement(
     roomId: string,
     winningOption: string,
     winningOdds: number,
@@ -294,40 +296,75 @@ export class BetRoomService {
       cursor = nextCursor;
 
       const userUpdates = keys.map(async (key) => {
-        const userData = await this.redisManager.client.hgetall(key);
-
-        const userIdMatch = key.match(/user:(.+)$/);
-        const userId = userIdMatch ? userIdMatch[1] : null;
-        const { owner, betAmount, selectedOption, role } = userData;
+        const { userId, owner, betAmount, selectedOption, role } =
+          await this.fetchUserBetData(key);
 
         if (owner === "1" || !betAmount || !selectedOption) {
-          console.log("pass");
           return;
         }
 
-        const duck = await this.redisManager.client.hget(
-          `user:${userId}`,
-          "duck",
+        const updatedDuck = await this.calculateAndSaveDuckCoins(
+          userId,
+          betAmount,
+          selectedOption,
+          winningOption,
+          winningOdds,
         );
-
-        const isWinner = selectedOption === winningOption;
-        const duckChange = isWinner ? Number(betAmount) * winningOdds : 0;
-        const updatedDuck = duck
-          ? Number(duck) - Number(betAmount) + duckChange
-          : duckChange;
-
-        await this.redisManager.client.hset(`user:${userId}`, {
-          duck: updatedDuck,
-        });
-
         if (role === "user") {
-          await this.userRepository.update(Number(userId), {
-            duck: updatedDuck,
-          });
+          await this.settleUserBet(Number(userId), roomId, updatedDuck);
         }
       });
 
       await Promise.all(userUpdates);
     } while (cursor !== "0");
+  }
+
+  private async fetchUserBetData(key: string) {
+    const userData = await this.redisManager.client.hgetall(key);
+    const userIdMatch = key.match(/user:(.+)$/);
+    const userId = userIdMatch ? userIdMatch[1] : null;
+    const { owner, betAmount, selectedOption, role } = userData;
+    return {
+      userId,
+      owner,
+      betAmount: Number(betAmount),
+      selectedOption,
+      role,
+    };
+  }
+
+  private async calculateAndSaveDuckCoins(
+    userId: string,
+    betAmount: number,
+    selectedOption: string,
+    winningOption: string,
+    winningOdds: number,
+  ) {
+    const duck = Number(
+      (await this.redisManager.client.hget(`user:${userId}`, "duck")) || 0,
+    );
+
+    const isWinner = selectedOption === winningOption;
+    const duckChange = isWinner ? betAmount * winningOdds : 0;
+    const updatedDuck = duck ? duck - betAmount + duckChange : duckChange;
+
+    await this.redisManager.client.hset(`user:${userId}`, {
+      duck: updatedDuck,
+    });
+    return updatedDuck;
+  }
+
+  private async settleUserBet(
+    userId: number,
+    roomId: string,
+    updatedDuck: number,
+  ) {
+    await this.userRepository.update(userId, { duck: updatedDuck });
+
+    const bet = await this.betRepository.findByUserAndRoom(userId, roomId);
+    if (!bet) {
+      throw new NotFoundException("해당 베팅을 찾을 수 없습니다.");
+    }
+    await this.betRepository.update(bet.id, { status: "settled" });
   }
 }
