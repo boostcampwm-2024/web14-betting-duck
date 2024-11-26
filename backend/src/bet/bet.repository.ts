@@ -18,4 +18,29 @@ export class BetRepository {
       throw new InternalServerErrorException("베팅 내역 저장이 실패했습니다.");
     }
   }
+
+  async update(id: number, partialEntity: Partial<Bet>) {
+    try {
+      return await this.betRepository.update(id, partialEntity);
+    } catch {
+      throw new InternalServerErrorException(
+        "베팅 상태 업데이트에 실패했습니다.",
+      );
+    }
+  }
+
+  async findByUserAndRoom(userId: number, roomId: string): Promise<Bet | null> {
+    try {
+      return await this.betRepository.findOne({
+        where: {
+          user: { id: userId },
+          betRoom: { id: roomId },
+        },
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        "베팅을 조회하는 데 실패했습니다.",
+      );
+    }
+  }
 }

@@ -145,24 +145,37 @@ export class RedisManager {
   }
 
   async initializeBetRoomOnCreated(userId: string, roomId: string) {
-    await Promise.all([
-      this.client.set(`room:${roomId}:creator`, userId),
-      this.client.set(`room:${roomId}:status`, "waiting"),
-    ]);
+    const transaction = this.client.multi();
+    transaction
+      .set(`room:${roomId}:creator`, userId)
+      .set(`room:${roomId}:status`, "waiting");
+    const results = await transaction.exec();
+
+    if (results.some((result) => result instanceof Error)) {
+      console.error("레디스 트랜잭션 실패", results);
+      throw new Error("레디스 트랜잭션 실패");
+    }
   }
 
   async initializeBetRoomOnStart(roomId: string) {
-    await Promise.all([
-      this.client.hmset(`room:${roomId}:option1`, {
+    const transaction = this.client.multi();
+    transaction
+      .hmset(`room:${roomId}:option1`, {
         participants: 0,
         currentBets: 0,
-      }),
-      this.client.hmset(`room:${roomId}:option2`, {
+      })
+      .hmset(`room:${roomId}:option2`, {
         participants: 0,
         currentBets: 0,
-      }),
-      this.client.set(`room:${roomId}:status`, "active"),
-    ]);
+      })
+      .set(`room:${roomId}:status`, "active");
+
+    const results = await transaction.exec();
+
+    if (results.some((result) => result instanceof Error)) {
+      console.error("레디스 트랜잭션 실패", results);
+      throw new Error("레디스 트랜잭션 실패");
+    }
   }
 
   async getChannelData(roomId: string) {

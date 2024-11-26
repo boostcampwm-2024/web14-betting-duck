@@ -137,10 +137,15 @@ export class BetRoomController {
   @Get("/:betRoomId")
   async getBetRoom(
     @Param("betRoomId") betRoomId: string,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
-      const betRoomData = await this.betRoomService.findBetRoomById(betRoomId);
+      const userId = req["user"].id;
+      const betRoomData = await this.betRoomService.findBetRoomById(
+        userId,
+        betRoomId,
+      );
       return res.status(HttpStatus.OK).json({
         status: HttpStatus.OK,
         data: {
