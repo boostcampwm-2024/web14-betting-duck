@@ -15,7 +15,7 @@ type WaitingRoomInfo = z.infer<typeof responseBetRoomInfo>;
 const EditFormStatusForm = React.memo(({ info }: { info: WaitingRoomInfo }) => {
   const { channel } = info;
   const { toggleOpen } = React.useContext(DialogContext);
-  const { setInfo } = useWaitingContext();
+  const { setBettingRoomInfo } = useWaitingContext();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,7 +50,7 @@ const EditFormStatusForm = React.memo(({ info }: { info: WaitingRoomInfo }) => {
         console.error(result.error.errors);
         return;
       }
-      setInfo(result.data);
+      setBettingRoomInfo(result.data);
       toggleOpen();
     } catch (error) {
       console.error(error);
