@@ -28,7 +28,6 @@ export const signup = async (data: SignupRequest) => {
   });
 
   const result = await response.json();
-  console.log(result);
   let resultMessage = result.data.message;
   if (response.ok) {
     return resultMessage;
@@ -49,5 +48,19 @@ export const guestlogin = async (data: GuestLoginRequest) => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  return response.json();
+
+  const result = await response.json();
+
+  let resultMessage = result.data.message;
+  if (response.ok) {
+    return resultMessage;
+  }
+
+  if (response.status === 409) {
+    resultMessage = resultMessage.message;
+    throw Error(resultMessage);
+  } else {
+    resultMessage = resultMessage.message;
+    throw Error(resultMessage);
+  }
 };
