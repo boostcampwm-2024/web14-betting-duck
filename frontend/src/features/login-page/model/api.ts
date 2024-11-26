@@ -28,11 +28,17 @@ export const signup = async (data: SignupRequest) => {
   });
 
   const result = await response.json();
-  const resultMessage = result.data.message.message;
+  console.log(result);
+  let resultMessage = result.data.message;
+  if (response.ok) {
+    return resultMessage;
+  }
 
   if (response.status === 400 || response.status === 409) {
+    resultMessage = resultMessage.message;
     throw Error(resultMessage);
   } else {
+    resultMessage = resultMessage.message;
     throw Error(resultMessage);
   }
 };

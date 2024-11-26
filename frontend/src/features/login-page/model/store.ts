@@ -23,8 +23,10 @@ function useAuthStore() {
     setError(null);
     try {
       const response = await signup(data);
+      console.log(response);
       return { success: true, data: response };
     } catch (err) {
+      console.log("err:", err);
       if (err instanceof Error) {
         setError(err.message);
         return { success: false, error: err.message };
