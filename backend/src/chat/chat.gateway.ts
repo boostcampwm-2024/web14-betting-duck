@@ -19,9 +19,20 @@ import {
 import { UseFilters, UseGuards } from "@nestjs/common";
 import { GlobalWsExceptionFilter } from "src/utils/filters/global-ws-exception.filter";
 import { AuthenticatedGuard } from "src/utils/guards/ws-authenticated.guard";
+// import * as fs from "fs";
 
 @UseFilters(new GlobalWsExceptionFilter())
-@WebSocketGateway({ namespace: "api/chat", cors: true })
+@WebSocketGateway({
+  namespace: "api/chat",
+  cors: {
+    origin: "*",
+    credentials: true,
+  },
+  // serverOptions: {
+  //   key: fs.readFileSync("src/privkey.pem"),
+  //   cert: fs.readFileSync("src/fullchain.pem"),
+  // },
+})
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
