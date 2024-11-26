@@ -1,20 +1,64 @@
 import { InputField } from "@/shared/components/input/InputField";
 import { LoginIDIcon, LoginPasswordIcon } from "@/shared/icons";
-import { useState } from "react";
-import { useAuthStore } from "../../model/store";
+import { useEffect, useState } from "react";
+import { useAuthStore } from "@/features/login-page/model/store";
+import {
+  validateConfirmPassword,
+  validateEmail,
+  validateNickname,
+  validatePassword,
+} from "@/features/login-page/model/validation";
+import { Warning } from "./Warning";
+import { toaster } from "@/components/ui/toaster";
 
-function RegisterForm() {
+interface RegisterFormProps {
+  setActiveTab: (tab: "login" | "register" | "guest") => void;
+}
+
+function RegisterForm({ setActiveTab }: RegisterFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nickname, setNickname] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { handleSignup } = useAuthStore();
+  const [isValid, setIsValid] = useState(false);
+
+  const { error, handleSignup } = useAuthStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    await handleSignup({ email, nickname, password });
+    // // Toast 테스트용 코드
+    // toaster.create({
+    //   description: "회원가입 성공! 로그인하세요.",
+    //   type: "success",
+    // });
+    // setActiveTab("login");
+
+    // 찐또코드
+    const result = await handleSignup({ email, nickname, password });
+    if (result.success) {
+      toaster.create({
+        description: "회원가입 성공! 로그인하세요.",
+        type: "success",
+      });
+      setActiveTab("login");
+    } else {
+      console.error("회원가입 실패:", result.error);
+    }
   };
+
+  useEffect(() => {
+    if (
+      validateEmail(email) &&
+      validatePassword(password) &&
+      validateNickname(nickname) &&
+      validateConfirmPassword(password, confirmPassword)
+    ) {
+      setIsValid(true);
+    } else {
+      setIsValid(false);
+    }
+  }, [email, password, nickname, confirmPassword]);
 
   return (
     <form onSubmit={handleSubmit} className="mt-3 w-[90%]">
@@ -35,11 +79,13 @@ function RegisterForm() {
         <div className="flex items-center shadow-md">
           <InputField
             id="nickname"
-            placeholder="닉네임을 입력해주세요."
+            placeholder="닉네임을 입력해주세요. (1글자 이상 10글자 이하)"
             name="nickname"
             value={nickname}
             type="text"
-            onChange={(e) => setNickname(e.target.value)}
+            onChange={(e) => {
+              setNickname(e.target.value);
+            }}
           >
             <LoginIDIcon />
           </InputField>
@@ -47,7 +93,7 @@ function RegisterForm() {
         <div className="flex items-center shadow-md">
           <InputField
             id="password"
-            placeholder="비밀번호를 입력해주세요."
+            placeholder="비밀번호를 입력해주세요. (영소문자 및 숫자 포함)"
             name="password"
             value={password}
             type="password"
@@ -71,9 +117,12 @@ function RegisterForm() {
           </InputField>
         </div>
       </div>
+      {error && <Warning message={error} />}
+
       <button
         type="submit"
         className="bg-default disabled:bg-default-disabled hover:bg-default-hover shadow-middle mt-3 w-full rounded-md py-2 text-white"
+        disabled={!isValid}
       >
         회원가입
       </button>

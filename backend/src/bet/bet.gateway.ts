@@ -84,10 +84,15 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    const userId = client.data.userId;
-    this.redisManager.removeUserFromAllRooms(userId);
+    const nickname = client.data.nickname;
+    const roomId = client.data.roomId;
+    if (roomId && nickname) {
+      await this.redisManager.client.lrem(`room:${roomId}:users`, 0, nickname);
+    }
+    const remainingUsers = await this.redisManager.getRoomUserNicknames(roomId);
+    this.server.to(roomId).emit("fetchRoomUsers", remainingUsers);
   }
 
   @SubscribeMessage("joinRoom")
@@ -107,22 +112,24 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     const { roomId } = channel;
     client.join(roomId);
+    client.data.nickname = nickname;
+    client.data.roomId = roomId;
 
     const creatorID = await this.redisManager.client.get(
       `room:${roomId}:creator`,
     );
     const owner = userId === creatorID ? 1 : 0;
-    console.log("creatorID: " + creatorID);
+
+    await this.redisManager.client.lpush(`room:${roomId}:users`, nickname);
     await this.redisManager.setBettingUserOnJoin({
       userId,
       nickname,
-      joinAt: new Date(new Date().getTime() + 9 * 60 * 60 * 1000).toISOString(),
       roomId,
       owner: owner,
       role: userRole,
     });
 
-    const users = await this.redisManager.getRoomUsersNicknameAndJoinAt(roomId);
+    const users = await this.redisManager.getRoomUserNicknames(roomId);
     this.server.to(roomId).emit("fetchRoomUsers", users);
   }
 
@@ -132,9 +139,12 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { roomId } = leaveRoomRequestSchema.parse(payload);
     client.leave(roomId);
 
-    await this.redisManager.client.del(`room:${roomId}:user:${userId}`);
-
-    const users = await this.redisManager.getRoomUsersNicknameAndJoinAt(roomId);
+    const nickname = await this.redisManager.client.hget(
+      `user:${userId}`,
+      "nickname",
+    );
+    await this.redisManager.client.lrem(`room:${roomId}:users`, 0, nickname);
+    const users = await this.redisManager.getRoomUserNicknames(roomId);
     this.server.to(roomId).emit("fetchRoomUsers", users);
   }
 
@@ -201,7 +211,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
 
         if (userRole === "user") {
-          this.saveBetHistory(
+          this.saveBetLog(
             client,
             Number(userId),
             channel.roomId,
@@ -268,7 +278,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return updatedChannel;
   }
 
-  private async saveBetHistory(
+  private async saveBetLog(
     client: Socket,
     userId: number,
     roomId: string,

@@ -1,13 +1,19 @@
 import { Injectable } from "@nestjs/common";
 import { RedisService } from "@liaoliaots/nestjs-redis";
-import { Redis } from "ioredis"; // ioredis를 사용하여 타입 지정
+import { Redis } from "ioredis";
+import { randomUUID } from "crypto";
 
 @Injectable()
 export class RedisManager {
   public client: Redis;
+  public publisher: Redis;
+  public consumer: Redis;
 
   constructor(private readonly redisService: RedisService) {
     this.client = this.redisService.getOrThrow("default");
+    this.publisher = this.redisService.getOrThrow("publisher");
+    this.consumer = this.redisService.getOrThrow("consumer");
+    this.consumer.subscribe("stream");
   }
 
   async getUser(userId: string) {
@@ -73,21 +79,18 @@ export class RedisManager {
   async setBettingUserOnJoin({
     userId,
     nickname,
-    joinAt,
     owner,
     roomId,
     role,
   }: {
     userId: string;
     nickname: string;
-    joinAt: string;
     owner: number;
     roomId: string;
     role: string;
   }) {
     await this.client.hset(`room:${roomId}:user:${userId}`, {
       nickname,
-      joinAt,
       owner,
       role,
     });
@@ -111,39 +114,18 @@ export class RedisManager {
   }
 
   async getBettingUser(userId: string, roomId: string) {
-    const [nickname, joinAt, betAmount, selectedOption, owner] =
-      await Promise.all([
-        this.client.hget(`room:${roomId}:user:${userId}`, "nickname"),
-        this.client.hget(`room:${roomId}:user:${userId}`, "joinAt"),
-        this.client.hget(`room:${roomId}:user:${userId}`, "betAmount"),
-        this.client.hget(`room:${roomId}:user:${userId}`, "selectedOption"),
-        this.client.hget(`room:${roomId}:user:${userId}`, "owner"),
-      ]);
-    return { nickname, joinAt, betAmount, selectedOption, owner };
+    const [nickname, betAmount, selectedOption, owner] = await Promise.all([
+      this.client.hget(`room:${roomId}:user:${userId}`, "nickname"),
+      this.client.hget(`room:${roomId}:user:${userId}`, "betAmount"),
+      this.client.hget(`room:${roomId}:user:${userId}`, "selectedOption"),
+      this.client.hget(`room:${roomId}:user:${userId}`, "owner"),
+    ]);
+    return { nickname, betAmount, selectedOption, owner };
   }
 
-  async getRoomUsersNicknameAndJoinAt(roomId: string) {
-    let cursor = "0";
-    const users: { nickname: string; joinAt: string }[] = [];
-
-    do {
-      const [nextCursor, keys] = await this.client.scan(
-        cursor,
-        "MATCH",
-        `room:${roomId}:user:*`,
-        "COUNT",
-        20,
-      );
-      cursor = nextCursor;
-
-      const fetchedUsers = await Promise.all(
-        keys.map(async (key) => {
-          const userData = await this.client.hgetall(key);
-          return { nickname: userData.nickname, joinAt: userData.joinAt };
-        }),
-      );
-      users.push(...fetchedUsers);
-    } while (cursor !== "0");
+  async getRoomUserNicknames(roomId: string) {
+    const key = `room:${roomId}:users`;
+    const users = await this.client.lrange(key, 0, -1);
     return users;
   }
 
@@ -162,18 +144,24 @@ export class RedisManager {
     ]);
   }
 
-  async initializeBetRoom(roomUUID: string, creatorId: string) {
+  async initializeBetRoomOnCreated(userId: string, roomId: string) {
     await Promise.all([
-      this.client.hmset(`room:${roomUUID}:option1`, {
+      this.client.set(`room:${roomId}:creator`, userId),
+      this.client.set(`room:${roomId}:status`, "waiting"),
+    ]);
+  }
+
+  async initializeBetRoomOnStart(roomId: string) {
+    await Promise.all([
+      this.client.hmset(`room:${roomId}:option1`, {
         participants: 0,
         currentBets: 0,
       }),
-      this.client.hmset(`room:${roomUUID}:option2`, {
+      this.client.hmset(`room:${roomId}:option2`, {
         participants: 0,
         currentBets: 0,
       }),
-      this.client.set(`room:${roomUUID}:creator`, creatorId),
-      this.client.set(`room:${roomUUID}:status`, "waiting"),
+      this.client.set(`room:${roomId}:status`, "active"),
     ]);
   }
 
@@ -214,23 +202,116 @@ export class RedisManager {
     } while (cursor !== "0");
   }
 
-  async removeUserFromAllRooms(userId: string) {
-    let cursor = "0";
-    do {
-      const [nextCursor, keys] = await this.client.scan(
-        cursor,
-        "MATCH",
-        `room:*:user:${userId}`,
-        "COUNT",
-        10,
-      );
-      cursor = nextCursor;
-      for (const key of keys) {
-        const betAmount = await this.client.hget(key, "betAmount");
-        if (!betAmount) {
-          await this.client.del(key);
-        }
-      }
-    } while (cursor !== "0");
+  async _xadd(streamKey: string, entryID: string, ...dataArr: string[]) {
+    if (entryID === "*") entryID = randomUUID();
+    if (dataArr.length % 2 !== 0) {
+      console.error("Data should be in key-value pairs");
+      return;
+    }
+
+    const entryKey = `stream:${streamKey}:${entryID}`;
+
+    const data = dataArr.reduce(
+      (acc, curr, index) => {
+        if (index % 2 === 0) acc[curr as string] = dataArr[index + 1];
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
+    // TODO: transaction 시작
+    await this.client.lpush(streamKey, entryKey);
+    await this.client.hset(entryKey, data);
+    await this.client.hset(entryKey, {
+      event_status: "pending",
+      event_retries: 0,
+    });
+    console.log("New message in stream:", streamKey);
+    await this.publisher.publish("stream", streamKey);
   }
+
+  async _xread(count: number, streamKey: string, blockTime: number) {
+    const readStream = async (
+      signal: AbortSignal,
+      count: number,
+      streamKey: string,
+    ): Promise<[string, [string, Record<string, string>][]]> => {
+      const entries: [string, Record<string, string>][] = [];
+      let processedCount = 0;
+
+      while (processedCount < count && !signal.aborted) {
+        let entryKey = await this.client.lpop(streamKey);
+
+        if (!entryKey) {
+          await new Promise<void>((resolve) => {
+            const abortHandler = () => {
+              this.consumer.off("message", handleMessage);
+              signal.removeEventListener("abort", abortHandler);
+              resolve();
+            };
+
+            const handleMessage = (
+              channel: string,
+              messageStreamKey: string,
+            ) => {
+              if (messageStreamKey === streamKey) {
+                this.consumer.off("message", handleMessage);
+                signal.removeEventListener("abort", abortHandler);
+                resolve();
+              }
+            };
+
+            signal.addEventListener("abort", abortHandler);
+            this.consumer.on("message", handleMessage);
+          });
+
+          if (signal.aborted) {
+            return [streamKey, entries];
+          }
+
+          entryKey = await this.client.lpop(streamKey);
+        }
+
+        if (entryKey) {
+          const fields = await this.client.hgetall(entryKey);
+          entries.push([entryKey, fields]);
+        }
+
+        processedCount++;
+      }
+
+      return [streamKey, entries];
+    };
+
+    return new Promise<[string, [string, Record<string, string>][]]>(
+      (resolve, reject) => {
+        const controller = new AbortController();
+        const { signal } = controller;
+
+        readStream(signal, count, streamKey).then(resolve).catch(reject);
+
+        setTimeout(() => {
+          controller.abort();
+          console.log("Operation timed out");
+        }, blockTime);
+      },
+    );
+  }
+
+  // 개선 이전의 _xread 메서드
+  // async _xread(count: number, streamKey: string) {
+  //   const messages = [];
+
+  //   for (let i = 0; i < count; i++) {
+  //     const entryID = await this.client.rpop(streamKey);
+  //     if (!entryID) break;
+
+  //     const fields = await this.client.hgetall(entryID);
+  //     messages.push([entryID, fields]);
+  //   }
+
+  //   return [[streamKey, messages]];
+  // }
+
+  // async _xack(streamKey: string, groupName: string, entryID: string) {}
 }
