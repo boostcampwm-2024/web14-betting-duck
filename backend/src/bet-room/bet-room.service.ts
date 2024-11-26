@@ -160,13 +160,14 @@ export class BetRoomService {
     return updateResult;
   }
 
-  async findBetRoomById(betRoomId: string) {
+  async findBetRoomById(userId: number | string, betRoomId: string) {
     const betRoom = await this.betRoomRepository.findOneById(betRoomId);
     if (!betRoom) {
       throw new NotFoundException(
         `해당하는 베팅방이 존재하지 않습니다. Id: ${betRoomId}`,
       );
     }
+    const isAdmin = userId === betRoom.manager.id;
     return {
       id: betRoom.id,
       title: betRoom.title,
@@ -194,6 +195,7 @@ export class BetRoomService {
       urls: {
         invite: betRoom.joinUrl,
       },
+      isAdmin: isAdmin,
     };
   }
 
