@@ -101,6 +101,9 @@ export class BetRoomService {
 
     setTimeout(
       async () => {
+        await this.betRoomRepository.update(betRoomId, {
+          status: "timeover",
+        });
         await this.redisManager.setRoomStatus(betRoomId, "timeover");
         this.betGateway.server.to(betRoomId).emit("timeover", {
           message: "베팅 시간이 종료되었습니다.",
