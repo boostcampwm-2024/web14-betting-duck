@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "../../model/store";
 import { Warning } from "./Warning";
 import { useNavigate } from "@tanstack/react-router";
-import { useUser } from "@/shared/hooks/use-user";
+import { useUserContext } from "@/shared/hooks/use-user-context";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isValid, setIsValid] = useState(false);
   const navigate = useNavigate();
-  const { refreshUserInfo } = useUser();
+  const { refreshUserInfo } = useUserContext();
 
   const { error, handleLogin } = useAuthStore();
 
