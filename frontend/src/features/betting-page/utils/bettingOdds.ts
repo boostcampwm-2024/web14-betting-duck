@@ -25,13 +25,16 @@ function calculateOdds(pool: BettingPool): BettingOdds {
 
   const effectivePool = totalPool * (1 - HOUSE_EDGE);
 
-  const option1Ratio = pool.option1.totalAmount / totalPool;
-  const option2Ratio = pool.option2.totalAmount / totalPool;
+  const option1Ratio =
+    pool.option1.totalAmount === 0 ? 0 : pool.option1.totalAmount / totalPool;
+  const option2Ratio =
+    pool.option2.totalAmount === 0 ? 0 : pool.option2.totalAmount / totalPool;
 
   const option1Multiplier =
     option1Ratio === 0
       ? 1
       : Math.max(1, effectivePool / pool.option1.totalAmount);
+
   const option2Multiplier =
     option2Ratio === 0
       ? 1
@@ -61,12 +64,14 @@ function getBettingSummary(pool: BettingPool) {
   return {
     totalParticipants,
     totalAmount,
-    option1Percentage: ((pool.option1.totalAmount / totalAmount) * 100).toFixed(
-      1,
-    ),
-    option2Percentage: ((pool.option2.totalAmount / totalAmount) * 100).toFixed(
-      1,
-    ),
+    option1Percentage: (totalAmount === 0
+      ? 0
+      : (pool.option1.totalAmount / totalAmount) * 100
+    ).toFixed(1),
+    option2Percentage: (totalAmount === 0
+      ? 0
+      : (pool.option2.totalAmount / totalAmount) * 100
+    ).toFixed(1),
     option1: {
       participants: pool.option1.participants,
       totalAmount: pool.option1.totalAmount,
@@ -89,26 +94,3 @@ export {
   type BettingPool,
   type BettingSummary,
 };
-
-// 사용 예시:
-const examplePool: BettingPool = {
-  option1: {
-    totalAmount: 10000,
-    participants: 50,
-  },
-  option2: {
-    totalAmount: 5000,
-    participants: 30,
-  },
-};
-
-const odds = calculateOdds(examplePool);
-console.log("Betting Odds:", odds);
-
-const summary = getBettingSummary(examplePool);
-console.log("Betting Summary:", summary);
-
-// 특정 베팅의 잠재적 수익 계산
-const betAmount = 1000;
-const potentialWinnings = calculateWinnings(betAmount, odds.option1Multiplier);
-console.log(`Potential winnings for ${betAmount} points:`, potentialWinnings);

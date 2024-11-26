@@ -22,7 +22,7 @@
       0px 1.8px 1.7px -3.7px hsl(217deg 20% 62% / 0.23);
     --shadow-elevation-medium: 0px 0.5px 0.5px hsl(217deg 20% 62% / 0.35),
       0px 0.9px 0.8px -0.9px hsl(217deg 20% 62% / 0.31),
-      0px 2px 1.9px -1.9px hsl(217deg 20% 62% / 0.26),
+      0px 2px 1.9px -1.9px hsla(214, 11%, 25%, 0.26),
       -0.1px 4.4px 4.1px -2.8px hsl(217deg 20% 62% / 0.21),
       -0.1px 9.1px 8.5px -3.7px hsl(217deg 20% 62% / 0.16);
     --shadow-elevation-high: 0px 0.5px 0.5px hsl(217deg 20% 62% / 0.33),
@@ -184,11 +184,11 @@
   }
 
   .betting-container {
-    container: betting-container / size;
-    min-width: 620px;
-    min-height: 430px;
+    container: betting-container / inline-size;
+    min-width: 750px;
+    /* min-height: 430px; */
     width: fit-content;
-    height: 100%;
+    height: fit-content;
   }
 
   .message-container {

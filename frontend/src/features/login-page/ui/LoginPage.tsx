@@ -7,15 +7,26 @@ import {
   RegisterForm,
   TabButton,
 } from "./components";
-import { Toaster } from "@/components/ui/toaster";
+import { Alert, Snackbar } from "@mui/material";
 
 function LoginPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register" | "guest">(
     "login",
   );
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleTabChange = (tab: "login" | "register" | "guest") => {
     setActiveTab(tab);
+  };
+
+  const handleSnackbarClose = (
+    _event?: React.SyntheticEvent | Event,
+    reason?: string,
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
   };
 
   return (
@@ -54,10 +65,28 @@ function LoginPage() {
         />
       </div>
       {activeTab === "login" && <LoginForm />}
-      {activeTab === "register" && <RegisterForm setActiveTab={setActiveTab} />}
+      {activeTab === "register" && (
+        <RegisterForm
+          setActiveTab={setActiveTab}
+          setSnackbarOpen={setSnackbarOpen}
+        />
+      )}
 
       {activeTab === "guest" && <GuestLoginForm />}
-      <Toaster />
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          "회원가입 성공! 로그인하세요."
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

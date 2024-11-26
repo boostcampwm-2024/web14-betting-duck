@@ -2,20 +2,11 @@ import waitingUserImage from "@assets/images/waiting-user.png";
 import React from "react";
 import { useWaitingContext } from "../hooks/use-waiting-context";
 
-type ParticipantInfo = {
-  nickname: string;
-  joinAt: string;
-};
+type ParticipantInfo = string;
 
 function isParticipantInfo(info: unknown): info is ParticipantInfo[] {
   if (Array.isArray(info)) {
-    return info.every(
-      (item) =>
-        typeof item === "object" &&
-        item !== null &&
-        typeof (item as ParticipantInfo).nickname === "string" &&
-        typeof (item as ParticipantInfo).joinAt === "string",
-    );
+    return info.every((item) => typeof item === "string" && item !== null);
   }
   return false;
 }
@@ -84,7 +75,7 @@ function ParticipantsList() {
     <div className="bg-secondary flex flex-col gap-4 rounded-lg px-6 pb-4 pt-2 shadow-inner">
       <div className="font-extrabold">참가 중인 사용자</div>
       <ul className="max flex w-full max-w-[366px] flex-row gap-4 overflow-x-scroll font-bold">
-        {participants.map(({ nickname }, i) => (
+        {participants.map((nickname, i) => (
           <User key={`${nickname}-${i}th-player`} nickname={nickname} />
         ))}
       </ul>
