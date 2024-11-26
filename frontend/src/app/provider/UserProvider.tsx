@@ -3,7 +3,7 @@ import React from "react";
 
 interface UserContextType {
   userInfo: UserInfo;
-  setUserInfo: (info: UserInfo) => void;
+  setUserInfo: (info: UserInfo) => Promise<void>;
   refreshUserInfo: () => Promise<void>;
 }
 
@@ -25,26 +25,44 @@ const UserContext = React.createContext<UserContextType | null>(null);
 
 function UserProvider({ children }: { children: React.ReactNode }) {
   const { getSessionItem, setSessionItem } = useSessionStorage();
-  const [userInfo, setUserInfo] = React.useState<UserInfo>(() => {
-    const userInfo = getSessionItem("userInfo");
-    if (userInfo) {
-      return JSON.parse(userInfo);
-    }
-    return defaultUserInfo;
-  });
+  const [userInfo, setUserInfo] = React.useState<UserInfo>(defaultUserInfo);
+  const initialized = React.useRef(false);
+
+  React.useEffect(() => {
+    const loadInitialState = async () => {
+      if (initialized.current) return;
+
+      try {
+        const savedUserInfo = await getSessionItem("userInfo");
+        if (savedUserInfo) {
+          setUserInfo(JSON.parse(savedUserInfo));
+        }
+      } catch (error) {
+        console.error(error);
+        throw new Error("사용자의 초기 정보를 불러오는데 실패 했습니다.");
+      } finally {
+        initialized.current = true;
+      }
+    };
+
+    loadInitialState();
+  }, [getSessionItem]);
 
   const updateUserInfo = React.useCallback(
-    (info: Partial<UserInfo>) => {
-      setUserInfo((prev) => {
+    async (info: Partial<UserInfo>) => {
+      try {
         const newUserInfo = {
-          ...prev,
+          ...userInfo,
           ...info,
         };
-        setSessionItem("userInfo", JSON.stringify(newUserInfo));
-        return newUserInfo;
-      });
+        await setSessionItem("userInfo", JSON.stringify(newUserInfo));
+        setUserInfo(newUserInfo);
+      } catch (error) {
+        console.error("사용자의 정보를 업데이트에 실패 했습니다.", error);
+        throw error;
+      }
     },
-    [setSessionItem],
+    [setSessionItem, userInfo],
   );
 
   const refreshUserInfo = React.useCallback(async () => {
@@ -55,25 +73,20 @@ function UserProvider({ children }: { children: React.ReactNode }) {
       }
       const { data } = await response.json();
       const { role, nickname, duck } = data as UserInfo;
-      updateUserInfo({ role, nickname, duck });
+      await updateUserInfo({ role, nickname, duck });
     } catch (error) {
       updateUserInfo(defaultUserInfo);
       console.error("Failed to refresh user info:", error);
     }
   }, [updateUserInfo]);
 
-  const getSessionUserInfo = React.useCallback(() => {
-    const userInfo = getSessionItem("userInfo");
-    return userInfo;
-  }, [getSessionItem]);
-
   const value = React.useMemo(
     () => ({
-      userInfo: getSessionUserInfo() || userInfo,
+      userInfo,
       setUserInfo: updateUserInfo,
       refreshUserInfo,
     }),
-    [userInfo, refreshUserInfo, getSessionUserInfo, updateUserInfo],
+    [userInfo, refreshUserInfo, updateUserInfo],
   );
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
