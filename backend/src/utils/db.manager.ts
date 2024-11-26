@@ -12,7 +12,7 @@ export class DBManager {
     private readonly userRepository: Repository<User>,
     private redisManager: RedisManager,
   ) {
-    this.userStreamKey = "stream:users";
+    this.userStreamKey = "users";
     this.getUserFromStream();
   }
 

@@ -237,7 +237,7 @@ export class RedisManager {
       count: number,
       streamKey: string,
     ): Promise<[string, [string, Record<string, string>][]]> => {
-      const pelKey = `${streamKey}:pel`;
+      const pelKey = `stream:${streamKey}:pel`;
       const entries: [string, Record<string, string>][] = [];
       let processedCount = 0;
 
@@ -277,7 +277,9 @@ export class RedisManager {
         if (entryKey) {
           const fields = await this.client.hgetall(entryKey);
           if (fields.event_status === "pending") {
-            await this.client.sadd(pelKey, entryKey);
+            await this.client.rpush(pelKey, entryKey);
+            await this.client.set(`${pelKey}:${entryKey}`, "pending", "EX", 60);
+
             await this.client.hset(entryKey, "event_status", "processing");
             await this.client.hincrby(entryKey, "event_retries", 1);
             entries.push([entryKey, fields]);
@@ -306,8 +308,9 @@ export class RedisManager {
   }
 
   async _xack(streamKey: string, entryKey: string) {
-    const pelKey = `${streamKey}:pel`;
-    await this.client.srem(pelKey, entryKey);
+    const pelKey = `stream:${streamKey}:pel`;
+    await this.client.lrem(pelKey, 1, entryKey);
+    await this.client.del(`${pelKey}:${entryKey}`);
     await this.client.hset(entryKey, "event_status", "acknowledged");
   }
 
