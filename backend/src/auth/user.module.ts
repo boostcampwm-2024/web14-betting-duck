@@ -6,6 +6,7 @@ import { UserRepository } from "./user.repository";
 import { User } from "./user.entity";
 import { JwtModule } from "@nestjs/jwt";
 import { RedisManagerModule } from "src/utils/redis-manager.module";
+import { DBManagerModule } from "src/utils/db.manager.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RedisManagerModule } from "src/utils/redis-manager.module";
       signOptions: { expiresIn: "1h" },
     }),
     RedisManagerModule,
+    DBManagerModule,
   ],
   controllers: [UserController],
   providers: [UserService, UserRepository],

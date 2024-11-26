@@ -18,6 +18,7 @@ import {
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
 import { UpgradeGuestRequestDto } from "./dto/upgrade-guest.dto";
+import { DBManager } from "src/utils/db.manager";
 
 @Injectable()
 export class UserService {
@@ -25,6 +26,7 @@ export class UserService {
     private userRepository: UserRepository,
     private jwtService: JwtService,
     private redisManager: RedisManager,
+    private dbManager: DBManager,
   ) {}
 
   async signUp(body: SignUpUserRequestDto): Promise<void> {
@@ -221,7 +223,8 @@ export class UserService {
     const userId = req["user"].id;
     const role = req["user"].role;
     const user = await this.redisManager.getUser(String(userId));
-    if (role === "user") await this.userRepository.update(userId, { duck });
+    // if (role === "user") await this.userRepository.update(userId, { duck });
+    if (role === "user") await this.dbManager.setUser({ id: userId, duck });
 
     const newUserInfo = {
       userId: userId,
