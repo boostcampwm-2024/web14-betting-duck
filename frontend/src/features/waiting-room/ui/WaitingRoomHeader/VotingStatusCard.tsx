@@ -10,9 +10,9 @@ import React from "react";
 import { useUserContext } from "@/shared/hooks/use-user-context";
 
 const VotingStatusCard = React.memo(() => {
-  const { info } = useWaitingContext();
+  const { bettingRoomInfo } = useWaitingContext();
   const { userInfo } = useUserContext();
-  const { channel } = info;
+  const { channel } = bettingRoomInfo;
 
   return (
     <div className="bg-primary text-secondary-default text-secondary flex w-full flex-col gap-2 rounded-lg p-3 shadow-md">
@@ -27,7 +27,7 @@ const VotingStatusCard = React.memo(() => {
               <EditIcon />
             </DialogTrigger>
             <DialogContent>
-              <EditFormStatusForm info={info} />
+              <EditFormStatusForm info={bettingRoomInfo} />
             </DialogContent>
           </Dialog>
         )}
