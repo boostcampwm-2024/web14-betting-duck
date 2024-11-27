@@ -144,6 +144,15 @@ export class RedisManager {
     ]);
   }
 
+  async deductDuck(userId: string, betAmount: number): Promise<number> {
+    const updatedDuck = await this.client.hincrby(
+      `user:${userId}`,
+      "duck",
+      -betAmount,
+    );
+    return updatedDuck;
+  }
+
   async initializeBetRoomOnCreated(userId: string, roomId: string) {
     const transaction = this.client.multi();
     transaction
