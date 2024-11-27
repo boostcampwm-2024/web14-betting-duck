@@ -5,6 +5,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen.ts";
 import { Auth } from "@/shared/lib/auth.ts";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { GlobalErrorComponent } from "./shared/components/Error/GlobalError.tsx";
 
 const router = createRouter({
   routeTree,
@@ -12,6 +13,9 @@ const router = createRouter({
     auth: Auth,
   },
   defaultPreload: "intent",
+  defaultErrorComponent: ({ error, reset }) => (
+    <GlobalErrorComponent error={error} reset={reset} />
+  ),
 });
 
 const theme = createTheme();

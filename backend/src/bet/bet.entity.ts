@@ -23,6 +23,16 @@ export class Bet extends BaseEntity {
   @Column()
   betAmount: number;
 
+  @Column({ nullable: true })
+  settledAmount?: number;
+
+  @Column({
+    type: "enum",
+    enum: ["pending", "settled", "refunded"],
+    default: "pending",
+  })
+  status: "pending" | "settled" | "refunded";
+
   @CreateDateColumn({ type: "timestamp" })
   createdAt: Date;
 

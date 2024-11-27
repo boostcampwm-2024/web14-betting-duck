@@ -10,6 +10,6 @@ import { Bet } from "./bet.entity";
 @Module({
   imports: [TypeOrmModule.forFeature([Bet]), RedisManagerModule],
   providers: [BetGateway, JwtUtils, BetService, BetRepository],
-  exports: [BetGateway],
+  exports: [BetGateway, BetRepository],
 })
 export class BetModule {}
