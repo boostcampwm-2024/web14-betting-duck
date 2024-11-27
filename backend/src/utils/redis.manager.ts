@@ -242,13 +242,13 @@ export class RedisManager {
     );
 
     // TODO: transaction 시작
-    await this.client.lpush(streamKey, entryKey);
+    await this.client.lpush(`stream:${streamKey}`, entryKey);
     await this.client.hset(entryKey, data);
     await this.client.hset(entryKey, {
+      stream_key: `stream:${streamKey}`,
       event_status: "pending",
       event_retries: 0,
     });
-    console.log("New message in stream:", streamKey);
     await this.publisher.publish("stream", streamKey);
   }
 
@@ -258,11 +258,12 @@ export class RedisManager {
       count: number,
       streamKey: string,
     ): Promise<[string, [string, Record<string, string>][]]> => {
+      const pelKey = `stream:${streamKey}:pel`;
       const entries: [string, Record<string, string>][] = [];
       let processedCount = 0;
 
       while (processedCount < count && !signal.aborted) {
-        let entryKey = await this.client.lpop(streamKey);
+        let entryKey = await this.client.lpop(`stream:${streamKey}`);
 
         if (!entryKey) {
           await new Promise<void>((resolve) => {
@@ -288,21 +289,28 @@ export class RedisManager {
           });
 
           if (signal.aborted) {
-            return [streamKey, entries];
+            return [`stream:${streamKey}`, entries];
           }
 
-          entryKey = await this.client.lpop(streamKey);
+          entryKey = await this.client.lpop(`stream:${streamKey}`);
         }
 
         if (entryKey) {
           const fields = await this.client.hgetall(entryKey);
-          entries.push([entryKey, fields]);
+          if (fields.event_status === "pending") {
+            await this.client.rpush(pelKey, entryKey);
+            await this.client.set(`${pelKey}:${entryKey}`, "pending", "EX", 60);
+
+            await this.client.hset(entryKey, "event_status", "processing");
+            await this.client.hincrby(entryKey, "event_retries", 1);
+            entries.push([entryKey, fields]);
+          }
         }
 
         processedCount++;
       }
 
-      return [streamKey, entries];
+      return [`stream:${streamKey}`, entries];
     };
 
     return new Promise<[string, [string, Record<string, string>][]]>(
@@ -314,10 +322,16 @@ export class RedisManager {
 
         setTimeout(() => {
           controller.abort();
-          console.log("Operation timed out");
         }, blockTime);
       },
     );
+  }
+
+  async _xack(streamKey: string, entryKey: string) {
+    const pelKey = `stream:${streamKey}:pel`;
+    await this.client.lrem(pelKey, 1, entryKey);
+    await this.client.del(`${pelKey}:${entryKey}`);
+    await this.client.hset(entryKey, "event_status", "acknowledged");
   }
 
   // 개선 이전의 _xread 메서드

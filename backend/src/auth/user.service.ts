@@ -18,6 +18,7 @@ import {
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
 import { UpgradeGuestRequestDto } from "./dto/upgrade-guest.dto";
+import { DBManager } from "src/utils/db.manager";
 
 @Injectable()
 export class UserService {
@@ -25,6 +26,7 @@ export class UserService {
     private userRepository: UserRepository,
     private jwtService: JwtService,
     private redisManager: RedisManager,
+    private dbManager: DBManager,
   ) {}
 
   async signUp(body: SignUpUserRequestDto): Promise<void> {
@@ -224,7 +226,7 @@ export class UserService {
     if (role === "user") await this.userRepository.update(userId, { duck });
 
     const newUserInfo = {
-      userId: userId,
+      userId: String(userId),
       nickname: user.nickname,
       role: user.role,
       duck: duck,
@@ -232,5 +234,10 @@ export class UserService {
     await this.redisManager.setUser(newUserInfo);
 
     return newUserInfo;
+  }
+
+  // DBManager 테스트용 메서드
+  async dbTest(userId: number) {
+    await this.dbManager.setUser(userId, { duck: 100 });
   }
 }
