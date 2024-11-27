@@ -115,6 +115,22 @@ export class BetRoomService {
       Number(duration) * 1000,
     );
 
+    setTimeout(
+      async () => {
+        const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+        if (betRoom.status === "timeover") {
+          await this.saveRefundedData(betRoomId);
+          this.betGateway.server.to(betRoomId).emit("finished", {
+            message: "배팅 정산이 취소되었습니다",
+            roomId: betRoomId,
+          });
+          await this.processBetRoomRefund(betRoomId);
+          await this.redisManager.deleteChannelData(betRoomId);
+        }
+      },
+      (Number(duration) + 3 * 60) * 1000,
+    );
+
     return updateResult;
   }
 
@@ -124,10 +140,6 @@ export class BetRoomService {
     winningOption: "option1" | "option2",
   ) {
     await this.assertBetRoomAccess(betRoomId, userId);
-
-    const updateResult = await this.betRoomRepository.update(betRoomId, {
-      status: "finished",
-    });
     await this.redisManager.setRoomStatus(betRoomId, "finished");
 
     const {
@@ -157,13 +169,27 @@ export class BetRoomService {
 
     await this.processBetRoomSettlement(betRoomId, winningOption, winningOdds);
     await this.redisManager.deleteChannelData(betRoomId);
+    const updateResult = await this.betRoomRepository.update(betRoomId, {
+      status: "finished",
+    });
+    return updateResult;
+  }
+
+  async refundBetRoom(userId: number, betRoomId: string) {
+    await this.assertBetRoomAccess(betRoomId, userId);
+    const updateResult = await this.saveRefundedData(betRoomId);
+
+    this.betGateway.server.to(betRoomId).emit("finished", {
+      message: "배팅 정산이 취소되었습니다",
+      roomId: betRoomId,
+    });
+    await this.processBetRoomRefund(betRoomId);
+    await this.redisManager.deleteChannelData(betRoomId);
 
     return updateResult;
   }
 
-  async cancelBetRoomSettlement(userId: number, betRoomId: string) {
-    await this.assertBetRoomAccess(betRoomId, userId);
-
+  private async saveRefundedData(betRoomId: string) {
     const updateResult = await this.betRoomRepository.update(betRoomId, {
       status: "finished",
     });
@@ -183,15 +209,6 @@ export class BetRoomService {
       option2Participants,
       "refunded",
     );
-
-    this.betGateway.server.to(betRoomId).emit("finished", {
-      message: "배팅 정산이 취소되었습니다",
-      roomId: betRoomId,
-    });
-
-    await this.processBetRoomRefund(betRoomId);
-    await this.redisManager.deleteChannelData(betRoomId);
-
     return updateResult;
   }
 

@@ -135,16 +135,13 @@ export class BetRoomController {
 
   @UseGuards(JwtUserAuthGuard)
   @Patch("/refund/:betRoomId")
-  async cancelBetRoomSettlement(
+  async refundBetRoom(
     @Param("betRoomId") betRoomId: string,
     @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
-      await this.betRoomService.cancelBetRoomSettlement(
-        req["user"].id,
-        betRoomId,
-      );
+      await this.betRoomService.refundBetRoom(req["user"].id, betRoomId);
       return res.status(HttpStatus.OK).json({
         status: HttpStatus.OK,
         data: {
