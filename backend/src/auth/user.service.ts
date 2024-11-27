@@ -223,11 +223,10 @@ export class UserService {
     const userId = req["user"].id;
     const role = req["user"].role;
     const user = await this.redisManager.getUser(String(userId));
-    // if (role === "user") await this.userRepository.update(userId, { duck });
-    if (role === "user") await this.dbManager.setUser({ id: userId, duck });
+    if (role === "user") await this.userRepository.update(userId, { duck });
 
     const newUserInfo = {
-      userId: userId,
+      userId: String(userId),
       nickname: user.nickname,
       role: user.role,
       duck: duck,
@@ -235,5 +234,10 @@ export class UserService {
     await this.redisManager.setUser(newUserInfo);
 
     return newUserInfo;
+  }
+
+  // DBManager 테스트용 메서드
+  async dbTest(userId: number) {
+    await this.dbManager.setUser(userId, { duck: 100 });
   }
 }
