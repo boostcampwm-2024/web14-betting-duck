@@ -188,6 +188,7 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
           : targetChannel.option2;
 
       if (selectedOption) {
+        await this.redisManager.deductDuck(userId, sender.betAmount);
         await this.redisManager.updateBetting(
           channel.roomId,
           sender.selectOption,

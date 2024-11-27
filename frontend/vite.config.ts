@@ -25,6 +25,7 @@ export default defineConfig(({ mode }) => {
           target: env.SOCKET_URL,
           changeOrigin: true,
           secure: false,
+          ws: true,
         },
       },
       middlewareMode: env.NODE_ENV === "development" ? false : true,

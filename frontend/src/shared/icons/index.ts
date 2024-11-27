@@ -18,6 +18,7 @@ import { InfoIcon } from "./InfoIcon";
 import { EditIcon } from "./EditIcon";
 import { LoginIDIcon } from "./LoginIDIcon";
 import { LoginPasswordIcon } from "./LoginPasswordIcon";
+import { EmailIcon } from "./EmailIcon";
 
 export {
   EditIcon,
@@ -40,4 +41,5 @@ export {
   DuckIcon,
   LoginIDIcon,
   LoginPasswordIcon,
+  EmailIcon,
 };

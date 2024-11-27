@@ -1,6 +1,8 @@
 import { ProgressBar } from "@/shared/components/ProgressBar";
 
-function PercentageDisplay({
+import React from "react";
+
+const PercentageDisplay = React.memo(function PercentageDisplay({
   percentage,
   index,
 }: {
@@ -23,6 +25,6 @@ function PercentageDisplay({
       />
     </div>
   );
-}
+});
 
 export { PercentageDisplay };

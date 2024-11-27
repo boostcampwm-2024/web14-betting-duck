@@ -3,6 +3,7 @@ import { RootHeader } from "@/shared/components/RootHeader";
 import { RootSideBar } from "@/shared/components/RootSideBar";
 import { UserProvider } from "@/app/provider/UserProvider";
 import type { Auth } from "@/shared/lib/auth";
+import { GlobalErrorComponent } from "@/shared/components/Error/GlobalError";
 
 export const Route = createRootRouteWithContext<{ auth: Auth }>()({
   component: () => (
@@ -13,6 +14,9 @@ export const Route = createRootRouteWithContext<{ auth: Auth }>()({
         <Outlet />
       </RootLayout>
     </UserProvider>
+  ),
+  errorComponent: ({ error, reset }) => (
+    <GlobalErrorComponent error={error} reset={reset} />
   ),
 });
 

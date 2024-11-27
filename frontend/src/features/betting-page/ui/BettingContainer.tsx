@@ -6,8 +6,8 @@ import { PercentageDisplay } from "./PercentageDisplay";
 import { DuckCoinIcon } from "@/shared/icons";
 import { useBettingContext } from "../hook/use-betting-context";
 import React from "react";
-import { z } from "zod";
 import { BettingPool } from "../utils/bettingOdds";
+import { bettingRoomSchema } from "../model/schema";
 
 interface BettingStats {
   coinAmount: number;
@@ -15,21 +15,6 @@ interface BettingStats {
   participant: number;
   percentage: number;
 }
-
-const bettingRoomSchema = z.object({
-  channel: z.object({
-    creator: z.string(),
-    status: z.enum(["waiting", "active", "timeover", "finished"]),
-    option1: z.object({
-      participants: z.coerce.number().int().lte(10000),
-      currentBets: z.coerce.number().int().lte(10000),
-    }),
-    option2: z.object({
-      participants: z.coerce.number().int().lte(10000),
-      currentBets: z.coerce.number().int().lte(10000),
-    }),
-  }),
-});
 
 interface BettingRoom {
   title: string;
@@ -52,6 +37,7 @@ function BettingContainer() {
     updateBettingPool,
     bettingSummary,
   } = useBettingContext();
+  const { channel } = bettingRoomInfo;
 
   const prevOption1Ref = React.useRef<Partial<BettingPool["option1"]>>(
     typeof window !== "undefined"
@@ -66,6 +52,7 @@ function BettingContainer() {
           ?.option2 ?? bettingPool.option2)
       : bettingPool.option2,
   );
+
   React.useEffect(() => {
     if (!socket.isConnected) return;
     socket.emit("joinRoom", {
@@ -87,29 +74,26 @@ function BettingContainer() {
 
     socket.on("fetchBetRoomInfo", (data) => {
       const result = bettingRoomSchema.safeParse(data);
-      if (!result.success)
+      if (!result.success) {
+        console.error(result.error.errors);
         throw new Error("배팅 방 정보를 가져오는데 실패했습니다.");
+      }
+
       const { channel } = result.data;
       if (
         prevOption1Ref.current.participants !== channel.option1.participants ||
         prevOption2Ref.current.participants !== channel.option2.participants
       ) {
-        console.log("배팅 정보 업데이트");
         updateBettingPool({
           option1: {
-            participants:
-              bettingPool.option1.participants + channel.option1.participants,
-            totalAmount:
-              bettingPool.option1.totalAmount + channel.option1.currentBets,
+            participants: channel.option1.participants,
+            totalAmount: channel.option1.currentBets,
           },
           option2: {
-            participants:
-              bettingPool.option2.participants + channel.option2.participants,
-            totalAmount:
-              bettingPool.option2.totalAmount + channel.option2.currentBets,
+            participants: channel.option2.participants,
+            totalAmount: channel.option2.currentBets,
           },
         });
-        console.log(bettingSummary);
         prevOption1Ref.current = channel.option1;
         prevOption2Ref.current = channel.option2;
       }
@@ -147,7 +131,7 @@ function BettingContainer() {
     <div
       className={cn(
         "betting-container",
-        "shadow-middle bg-layout-main h-full max-h-[430px] w-full min-w-[630px] rounded-lg border-2 p-6",
+        "shadow-middle bg-layout-main h-full rounded-lg border-2 p-6",
       )}
     >
       <button
@@ -155,7 +139,7 @@ function BettingContainer() {
           socket.emit("joinBet", {
             sender: {
               betAmount: 300,
-              selectOption: "option1", // enum option1, option2
+              selectOption: "option2", // enum option1, option2
             },
             channel: {
               roomId: bettingRoomInfo.channel.id,
@@ -167,19 +151,19 @@ function BettingContainer() {
       </button>
       <div className="flex h-full flex-col">
         <BettingHeader
-          content={bettingData.title}
+          content={channel.title}
           time={bettingData.timeRemaining}
         />
         <div className="flex flex-col gap-4">
           <div className="flex justify-between gap-6">
             <BettingStatsDisplay
               stats={bettingSummary.option1}
-              content={bettingData.option1.content}
+              content={channel.options.option1.name}
               uses="winning"
             />
             <BettingStatsDisplay
               stats={bettingSummary.option2}
-              content={bettingData.option2.content}
+              content={channel.options.option2.name}
               uses="losing"
             />
           </div>

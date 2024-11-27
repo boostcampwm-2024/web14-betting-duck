@@ -1,5 +1,5 @@
 import { InputField } from "@/shared/components/input/InputField";
-import { LoginIDIcon, LoginPasswordIcon } from "@/shared/icons";
+import { EmailIcon, LoginPasswordIcon } from "@/shared/icons";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../../model/store";
 import { Warning } from "./Warning";
@@ -55,7 +55,7 @@ function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
           >
-            <LoginIDIcon />
+            <EmailIcon />
           </InputField>
         </div>
         <div className="flex items-center shadow-md">

@@ -133,14 +133,43 @@ export class BetRoomController {
     }
   }
 
+  @UseGuards(JwtUserAuthGuard)
+  @Patch("/refund/:betRoomId")
+  async refundBetRoom(
+    @Param("betRoomId") betRoomId: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+      await this.betRoomService.refundBetRoom(req["user"].id, betRoomId);
+      return res.status(HttpStatus.OK).json({
+        status: HttpStatus.OK,
+        data: {
+          message: "베팅 정산이 취소되었습니다.",
+          betRoomId: betRoomId,
+        },
+      });
+    } catch (error) {
+      return res.status(error.status || HttpStatus.INTERNAL_SERVER_ERROR).json({
+        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        data: { message: error.message },
+      });
+    }
+  }
+
   @UseGuards(JwtGuestAuthGuard)
   @Get("/:betRoomId")
   async getBetRoom(
     @Param("betRoomId") betRoomId: string,
+    @Req() req: Request,
     @Res() res: Response,
   ) {
     try {
-      const betRoomData = await this.betRoomService.findBetRoomById(betRoomId);
+      const userId = req["user"].id;
+      const betRoomData = await this.betRoomService.findBetRoomById(
+        userId,
+        betRoomId,
+      );
       return res.status(HttpStatus.OK).json({
         status: HttpStatus.OK,
         data: {

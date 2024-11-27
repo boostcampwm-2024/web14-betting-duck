@@ -12,7 +12,7 @@ const DialogContext = React.createContext<DialogContextType>({
 
 const DialogStateProvider = React.memo(
   ({ children }: { children: React.ReactNode }) => {
-    const [isOpen, setIsOpen] = React.useState(false);
+    const [isOpen, setIsOpen] = React.useState(true);
     const toggleOpen = React.useCallback(() => setIsOpen((prev) => !prev), []);
 
     const value = React.useMemo(

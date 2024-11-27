@@ -13,6 +13,7 @@ import { RedisManager } from "src/utils/redis.manager";
 import { BetRoom } from "./bet-room.entity";
 import { BetResult } from "src/bet-result/bet-result.entity";
 import { BetGateway } from "src/bet/bet.gateway";
+import { BetRepository } from "src/bet/bet.repository";
 
 @Injectable()
 export class BetRoomService {
@@ -20,6 +21,7 @@ export class BetRoomService {
     private betRoomRepository: BetRoomRepository,
     private betResultRepository: BetResultRepository,
     private userRepository: UserRepository,
+    private betRepository: BetRepository,
     private redisManager: RedisManager,
     private betGateway: BetGateway,
   ) {}
@@ -113,6 +115,22 @@ export class BetRoomService {
       Number(duration) * 1000,
     );
 
+    setTimeout(
+      async () => {
+        const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+        if (betRoom.status === "timeover") {
+          await this.saveRefundedData(betRoomId);
+          this.betGateway.server.to(betRoomId).emit("finished", {
+            message: "배팅 정산이 취소되었습니다",
+            roomId: betRoomId,
+          });
+          await this.processBetRoomRefund(betRoomId);
+          await this.redisManager.deleteChannelData(betRoomId);
+        }
+      },
+      (Number(duration) + 3 * 60) * 1000,
+    );
+
     return updateResult;
   }
 
@@ -122,10 +140,6 @@ export class BetRoomService {
     winningOption: "option1" | "option2",
   ) {
     await this.assertBetRoomAccess(betRoomId, userId);
-
-    const updateResult = await this.betRoomRepository.update(betRoomId, {
-      status: "finished",
-    });
     await this.redisManager.setRoomStatus(betRoomId, "finished");
 
     const {
@@ -137,11 +151,12 @@ export class BetRoomService {
     } = await this.getBettingTotals(betRoomId);
     await this.saveBetResult(
       betRoomId,
-      winningOption,
       option1TotalBet,
       option2TotalBet,
       option1Participants,
       option2Participants,
+      "settled",
+      winningOption,
     );
     const winningOdds = this.calculateWinningOdds(channel, winningOption);
 
@@ -152,19 +167,59 @@ export class BetRoomService {
       winningOdds: winningOdds,
     });
 
-    await this.settleBetRoom(betRoomId, winningOption, winningOdds);
+    await this.processBetRoomSettlement(betRoomId, winningOption, winningOdds);
+    await this.redisManager.deleteChannelData(betRoomId);
+    const updateResult = await this.betRoomRepository.update(betRoomId, {
+      status: "finished",
+    });
+    return updateResult;
+  }
+
+  async refundBetRoom(userId: number, betRoomId: string) {
+    await this.assertBetRoomAccess(betRoomId, userId);
+    const updateResult = await this.saveRefundedData(betRoomId);
+
+    this.betGateway.server.to(betRoomId).emit("finished", {
+      message: "배팅 정산이 취소되었습니다",
+      roomId: betRoomId,
+    });
+    await this.processBetRoomRefund(betRoomId);
     await this.redisManager.deleteChannelData(betRoomId);
 
     return updateResult;
   }
 
-  async findBetRoomById(betRoomId: string) {
+  private async saveRefundedData(betRoomId: string) {
+    const updateResult = await this.betRoomRepository.update(betRoomId, {
+      status: "finished",
+    });
+    await this.redisManager.setRoomStatus(betRoomId, "finished");
+
+    const {
+      option1Participants,
+      option2Participants,
+      option1TotalBet,
+      option2TotalBet,
+    } = await this.getBettingTotals(betRoomId);
+    await this.saveBetResult(
+      betRoomId,
+      option1TotalBet,
+      option2TotalBet,
+      option1Participants,
+      option2Participants,
+      "refunded",
+    );
+    return updateResult;
+  }
+
+  async findBetRoomById(userId: number | string, betRoomId: string) {
     const betRoom = await this.betRoomRepository.findOneById(betRoomId);
     if (!betRoom) {
       throw new NotFoundException(
         `해당하는 베팅방이 존재하지 않습니다. Id: ${betRoomId}`,
       );
     }
+    const isAdmin = userId === betRoom.manager.id;
     return {
       id: betRoom.id,
       title: betRoom.title,
@@ -192,6 +247,7 @@ export class BetRoomService {
       urls: {
         invite: betRoom.joinUrl,
       },
+      isAdmin: isAdmin,
     };
   }
 
@@ -231,19 +287,21 @@ export class BetRoomService {
 
   private async saveBetResult(
     betRoomId: string,
-    winningOption: "option1" | "option2",
     option1TotalBet: number,
     option2TotalBet: number,
-    option1Participants: number,
-    option2Participants: number,
+    option1TotalParticipants: number,
+    option2TotalParticipants: number,
+    status: "settled" | "refunded",
+    winningOption?: "option1" | "option2",
   ) {
     const betResult: Partial<BetResult> = {
       betRoom: { id: betRoomId } as BetRoom,
-      option1TotalBet: option1TotalBet,
-      option2TotalBet: option2TotalBet,
-      option1TotalParticipants: option1Participants,
-      option2TotalParticipants: option2Participants,
-      winningOption: winningOption,
+      option1TotalBet,
+      option2TotalBet,
+      option1TotalParticipants,
+      option2TotalParticipants,
+      status,
+      ...(winningOption && { winningOption }),
     };
     await this.betResultRepository.saveBetResult(betResult);
   }
@@ -277,7 +335,7 @@ export class BetRoomService {
     return winningOdds;
   }
 
-  private async settleBetRoom(
+  private async processBetRoomSettlement(
     roomId: string,
     winningOption: string,
     winningOdds: number,
@@ -294,40 +352,126 @@ export class BetRoomService {
       cursor = nextCursor;
 
       const userUpdates = keys.map(async (key) => {
-        const userData = await this.redisManager.client.hgetall(key);
-
-        const userIdMatch = key.match(/user:(.+)$/);
-        const userId = userIdMatch ? userIdMatch[1] : null;
-        const { owner, betAmount, selectedOption, role } = userData;
+        const { userId, owner, betAmount, selectedOption, role } =
+          await this.fetchUserBetData(key);
 
         if (owner === "1" || !betAmount || !selectedOption) {
-          console.log("pass");
           return;
         }
 
-        const duck = await this.redisManager.client.hget(
-          `user:${userId}`,
-          "duck",
+        const updatedDuck = await this.calculateAndSaveDuckCoins(
+          userId,
+          betAmount,
+          selectedOption,
+          winningOption,
+          winningOdds,
         );
-
-        const isWinner = selectedOption === winningOption;
-        const duckChange = isWinner ? Number(betAmount) * winningOdds : 0;
-        const updatedDuck = duck
-          ? Number(duck) - Number(betAmount) + duckChange
-          : duckChange;
-
-        await this.redisManager.client.hset(`user:${userId}`, {
-          duck: updatedDuck,
-        });
-
         if (role === "user") {
-          await this.userRepository.update(Number(userId), {
-            duck: updatedDuck,
-          });
+          await this.settleUserBet(Number(userId), roomId, updatedDuck);
         }
       });
 
       await Promise.all(userUpdates);
     } while (cursor !== "0");
+  }
+
+  private async fetchUserBetData(key: string) {
+    const userData = await this.redisManager.client.hgetall(key);
+    const userIdMatch = key.match(/user:(.+)$/);
+    const userId = userIdMatch ? userIdMatch[1] : null;
+    const { owner, betAmount, selectedOption, role } = userData;
+    return {
+      userId,
+      owner,
+      betAmount: Number(betAmount),
+      selectedOption,
+      role,
+    };
+  }
+
+  private async calculateAndSaveDuckCoins(
+    userId: string,
+    betAmount: number,
+    selectedOption: string,
+    winningOption: string,
+    winningOdds: number,
+  ) {
+    const duck = Number(
+      (await this.redisManager.client.hget(`user:${userId}`, "duck")) || 0,
+    );
+
+    const isWinner = selectedOption === winningOption;
+    const duckChange = isWinner ? betAmount * winningOdds : 0;
+    const updatedDuck = duck ? duck + duckChange : duckChange;
+
+    await this.redisManager.client.hset(`user:${userId}`, {
+      duck: updatedDuck,
+    });
+    return updatedDuck;
+  }
+
+  private async settleUserBet(
+    userId: number,
+    roomId: string,
+    updatedDuck: number,
+  ) {
+    await this.userRepository.update(userId, { duck: updatedDuck });
+
+    const bet = await this.betRepository.findByUserAndRoom(userId, roomId);
+    if (!bet) {
+      throw new NotFoundException("해당 베팅을 찾을 수 없습니다.");
+    }
+    await this.betRepository.update(bet.id, {
+      status: "settled",
+      settledAmount: updatedDuck,
+    });
+  }
+
+  private async processBetRoomRefund(roomId: string) {
+    let cursor = "0";
+    do {
+      const [nextCursor, keys] = await this.redisManager.client.scan(
+        cursor,
+        "MATCH",
+        `room:${roomId}:user:*`,
+        "COUNT",
+        20,
+      );
+      cursor = nextCursor;
+
+      const userUpdates = keys.map(async (key) => {
+        const { userId, owner, betAmount, selectedOption, role } =
+          await this.fetchUserBetData(key);
+
+        if (owner === "1" || !betAmount || !selectedOption) {
+          return;
+        }
+
+        await this.refundDuckCoins(userId, betAmount);
+        if (role === "user") {
+          await this.refundUserBet(Number(userId), roomId);
+        }
+      });
+      await Promise.all(userUpdates);
+    } while (cursor !== "0");
+  }
+
+  private async refundDuckCoins(userId: string, betAmount: number) {
+    const duck = Number(
+      (await this.redisManager.client.hget(`user:${userId}`, "duck")) || 0,
+    );
+    const refundDuck = duck + betAmount;
+    await this.redisManager.client.hset(`user:${userId}`, {
+      duck: refundDuck,
+    });
+    return refundDuck;
+  }
+
+  private async refundUserBet(userId: number, roomId: string) {
+    const bet = await this.betRepository.findByUserAndRoom(userId, roomId);
+    if (!bet) {
+      throw new NotFoundException("해당 베팅을 찾을 수 없습니다.");
+    }
+    await this.betRepository.update(bet.id, { status: "refunded" });
   }
 }
