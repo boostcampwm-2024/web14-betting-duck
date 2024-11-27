@@ -2,6 +2,8 @@ import { z } from "zod";
 
 const ROUTE_PATHS = {
   LOGIN: "/login",
+  GUEST_LOGIN: "/guest-login",
+  GUEST_CREATE_VOTE: "/guest-vote",
   BETTING: "/betting",
   BETTING_WAITING: "/betting_/$roomId/waiting",
   BETTING_VOTE: "/betting_/$roomId/vote",
@@ -26,6 +28,8 @@ const ROUTE_PATH_ENUM = z.enum([
   "/create-vote",
   "/my-page",
   "/require-login",
+  "/guest-login",
+  "/guest-vote",
 ]);
 
 const ROUTES_PATH = ROUTE_PATH_ENUM.options;
