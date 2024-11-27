@@ -220,10 +220,10 @@ export class RedisManager {
     );
 
     // TODO: transaction 시작
-    await this.client.lpush(streamKey, entryKey);
+    await this.client.lpush(`stream:${streamKey}`, entryKey);
     await this.client.hset(entryKey, data);
     await this.client.hset(entryKey, {
-      stream_key: streamKey,
+      stream_key: `stream:${streamKey}`,
       event_status: "pending",
       event_retries: 0,
     });
@@ -242,7 +242,7 @@ export class RedisManager {
       let processedCount = 0;
 
       while (processedCount < count && !signal.aborted) {
-        let entryKey = await this.client.lpop(streamKey);
+        let entryKey = await this.client.lpop(`stream:${streamKey}`);
 
         if (!entryKey) {
           await new Promise<void>((resolve) => {
@@ -268,10 +268,10 @@ export class RedisManager {
           });
 
           if (signal.aborted) {
-            return [streamKey, entries];
+            return [`stream:${streamKey}`, entries];
           }
 
-          entryKey = await this.client.lpop(streamKey);
+          entryKey = await this.client.lpop(`stream:${streamKey}`);
         }
 
         if (entryKey) {
@@ -289,7 +289,7 @@ export class RedisManager {
         processedCount++;
       }
 
-      return [streamKey, entries];
+      return [`stream:${streamKey}`, entries];
     };
 
     return new Promise<[string, [string, Record<string, string>][]]>(

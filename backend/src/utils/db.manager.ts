@@ -28,10 +28,9 @@ export class DBManager {
   async getUserFromStream() {
     console.log("---------------------");
     const event = await this.redisManager._xread(1, this.userStreamKey, 10000);
-
     event[1].forEach(async (entry) => {
       const [entryKey, fields] = entry;
-      console.log("user: ", fields);
+      // console.log("user: ", fields);
 
       delete fields.stream_key;
       delete fields.event_status;
