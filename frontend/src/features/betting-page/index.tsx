@@ -1,7 +1,7 @@
 import { ProgressBar } from "@/shared/components/ProgressBar";
 import { BettingProvider } from "./provider/BettingProvider";
 import { BettingContainer } from "./ui/BettingContainer";
-import { useBettingContext } from "./hook/use-betting-context";
+import { useBettingContext } from "./hook/useBettingContext";
 import React from "react";
 import { TimerIcon } from "@/shared/icons";
 

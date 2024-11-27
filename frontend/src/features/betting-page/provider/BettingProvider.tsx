@@ -1,4 +1,4 @@
-import { useSocketIO } from "@/shared/hooks/use-socket-io";
+import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { useLoaderData } from "@tanstack/react-router";
 import React from "react";
 import { responseBetRoomInfo } from "@betting-duck/shared";

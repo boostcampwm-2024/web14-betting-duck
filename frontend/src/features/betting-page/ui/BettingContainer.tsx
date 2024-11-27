@@ -4,7 +4,7 @@ import { BettingHeader } from "./BettingHeader";
 import { BettingStatsDisplay } from "./BettingStatsDisplay";
 import { PercentageDisplay } from "./PercentageDisplay";
 import { DuckCoinIcon } from "@/shared/icons";
-import { useBettingContext } from "../hook/use-betting-context";
+import { useBettingContext } from "../hook/useBettingContext";
 import React from "react";
 import { BettingPool } from "../utils/bettingOdds";
 import { bettingRoomSchema } from "../model/schema";
@@ -139,7 +139,7 @@ function BettingContainer() {
           socket.emit("joinBet", {
             sender: {
               betAmount: 300,
-              selectOption: "option2", // enum option1, option2
+              selectOption: "option1", // enum option1, option2
             },
             channel: {
               roomId: bettingRoomInfo.channel.id,

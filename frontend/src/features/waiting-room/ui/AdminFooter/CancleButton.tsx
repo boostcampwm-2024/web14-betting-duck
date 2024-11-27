@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useWaitingContext } from "../../hooks/use-waiting-context";
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 
 function CancleVottingButton() {
   const navigate = useNavigate();

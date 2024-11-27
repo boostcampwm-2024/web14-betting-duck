@@ -1,7 +1,7 @@
 import React from "react";
 import { useWaitingContext } from "../../hooks/use-waiting-context";
 import { useNavigate } from "@tanstack/react-router";
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 
 function MemberFooter() {
   const { socket, roomId } = useWaitingContext();
