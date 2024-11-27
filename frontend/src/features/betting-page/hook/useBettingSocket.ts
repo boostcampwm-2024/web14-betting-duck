@@ -1,8 +1,8 @@
 import React from "react";
 import { BettingPool } from "../utils/bettingOdds";
-import { useBettingContext } from "./use-betting-context";
+import { useBettingContext } from "./useBettingContext";
 import { bettingRoomSchema } from "../model/schema";
-import { useSocketIO } from "@/shared/hooks/use-socket-io";
+import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { responseBetRoomInfo } from "@betting-duck/shared";
 import { z } from "zod";
 
