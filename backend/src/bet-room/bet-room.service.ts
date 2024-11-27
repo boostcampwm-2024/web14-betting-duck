@@ -372,4 +372,52 @@ export class BetRoomService {
       settledAmount: updatedDuck,
     });
   }
+
+  private async processBetRoomRefund(roomId: string) {
+    let cursor = "0";
+    do {
+      const [nextCursor, keys] = await this.redisManager.client.scan(
+        cursor,
+        "MATCH",
+        `room:${roomId}:user:*`,
+        "COUNT",
+        20,
+      );
+      cursor = nextCursor;
+
+      const userUpdates = keys.map(async (key) => {
+        const { userId, owner, betAmount, selectedOption, role } =
+          await this.fetchUserBetData(key);
+
+        if (owner === "1" || !betAmount || !selectedOption) {
+          return;
+        }
+
+        await this.refundDuckCoins(userId, betAmount);
+        if (role === "user") {
+          await this.refundUserBet(Number(userId), roomId);
+        }
+      });
+      await Promise.all(userUpdates);
+    } while (cursor !== "0");
+  }
+
+  private async refundDuckCoins(userId: string, betAmount: number) {
+    const duck = Number(
+      (await this.redisManager.client.hget(`user:${userId}`, "duck")) || 0,
+    );
+    const refundDuck = duck + betAmount;
+    await this.redisManager.client.hset(`user:${userId}`, {
+      duck: refundDuck,
+    });
+    return refundDuck;
+  }
+
+  private async refundUserBet(userId: number, roomId: string) {
+    const bet = await this.betRepository.findByUserAndRoom(userId, roomId);
+    if (!bet) {
+      throw new NotFoundException("해당 베팅을 찾을 수 없습니다.");
+    }
+    await this.betRepository.update(bet.id, { status: "refunded" });
+  }
 }
