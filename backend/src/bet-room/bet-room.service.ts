@@ -348,7 +348,7 @@ export class BetRoomService {
 
     const isWinner = selectedOption === winningOption;
     const duckChange = isWinner ? betAmount * winningOdds : 0;
-    const updatedDuck = duck ? duck - betAmount + duckChange : duckChange;
+    const updatedDuck = duck ? duck + duckChange : duckChange;
 
     await this.redisManager.client.hset(`user:${userId}`, {
       duck: updatedDuck,
@@ -367,6 +367,9 @@ export class BetRoomService {
     if (!bet) {
       throw new NotFoundException("해당 베팅을 찾을 수 없습니다.");
     }
-    await this.betRepository.update(bet.id, { status: "settled" });
+    await this.betRepository.update(bet.id, {
+      status: "settled",
+      settledAmount: updatedDuck,
+    });
   }
 }
