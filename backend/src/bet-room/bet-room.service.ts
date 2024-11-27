@@ -139,11 +139,12 @@ export class BetRoomService {
     } = await this.getBettingTotals(betRoomId);
     await this.saveBetResult(
       betRoomId,
-      winningOption,
       option1TotalBet,
       option2TotalBet,
       option1Participants,
       option2Participants,
+      "settled",
+      winningOption,
     );
     const winningOdds = this.calculateWinningOdds(channel, winningOption);
 
@@ -155,6 +156,40 @@ export class BetRoomService {
     });
 
     await this.processBetRoomSettlement(betRoomId, winningOption, winningOdds);
+    await this.redisManager.deleteChannelData(betRoomId);
+
+    return updateResult;
+  }
+
+  async cancelBetRoomSettlement(userId: number, betRoomId: string) {
+    await this.assertBetRoomAccess(betRoomId, userId);
+
+    const updateResult = await this.betRoomRepository.update(betRoomId, {
+      status: "finished",
+    });
+    await this.redisManager.setRoomStatus(betRoomId, "finished");
+
+    const {
+      option1Participants,
+      option2Participants,
+      option1TotalBet,
+      option2TotalBet,
+    } = await this.getBettingTotals(betRoomId);
+    await this.saveBetResult(
+      betRoomId,
+      option1TotalBet,
+      option2TotalBet,
+      option1Participants,
+      option2Participants,
+      "refunded",
+    );
+
+    this.betGateway.server.to(betRoomId).emit("finished", {
+      message: "배팅 정산이 취소되었습니다",
+      roomId: betRoomId,
+    });
+
+    await this.processBetRoomRefund(betRoomId);
     await this.redisManager.deleteChannelData(betRoomId);
 
     return updateResult;
@@ -235,19 +270,21 @@ export class BetRoomService {
 
   private async saveBetResult(
     betRoomId: string,
-    winningOption: "option1" | "option2",
     option1TotalBet: number,
     option2TotalBet: number,
-    option1Participants: number,
-    option2Participants: number,
+    option1TotalParticipants: number,
+    option2TotalParticipants: number,
+    status: "settled" | "refunded",
+    winningOption?: "option1" | "option2",
   ) {
     const betResult: Partial<BetResult> = {
       betRoom: { id: betRoomId } as BetRoom,
-      option1TotalBet: option1TotalBet,
-      option2TotalBet: option2TotalBet,
-      option1TotalParticipants: option1Participants,
-      option2TotalParticipants: option2Participants,
-      winningOption: winningOption,
+      option1TotalBet,
+      option2TotalBet,
+      option1TotalParticipants,
+      option2TotalParticipants,
+      status,
+      ...(winningOption && { winningOption }),
     };
     await this.betResultRepository.saveBetResult(betResult);
   }
