@@ -16,10 +16,10 @@ export class DBManager {
     this.getUserFromStream();
   }
 
-  async setUser(user: Partial<User>) {
-    const params = [];
+  async setUser(userId: number, user: Partial<User>) {
+    const params = ["id", String(userId)];
     Object.entries(user).forEach(([key, value]) => {
-      params.push(key, value);
+      params.push(key, String(value));
     });
 
     this.redisManager._xadd(this.userStreamKey, "*", ...params);
