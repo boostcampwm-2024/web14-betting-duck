@@ -249,7 +249,6 @@ export class RedisManager {
       event_status: "pending",
       event_retries: 0,
     });
-    console.log("New message in stream:", streamKey);
     await this.publisher.publish("stream", streamKey);
   }
 
@@ -323,7 +322,6 @@ export class RedisManager {
 
         setTimeout(() => {
           controller.abort();
-          console.log("Operation timed out");
         }, blockTime);
       },
     );
