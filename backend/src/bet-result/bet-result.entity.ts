@@ -31,9 +31,12 @@ export class BetResult extends BaseEntity {
   @Column()
   option2TotalParticipants: number;
 
-  @Column({ type: "enum", enum: ["option1", "option2"] })
+  @Column({ type: "enum", enum: ["option1", "option2"], nullable: true })
   winningOption: "option1" | "option2";
 
   @CreateDateColumn({ type: "timestamp", nullable: true })
   createdAt: Date;
+
+  @Column({ type: "enum", enum: ["settled", "refunded"] })
+  status: "settled" | "refunded";
 }
