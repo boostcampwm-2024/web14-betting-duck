@@ -1,19 +1,37 @@
 import { BettingStatsDisplay } from "@/shared/components/BettingStatsDisplay/BettingStatsDisplay";
-import { useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { BettingSummary, getBettingSummary } from "@/shared/utils/bettingOdds";
 import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
 import { BettingSharedLink } from "@/shared/components/BettingSharedLink/BettingSharedLink";
 import { BettingStats, FetchBetRoomInfoData } from "./model/types";
+import { useBettingContext } from "../betting-page/hook/useBettingContext";
+import { PercentageDisplay } from "@/shared/components/PercentageDisplay/PercentageDisplay";
+import { refund } from "./model/api";
 
 function BettingPageAdmin() {
   const [title, setTitle] = useState("");
   const [option1, setOption1] = useState("");
   const [option2, setOption2] = useState("");
-  const [bettingSummary, setBettingSummary] = useState<BettingSummary | null>(
-    null,
-  );
+  const [bettingSummary, setBettingSummary] = useState<BettingSummary>({
+    totalParticipants: 0,
+    totalAmount: 0,
+    option1Percentage: "0.0",
+    option2Percentage: "0.0",
+    option1: {
+      participants: 0,
+      totalAmount: 0,
+      multiplier: 1,
+      returnRate: 1,
+    },
+    option2: {
+      participants: 0,
+      totalAmount: 0,
+      multiplier: 1,
+      returnRate: 1,
+    },
+  });
   const [stats1, setStats1] = useState<BettingStats>({
     totalAmount: 0,
     returnRate: 1,
@@ -32,6 +50,13 @@ function BettingPageAdmin() {
   const [defaultBetAmount, setDefaultBetAmount] = useState(0);
   const { roomId } = useParams({ from: "/betting_/$roomId/vote" });
 
+  const { bettingRoomInfo, updateBettingRoomInfo, updateBettingPool } =
+    useBettingContext();
+  const [status, setStatus] = useState(
+    bettingRoomInfo.channel.status || "active",
+  );
+  const navigate = useNavigate();
+
   const socket = useSocketIO({
     url: "/api/betting",
     onConnect: () => {
@@ -46,20 +71,42 @@ function BettingPageAdmin() {
   });
 
   useEffect(() => {
-    if (!socket.isConnected) return;
-
-    socket.emit("joinRoom", {
-      channel: {
-        roomId,
-      },
+    socket.on("timeover", () => {
+      updateBettingRoomInfo();
+      updateBettingPool({ isBettingEnd: true });
     });
-  }, [socket, roomId]);
+
+    return () => {
+      socket.off("timeover");
+    };
+  }, [socket, updateBettingPool, updateBettingRoomInfo]);
 
   useEffect(() => {
-    if (socket.isConnected) {
-      socket.emit("fetchBetRoomInfo", { roomId });
-    }
-  }, [socket, roomId]);
+    if (!socket.isConnected) return;
+    socket.emit("joinRoom", {
+      channel: {
+        roomId: bettingRoomInfo.channel.id,
+      },
+    });
+  }, [socket, bettingRoomInfo]);
+
+  useEffect(() => {
+    if (!socket.isConnected || bettingRoomInfo.channel.status !== "active")
+      return;
+    socket.emit("fetchBetRoomInfo", {
+      roomId: bettingRoomInfo.channel.id,
+    });
+  }, [socket, bettingRoomInfo]);
+
+  useEffect(() => {
+    console.log(bettingRoomInfo.channel.status);
+    setStatus((prev) => {
+      if (prev !== bettingRoomInfo.channel.status) {
+        return bettingRoomInfo.channel.status;
+      }
+      return prev;
+    });
+  }, [bettingRoomInfo]);
 
   useEffect(() => {
     const handleFetchBetRoomInfo = (data: unknown) => {
@@ -79,7 +126,6 @@ function BettingPageAdmin() {
       };
 
       const newBettingSummary = getBettingSummary(bettingPool);
-      console.log(newBettingSummary);
 
       setBettingSummary((prev) => {
         if (JSON.stringify(prev) !== JSON.stringify(newBettingSummary)) {
@@ -91,7 +137,7 @@ function BettingPageAdmin() {
       setStats1((prev) => {
         const newStats = {
           totalAmount: newBettingSummary.option1.totalAmount,
-          returnRate: newBettingSummary.option1.multiplier,
+          returnRate: newBettingSummary.option1.returnRate,
           participants: newBettingSummary.option1.participants,
           multiplier: newBettingSummary.option1.multiplier,
         };
@@ -105,7 +151,7 @@ function BettingPageAdmin() {
       setStats2((prev) => {
         const newStats = {
           totalAmount: newBettingSummary.option2.totalAmount,
-          returnRate: newBettingSummary.option2.multiplier,
+          returnRate: newBettingSummary.option2.returnRate,
           participants: newBettingSummary.option2.participants,
           multiplier: newBettingSummary.option1.multiplier,
         };
@@ -113,6 +159,7 @@ function BettingPageAdmin() {
         if (JSON.stringify(prev) !== JSON.stringify(newStats)) {
           return newStats;
         }
+
         return prev;
       });
     };
@@ -122,30 +169,7 @@ function BettingPageAdmin() {
     return () => {
       socket.off("fetchBetRoomInfo");
     };
-  }, [socket]);
-
-  const handleBetOption1 = () => {
-    socket.emit("joinBet", {
-      sender: {
-        betAmount: 100,
-        selectOption: "option1",
-      },
-      channel: {
-        roomId,
-      },
-    });
-  };
-  const handleBetOption2 = () => {
-    socket.emit("joinBet", {
-      sender: {
-        betAmount: 100,
-        selectOption: "option2",
-      },
-      channel: {
-        roomId,
-      },
-    });
-  };
+  }, [socket, bettingRoomInfo]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -166,6 +190,25 @@ function BettingPageAdmin() {
     if (roomId) fetchData();
   }, [roomId]);
 
+  const handleCancelClick = async () => {
+    refund(roomId)
+      .then((data) => {
+        console.log("API 성공 결과:", data);
+        navigate({
+          to: "/my-page",
+        });
+      })
+      .catch((error) => {
+        console.error("API 실패 결과:", error);
+      });
+  };
+
+  const handleFinishClick = () => {
+    navigate({
+      to: `/betting/${roomId}/vote/decide`,
+    });
+  };
+
   return (
     <div className="bg-layout-main flex h-full w-full flex-col justify-between">
       <div className="flex flex-col gap-5">
@@ -178,6 +221,11 @@ function BettingPageAdmin() {
             <h1 className="text-primary mb-1 pt-2 text-4xl font-extrabold">
               {title}
             </h1>
+            <p>
+              {status === "active"
+                ? "투표가 진행 중입니다. 투표를 취소할 수 있습니다."
+                : "투표가 종료되었습니다. 투표를 취소하거나 종료할 수 있습니다."}
+            </p>
             <h1 className="text-default-disabled text-md mb-1 font-bold">
               베팅 정보
             </h1>
@@ -202,37 +250,42 @@ function BettingPageAdmin() {
               stats={stats1}
               uses={"winning"}
               content={option1}
-            />
+            >
+              <PercentageDisplay
+                percentage={parseInt(bettingSummary.option1Percentage)}
+                index={0}
+              />
+            </BettingStatsDisplay>
             <BettingStatsDisplay
               stats={stats2}
               uses={"losing"}
               content={option2}
-            />
+            >
+              <PercentageDisplay
+                percentage={parseInt(bettingSummary.option2Percentage)}
+                index={1}
+              />
+            </BettingStatsDisplay>
           </div>
 
-          {/* <div className="flex flex-row gap-6">
-        {[bettingData.option1, bettingData.option2].map((option, index) => (
-          <PercentageDisplay
-            key={`betting-percentage-${index}`}
-            index={index}
-            percentage={option.stats.percentage}
-          />
-        ))}
-      </div> */}
           <div className="flex w-full justify-end font-extrabold">
             <div className="flex w-full justify-end gap-6">
-              <button className="bg-secondary text-default hover:bg-secondary-hover hover:text-layout-main w-1/2 rounded-lg px-4 py-2 shadow-md">
+              <button
+                className="bg-secondary text-default hover:bg-secondary-hover hover:text-layout-main w-1/2 rounded-lg px-4 py-2 shadow-md"
+                onClick={handleCancelClick}
+              >
                 승부 예측 취소
               </button>
-              <button className="bg-primary text-layout-main hover:bg-primary-hover w-1/2 rounded-lg px-4 py-2 shadow-md">
+              <button
+                className="bg-primary text-layout-main hover:bg-primary-hover disabled:bg-primary-disabled w-1/2 rounded-lg px-4 py-2 shadow-md"
+                disabled={status !== "timeover"}
+                onClick={handleFinishClick}
+              >
                 승부 예측 종료
               </button>
             </div>
           </div>
         </div>
-
-        <button onClick={handleBetOption1}>투표1</button>
-        <button onClick={handleBetOption2}>투표2</button>
       </div>
       <BettingSharedLink />
     </div>
