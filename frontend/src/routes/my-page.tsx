@@ -5,6 +5,22 @@ import { ErrorMyPage } from "@/features/my-page/error";
 import { ROUTES } from "@/shared/config/route";
 import { responseUserInfoSchema } from "@betting-duck/shared";
 
+async function getUserInfo() {
+  const response = await fetch("/api/users/userInfo");
+  if (!response.ok) {
+    throw new Error("사용자 정보를 불러오는데 실패했습니다.");
+  }
+
+  const { data } = await response.json();
+  const result = responseUserInfoSchema.safeParse(data);
+  if (!result.success) {
+    console.error(result.error);
+    throw new Error("사용자 정보를 불러오는데 실패했습니다.");
+  }
+
+  return result.data;
+}
+
 export const Route = createFileRoute("/my-page")({
   beforeLoad: async () => {
     const tokenResponse = await fetch("/api/users/token");
@@ -24,13 +40,16 @@ export const Route = createFileRoute("/my-page")({
     if (!userInfo.success) {
       throw new Error("사용자 정보를 파싱하는데 실패했습니다.");
     }
-    console.log(userInfo.data.role);
     if (userInfo.data.role === "guest") {
       throw redirect({
         to: "/require-login",
         search: { from: encodeURIComponent(ROUTES.GUEST_LOGIN) },
       });
     }
+  },
+  loader: async () => {
+    const userInfo = await getUserInfo();
+    return userInfo;
   },
   component: MyPage,
   errorComponent: ({ error }) => (

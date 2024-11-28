@@ -20,9 +20,16 @@ export const Route = createFileRoute("/betting/")({
       <WaitingError />
     </ErrorComponent>
   ),
+  onLeave: () => {
+    const rootLayout = document.getElementById("root-layout");
+    if (rootLayout) rootLayout.classList.remove("betting-page");
+  },
 });
 
 function RouteComponent() {
+  const rootLayout = document.getElementById("root-layout");
+  if (rootLayout) rootLayout.classList.add("betting-page");
+
   const navigate = useNavigate();
   const { userInfo } = useUserContext();
   const { roomId } = userInfo;
