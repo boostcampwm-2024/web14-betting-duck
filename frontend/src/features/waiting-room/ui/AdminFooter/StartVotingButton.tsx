@@ -12,7 +12,7 @@ function StartVotingButton() {
       });
       if (!response.ok) throw new Error("배팅 시작에 실패했습니다.");
       setIsBettingStarted(true);
-      navigate({ to: "../vote/voting" });
+      navigate({ to: "../vote/admin" });
     } catch (error) {
       console.error(error);
     }
