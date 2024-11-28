@@ -13,10 +13,12 @@ const BettingStatsDisplay = React.memo(
     stats,
     content,
     uses,
+    children,
   }: {
     stats: BettingStats;
     content: string;
     uses: "winning" | "losing";
+    children?: React.ReactNode;
   }) => {
     const color = uses === "winning" ? "text-bettingBlue" : "text-bettingPink";
 
@@ -34,7 +36,9 @@ const BettingStatsDisplay = React.memo(
     );
 
     return (
-      <div className={`flex flex-1 flex-row justify-between ${color}`}>
+      <div
+        className={`flex flex-1 flex-row justify-between pl-8 pr-4 ${color}`}
+      >
         <div className="text-md flex max-w-[25cqw] flex-col gap-2">
           {bettingStats.map(({ icon: Icon, alt, stat }) => (
             <div
@@ -46,8 +50,9 @@ const BettingStatsDisplay = React.memo(
             </div>
           ))}
         </div>
-        <div className="group relative mt-auto w-full max-w-[25cqw] truncate text-end text-2xl font-extrabold">
+        <div className="group relative mt-auto flex w-full max-w-[70cqw] flex-col items-end truncate text-end text-2xl font-extrabold">
           {content}
+          {children}
         </div>
       </div>
     );

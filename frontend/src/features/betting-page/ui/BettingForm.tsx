@@ -2,7 +2,7 @@ import { BettingInput } from "./BettingInput";
 
 function BettingForm() {
   return (
-    <div className="flex gap-6">
+    <div className="flex justify-end gap-16">
       <BettingInput uses={"winning"} />
       <BettingInput uses={"losing"} />
     </div>
