@@ -1,6 +1,11 @@
 import { DuckCoinIcon } from "@/shared/icons";
-import { cn } from "@/shared/misc";
 import { useBettingContext } from "../betting-page/hook/useBettingContext";
+import {
+  calculateWinnings,
+  calculateOdds,
+} from "../betting-page/utils/bettingOdds";
+import { endBetRoom } from "../betting-page/api/endBetroom";
+import { getBettingRoomInfo } from "../betting-page/api/getBettingRoomInfo";
 
 interface BettingPool {
   totalAmount: number;
@@ -16,6 +21,43 @@ function BettingResult({
   bettingPool: BettingPool;
   uses: "winning" | "losing";
 }) {
+  const { bettingPool: totalPool } = useBettingContext();
+
+  const calculatePayout = () => {
+    if (bettingPool.participants === 0) {
+      return {
+        totalPayout: 0,
+        averagePayout: 0,
+      };
+    }
+
+    const odds = calculateOdds({
+      option1: {
+        totalAmount: totalPool.option1.totalAmount,
+        participants: totalPool.option1.participants,
+      },
+      option2: {
+        totalAmount: totalPool.option2.totalAmount,
+        participants: totalPool.option2.participants,
+      },
+    });
+
+    const multiplier =
+      uses === "winning" ? odds.option1Multiplier : odds.option2Multiplier;
+    const averagePayout = calculateWinnings(
+      bettingPool.participants > 0
+        ? bettingPool.totalAmount / bettingPool.participants
+        : 0,
+      multiplier,
+    );
+
+    return {
+      totalPayout: averagePayout * bettingPool.participants,
+      averagePayout,
+    };
+  };
+
+  const { totalPayout, averagePayout } = calculatePayout();
   const color = uses === "winning" ? "text-bettingBlue" : "text-bettingPink";
 
   return (
@@ -25,16 +67,21 @@ function BettingResult({
         <p className="text-2xl font-extrabold">{content}</p>
         <div className="flex flex-row gap-2">
           <DuckCoinIcon width={36} height={36} />
-          <span className="text-xl font-extrabold">
-            {bettingPool.totalAmount}!
-          </span>
+          <span className="text-xl font-extrabold">{totalPayout || 0}</span>
         </div>
       </div>
       <div className="text-default-disabled text-md text-pretty break-all">
         <span>
-          {bettingPool.participants} 명에게{" "}
-          <DuckCoinIcon width={16} height={16} className="inline-block" />{" "}
-          {bettingPool.totalAmount} 포인트를 드립니다
+          {bettingPool.participants === 0 ? (
+            "베팅한 참가자가 없습니다"
+          ) : (
+            <>
+              {bettingPool.participants} 명에게 평균{" "}
+              <DuckCoinIcon width={16} height={16} className="inline-block" />{" "}
+              {averagePayout || 0} 포인트씩, 총 {totalPayout || 0} 포인트를
+              드립니다
+            </>
+          )}
         </span>
       </div>
     </div>
@@ -46,12 +93,15 @@ function DecideBettingResult() {
   const { channel } = bettingRoomInfo;
 
   return (
-    <form
-      className={cn(
-        "betting-container",
-        "shadow-middle bg-layout-main h-full max-h-[430px] w-full min-w-[630px] rounded-lg border-2 p-6",
-      )}
-    >
+    <div className={"bg-layout-main h-full w-full rounded-lg p-6"}>
+      <button
+        onClick={async () => {
+          const a = await getBettingRoomInfo(channel.id);
+          console.log(a);
+        }}
+      >
+        dd
+      </button>
       <h1 className="w-full text-center text-lg font-bold">
         승리한 팀을 선택 해주세요!
       </h1>
@@ -65,6 +115,7 @@ function DecideBettingResult() {
           <button
             className="bg-bettingBlue text-layout-main w-[40cqw] rounded-lg py-2"
             type="submit"
+            onClick={() => endBetRoom(channel.id, "option1")}
           >
             파란팀의 승리!
           </button>
@@ -77,13 +128,13 @@ function DecideBettingResult() {
           />
           <button
             className="bg-bettingPink text-layout-main w-[40cqw] rounded-lg py-2"
-            type="submit"
+            onClick={() => endBetRoom(channel.id, "option2")}
           >
             빨간팀의 승리!
           </button>
         </div>
       </div>
-    </form>
+    </div>
   );
 }
 export { DecideBettingResult };
