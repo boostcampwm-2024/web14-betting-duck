@@ -15,7 +15,6 @@ import { Route as RequireRoomIdImport } from "./routes/require-roomId";
 import { Route as RequireLoginImport } from "./routes/require-login";
 import { Route as MyPageImport } from "./routes/my-page";
 import { Route as LoginImport } from "./routes/login";
-import { Route as DemoLoginImport } from "./routes/demo-login";
 import { Route as CreateVoteImport } from "./routes/create-vote";
 import { Route as IndexImport } from "./routes/index";
 import { Route as BettingIndexImport } from "./routes/betting.index";
@@ -46,12 +45,6 @@ const MyPageRoute = MyPageImport.update({
 const LoginRoute = LoginImport.update({
   id: "/login",
   path: "/login",
-  getParentRoute: () => rootRoute,
-} as any);
-
-const DemoLoginRoute = DemoLoginImport.update({
-  id: "/demo-login",
-  path: "/demo-login",
   getParentRoute: () => rootRoute,
 } as any);
 
@@ -107,13 +100,6 @@ declare module "@tanstack/react-router" {
       path: "/create-vote";
       fullPath: "/create-vote";
       preLoaderRoute: typeof CreateVoteImport;
-      parentRoute: typeof rootRoute;
-    };
-    "/demo-login": {
-      id: "/demo-login";
-      path: "/demo-login";
-      fullPath: "/demo-login";
-      preLoaderRoute: typeof DemoLoginImport;
       parentRoute: typeof rootRoute;
     };
     "/login": {
@@ -180,7 +166,6 @@ declare module "@tanstack/react-router" {
 export interface FileRoutesByFullPath {
   "/": typeof IndexRoute;
   "/create-vote": typeof CreateVoteRoute;
-  "/demo-login": typeof DemoLoginRoute;
   "/login": typeof LoginRoute;
   "/my-page": typeof MyPageRoute;
   "/require-login": typeof RequireLoginRoute;
@@ -194,7 +179,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   "/": typeof IndexRoute;
   "/create-vote": typeof CreateVoteRoute;
-  "/demo-login": typeof DemoLoginRoute;
   "/login": typeof LoginRoute;
   "/my-page": typeof MyPageRoute;
   "/require-login": typeof RequireLoginRoute;
@@ -209,7 +193,6 @@ export interface FileRoutesById {
   __root__: typeof rootRoute;
   "/": typeof IndexRoute;
   "/create-vote": typeof CreateVoteRoute;
-  "/demo-login": typeof DemoLoginRoute;
   "/login": typeof LoginRoute;
   "/my-page": typeof MyPageRoute;
   "/require-login": typeof RequireLoginRoute;
@@ -225,7 +208,6 @@ export interface FileRouteTypes {
   fullPaths:
     | "/"
     | "/create-vote"
-    | "/demo-login"
     | "/login"
     | "/my-page"
     | "/require-login"
@@ -238,7 +220,6 @@ export interface FileRouteTypes {
   to:
     | "/"
     | "/create-vote"
-    | "/demo-login"
     | "/login"
     | "/my-page"
     | "/require-login"
@@ -251,7 +232,6 @@ export interface FileRouteTypes {
     | "__root__"
     | "/"
     | "/create-vote"
-    | "/demo-login"
     | "/login"
     | "/my-page"
     | "/require-login"
@@ -266,7 +246,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
   CreateVoteRoute: typeof CreateVoteRoute;
-  DemoLoginRoute: typeof DemoLoginRoute;
   LoginRoute: typeof LoginRoute;
   MyPageRoute: typeof MyPageRoute;
   RequireLoginRoute: typeof RequireLoginRoute;
@@ -280,7 +259,6 @@ export interface RootRouteChildren {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreateVoteRoute: CreateVoteRoute,
-  DemoLoginRoute: DemoLoginRoute,
   LoginRoute: LoginRoute,
   MyPageRoute: MyPageRoute,
   RequireLoginRoute: RequireLoginRoute,
@@ -303,7 +281,6 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/create-vote",
-        "/demo-login",
         "/login",
         "/my-page",
         "/require-login",
@@ -319,9 +296,6 @@ export const routeTree = rootRoute
     },
     "/create-vote": {
       "filePath": "create-vote.tsx"
-    },
-    "/demo-login": {
-      "filePath": "demo-login.tsx"
     },
     "/login": {
       "filePath": "login.tsx"
