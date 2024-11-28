@@ -269,7 +269,9 @@ export class BetRoomService {
   private async getBettingTotals(betRoomId: string) {
     const channel = await this.redisManager.getChannelData(betRoomId);
     if (!channel) {
-      throw new Error(`채널 데이터를 찾을 수 없습니다. roomId: ${betRoomId}`);
+      throw new NotFoundException(
+        `채널 데이터를 찾을 수 없습니다. roomId: ${betRoomId}`,
+      );
     }
     const option1Participants = Number(channel.option1.participants);
     const option2Participants = Number(channel.option2.participants);
