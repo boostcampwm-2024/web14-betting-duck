@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
-  InternalServerErrorException,
 } from "@nestjs/common";
 import { BetRoomRepository } from "./bet-room.repository";
 import { BetResultRepository } from "src/bet-result/bet-result.repository";
@@ -105,18 +104,19 @@ export class BetRoomService {
     setTimeout(
       async () => {
         try {
-          await this.betRoomRepository.update(betRoomId, {
-            status: "timeover",
-          });
-          await this.redisManager.setRoomStatus(betRoomId, "timeover");
-          this.betGateway.server.to(betRoomId).emit("timeover", {
-            message: "베팅 시간이 종료되었습니다.",
-            roomId: betRoomId,
-          });
+          const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+          if (betRoom.status === "active") {
+            await this.betRoomRepository.update(betRoomId, {
+              status: "timeover",
+            });
+            await this.redisManager.setRoomStatus(betRoomId, "timeover");
+            this.betGateway.server.to(betRoomId).emit("timeover", {
+              message: "베팅 시간이 종료되었습니다.",
+              roomId: betRoomId,
+            });
+          }
         } catch (error) {
-          throw new InternalServerErrorException(
-            "자동 베팅 환불이 실패했습니다." + error.message,
-          );
+          console.error("베팅 시간 종료에 문제가 있습니다.:", error);
         }
       },
       Number(duration) * 1000,
@@ -136,12 +136,10 @@ export class BetRoomService {
             await this.redisManager.deleteChannelData(betRoomId);
           }
         } catch (error) {
-          throw new InternalServerErrorException(
-            "자동 베팅 환불이 실패했습니다." + error.message,
-          );
+          console.error("자동 베팅 환불 처리 중 예외 발생:", error);
         }
       },
-      (Number(duration) + 3 * 60) * 1000,
+      (Number(duration) + 1 * 60) * 1000,
     );
 
     return updateResult;
@@ -207,7 +205,7 @@ export class BetRoomService {
       status: "finished",
     });
     await this.redisManager.setRoomStatus(betRoomId, "finished");
-
+    console.log(`saveRefundedData update: ${JSON.stringify(updateResult)}`);
     const {
       option1Participants,
       option2Participants,
@@ -374,15 +372,19 @@ export class BetRoomService {
           return;
         }
 
-        const updatedDuck = await this.calculateAndSaveDuckCoins(
+        const updatedDuck = await this.calculateSettledDuckCoins(
           userId,
           betAmount,
           selectedOption,
           winningOption,
           winningOdds,
         );
+        await this.redisManager.client.hset(`user:${userId}`, {
+          duck: updatedDuck,
+        });
         if (role === "user") {
-          await this.settleUserBet(Number(userId), roomId, updatedDuck);
+          await this.updateBetSettleStatus(Number(userId), roomId, updatedDuck);
+          await this.saveUserDuckCoins(Number(userId), updatedDuck);
         }
       });
 
@@ -404,35 +406,27 @@ export class BetRoomService {
     };
   }
 
-  private async calculateAndSaveDuckCoins(
+  private async calculateSettledDuckCoins(
     userId: string,
     betAmount: number,
     selectedOption: string,
     winningOption: string,
     winningOdds: number,
   ) {
-    //TODO: 캐시보고 없으면 DB 보기!
     const duck = Number(
       (await this.redisManager.client.hget(`user:${userId}`, "duck")) || 0,
     );
-
     const isWinner = selectedOption === winningOption;
     const duckChange = isWinner ? betAmount * winningOdds : 0;
     const updatedDuck = duck ? duck + duckChange : duckChange;
-
-    await this.redisManager.client.hset(`user:${userId}`, {
-      duck: updatedDuck,
-    });
     return updatedDuck;
   }
 
-  private async settleUserBet(
+  private async updateBetSettleStatus(
     userId: number,
     roomId: string,
     updatedDuck: number,
   ) {
-    await this.userRepository.update(userId, { duck: updatedDuck });
-
     const bet = await this.betRepository.findByUserAndRoom(userId, roomId);
     if (!bet) {
       throw new NotFoundException("해당 베팅을 찾을 수 없습니다.");
@@ -462,33 +456,43 @@ export class BetRoomService {
         if (owner === "1" || !betAmount || !selectedOption) {
           return;
         }
+        // if (!role) {
+        //   throw new InternalServerErrorException("정상적인 접근이 아닙니다.");
+        // }
 
-        await this.refundDuckCoins(userId, betAmount);
+        const refundDuck = await this.calculateRefundDuckCoins(
+          userId,
+          betAmount,
+        );
+        await this.redisManager.client.hset(`user:${userId}`, {
+          duck: refundDuck,
+        });
         if (role === "user") {
-          await this.refundUserBet(Number(userId), roomId);
+          await this.updateBetRefundStatus(Number(userId), roomId);
+          await this.saveUserDuckCoins(Number(userId), refundDuck);
         }
       });
       await Promise.all(userUpdates);
     } while (cursor !== "0");
   }
 
-  private async refundDuckCoins(userId: string, betAmount: number) {
-    //TODO: 캐시보고 없으면 DB 보기!
+  private async calculateRefundDuckCoins(userId: string, betAmount: number) {
     const duck = Number(
       (await this.redisManager.client.hget(`user:${userId}`, "duck")) || 0,
     );
     const refundDuck = duck + betAmount;
-    await this.redisManager.client.hset(`user:${userId}`, {
-      duck: refundDuck,
-    });
     return refundDuck;
   }
 
-  private async refundUserBet(userId: number, roomId: string) {
+  private async updateBetRefundStatus(userId: number, roomId: string) {
     const bet = await this.betRepository.findByUserAndRoom(userId, roomId);
     if (!bet) {
       throw new NotFoundException("해당 베팅을 찾을 수 없습니다.");
     }
     await this.betRepository.update(bet.id, { status: "refunded" });
+  }
+
+  private async saveUserDuckCoins(userId: number, updateDuck: number) {
+    await this.userRepository.update(userId, { duck: updateDuck });
   }
 }
