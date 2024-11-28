@@ -16,18 +16,8 @@ import {
 import {
   fetchBetRoomInfoRequestSchema,
   fetchBetRoomInfoRequestType,
-  joinBetRoomRequestSchema,
-  joinBetRoomRequestType,
 } from "@shared/schemas/bet/socket/request";
 import { JwtUtils } from "src/utils/jwt.utils";
-import { BetService } from "./bet.service";
-
-interface Channel {
-  creator: string;
-  status: string;
-  option1: Record<string, string>;
-  option2: Record<string, string>;
-}
 
 @WebSocketGateway({
   namespace: "api/betting",
@@ -40,7 +30,6 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly redisManager: RedisManager,
     private readonly jwtUtils: JwtUtils,
-    private readonly betService: BetService,
   ) {}
 
   handleConnection(client: Socket) {
@@ -151,138 +140,6 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
         event: "fetchBetRoomInfo",
         message: "해당하는 채널이 존재하지 않습니다.",
       });
-    }
-  }
-
-  @SubscribeMessage("joinBet")
-  async handleJoinBet(client: Socket, payload: joinBetRoomRequestType) {
-    const { sender, channel } = joinBetRoomRequestSchema.parse(payload);
-    const targetChannel = await this.redisManager.getChannelData(
-      channel.roomId,
-    );
-    const userId = client.data.userId;
-    const userRole = client.data.userRole;
-
-    if (!(await this.validateUserId(client, userId))) {
-      return;
-    }
-    if (!(await this.validateUserDuck(client, userId, sender.betAmount))) {
-      return;
-    }
-
-    if (targetChannel && targetChannel.status === "active") {
-      const selectedOption =
-        sender.selectOption === "option1"
-          ? targetChannel.option1
-          : targetChannel.option2;
-
-      if (selectedOption) {
-        await this.redisManager.deductDuck(userId, sender.betAmount);
-        await this.redisManager.updateBetting(
-          channel.roomId,
-          sender.selectOption,
-          sender.betAmount,
-        );
-
-        const updatedChannel = await this.getUpdatedChannel(
-          channel.roomId,
-          targetChannel,
-        );
-
-        this.server.to(channel.roomId).emit("fetchBetRoomInfo", {
-          channel: updatedChannel,
-        });
-
-        await this.redisManager.setBettingUserOnBet({
-          userId,
-          roomId: channel.roomId,
-          betAmount: sender.betAmount,
-          selectedOption: sender.selectOption,
-        });
-
-        if (userRole === "user") {
-          this.saveBetLog(
-            client,
-            Number(userId),
-            channel.roomId,
-            sender.betAmount,
-            sender.selectOption,
-          );
-        }
-      } else {
-        client.emit("error", {
-          event: "joinBet",
-          message: "해당하는 옵션이 존재하지 않습니다.",
-        });
-      }
-    } else {
-      client.emit("error", {
-        event: "joinBet",
-        message: "해당하는 채널이 존재하지 않거나 활성 상태가 아닙니다.",
-      });
-    }
-  }
-
-  private async validateUserId(client: Socket, userId: string | undefined) {
-    if (!userId) {
-      client.emit("error", {
-        event: "joinBet",
-        message: "인증되지 않은 사용자입니다.",
-      });
-      return false;
-    }
-    return true;
-  }
-
-  private async validateUserDuck(
-    client: Socket,
-    userId: string,
-    betAmount: number,
-  ) {
-    const userDuck = await this.redisManager.client.hget(
-      `user:${userId}`,
-      "duck",
-    );
-    if (!userDuck || Number(userDuck) < betAmount) {
-      client.emit("error", {
-        event: "joinBet",
-        message: "보유한 duck이 부족합니다.",
-      });
-      return false;
-    }
-    return true;
-  }
-
-  private async getUpdatedChannel(roomId: string, targetChannel: Channel) {
-    const [updatedOption1, updatedOption2] = await Promise.all([
-      this.redisManager.client.hgetall(`room:${roomId}:option1`),
-      this.redisManager.client.hgetall(`room:${roomId}:option2`),
-    ]);
-
-    const updatedChannel = {
-      creator: targetChannel.creator,
-      status: targetChannel.status,
-      option1: updatedOption1,
-      option2: updatedOption2,
-    };
-    return updatedChannel;
-  }
-
-  private async saveBetLog(
-    client: Socket,
-    userId: number,
-    roomId: string,
-    betAmount: number,
-    selectOption: "option1" | "option2",
-  ) {
-    try {
-      await this.betService.saveBet(userId, roomId, betAmount, selectOption);
-    } catch (error) {
-      client.emit("error", {
-        event: "joinBet",
-        message: "베팅 내역 저장 중 오류가 발생했습니다. " + error.message,
-      });
-      return;
     }
   }
 }

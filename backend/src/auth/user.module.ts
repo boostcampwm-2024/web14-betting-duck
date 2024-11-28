@@ -20,5 +20,6 @@ import { DBManagerModule } from "src/utils/db.manager.module";
   ],
   controllers: [UserController],
   providers: [UserService, UserRepository],
+  exports: [UserRepository],
 })
 export class UserModule {}
