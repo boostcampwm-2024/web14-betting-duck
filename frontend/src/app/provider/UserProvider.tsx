@@ -1,4 +1,4 @@
-import { useSessionStorage } from "@/shared/hooks/use-session-storage";
+import { useSessionStorage } from "@/shared/hooks/useSessionStorage";
 import React from "react";
 
 interface UserContextType {
@@ -9,16 +9,18 @@ interface UserContextType {
 
 interface UserInfo {
   nickname?: string;
-  duck?: number;
   role?: "user" | "guest" | "admin" | "member";
   roomId?: string;
+  isPlaceBet?: boolean;
+  placeBetAmount?: number;
 }
 
 const defaultUserInfo: UserInfo = {
   nickname: "",
-  duck: 0,
   role: "guest",
   roomId: undefined,
+  isPlaceBet: false,
+  placeBetAmount: 0,
 };
 
 const UserContext = React.createContext<UserContextType | null>(null);
@@ -72,8 +74,8 @@ function UserProvider({ children }: { children: React.ReactNode }) {
         throw new Error("사용자 정보를 불러오는데 실패했습니다.");
       }
       const { data } = await response.json();
-      const { role, nickname, duck } = data as UserInfo;
-      await updateUserInfo({ role, nickname, duck });
+      const { role, nickname } = data as UserInfo;
+      await updateUserInfo({ role, nickname });
     } catch (error) {
       updateUserInfo(defaultUserInfo);
       console.error("Failed to refresh user info:", error);

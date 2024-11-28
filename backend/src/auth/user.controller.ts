@@ -177,11 +177,28 @@ export class UserController {
     @Param("duck") duck: number,
   ) {
     const result = await this.userService.updateDuck(req, duck);
-    return res.status(HttpStatus.CREATED).json({
+    return res.status(HttpStatus.OK).json({
       status: HttpStatus.OK,
       data: {
         message: "OK",
         ...result,
+      },
+    });
+  }
+
+  // 테스트용 API
+  @ApiOperation({ summary: "DBManager 테스트 API" })
+  @Get("/dbtest/:userId")
+  async dbTest(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param("userId") userId: number,
+  ) {
+    await this.userService.dbTest(userId);
+    return res.status(HttpStatus.OK).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
       },
     });
   }

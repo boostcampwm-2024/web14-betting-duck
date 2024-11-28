@@ -11,6 +11,7 @@ import { ChatModule } from "./chat/chat.module";
 import { BetModule } from "./bet/bet.module";
 import { BetRoomModule } from "./bet-room/bet-room.module";
 import { BetResultModule } from "./bet-result/bet-result.module";
+import { DBManagerModule } from "./utils/db.manager.module";
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { BetResultModule } from "./bet-result/bet-result.module";
     BetModule,
     BetRoomModule,
     BetResultModule,
+    DBManagerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

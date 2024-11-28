@@ -2,17 +2,39 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Chat } from "@/features/chat";
 import { useNavigate } from "@tanstack/react-router";
 import { validateAccess } from "@/shared/lib/validateAccess";
-import { responseBetRoomInfo } from "@betting-duck/shared";
+import {
+  responseBetRoomInfo,
+  responseUserInfoSchema,
+} from "@betting-duck/shared";
 import { Unauthorized } from "@/features/waiting-room/error/Unauthorized";
 import { Forbidden } from "@/features/waiting-room/error/Forbidden";
 import { AccessError } from "@/features/waiting-room/error/AccessError";
 import { z } from "zod";
+import { BettingPage } from "@/features/betting-page";
 
 type BetRoomResponse = z.infer<typeof responseBetRoomInfo>;
 
 interface RouteLoaderData {
   roomId: string;
   bettingRoomInfo: BetRoomResponse;
+  duckCoin: number;
+}
+
+const STORAGE_KEY = "betting_pool";
+async function getUserInfo() {
+  const response = await fetch("/api/users/userInfo");
+  if (!response.ok) {
+    throw new Error("사용자 정보를 불러오는데 실패했습니다.");
+  }
+
+  const { data } = await response.json();
+  const result = responseUserInfoSchema.safeParse(data);
+  if (!result.success) {
+    console.error(result.error);
+    throw new Error("사용자 정보를 불러오는데 실패했습니다.");
+  }
+
+  return data;
 }
 
 async function getBettingRoomInfo(roomId: string) {
@@ -41,7 +63,9 @@ export const Route = createFileRoute("/betting_/$roomId/vote")({
       if (!bettingRoomInfo) {
         throw new Error("베팅 룸 데이터를 불러오는데 실패했습니다.");
       }
-      return { roomId, bettingRoomInfo };
+
+      const { duck } = await getUserInfo();
+      return { roomId, bettingRoomInfo, duckCoin: duck };
     } finally {
       abortController.abort();
     }
@@ -64,10 +88,23 @@ export const Route = createFileRoute("/betting_/$roomId/vote")({
     }
     return <ErrorComponent error={error} />;
   },
+  onLeave: () => {
+    const rootLayout = document.getElementById("root-layout");
+    if (rootLayout) rootLayout.classList.remove("betting-page");
+    if (!window) return;
+    window.sessionStorage.removeItem(STORAGE_KEY);
+  },
 });
 
 function RouteComponent() {
-  return <Chat />;
+  const rootLayout = document.getElementById("root-layout");
+  if (rootLayout) rootLayout.classList.add("betting-page");
+  return (
+    <div className="flex">
+      <Chat />
+      <BettingPage />
+    </div>
+  );
 }
 
 function ErrorComponent({ error }: { error: Error }) {

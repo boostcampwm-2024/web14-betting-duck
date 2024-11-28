@@ -174,10 +174,10 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const userId = client.data.userId;
     const userRole = client.data.userRole;
 
-    if (!this.validateUserId(client, userId)) {
+    if (!(await this.validateUserId(client, userId))) {
       return;
     }
-    if (!this.validateUserDuck(client, userId, sender.betAmount)) {
+    if (!(await this.validateUserDuck(client, userId, sender.betAmount))) {
       return;
     }
 

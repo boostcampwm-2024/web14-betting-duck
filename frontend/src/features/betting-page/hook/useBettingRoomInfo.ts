@@ -1,59 +1,32 @@
 import React from "react";
 import { BettingPool } from "../utils/bettingOdds";
-import { useBettingContext } from "./use-betting-context";
+import { useBettingContext } from "./useBettingContext";
 import { bettingRoomSchema } from "../model/schema";
-import { useSocketIO } from "@/shared/hooks/use-socket-io";
-import { responseBetRoomInfo } from "@betting-duck/shared";
-import { z } from "zod";
 
-type Options = "option1" | "option2";
+type BettingContextType = ReturnType<typeof useBettingContext>;
 
-type BettingRoomInfo = z.infer<typeof responseBetRoomInfo>;
-
-function getSessionBettingPool(option: Options, bettingPool: BettingPool) {
-  return typeof window !== "undefined"
-    ? (JSON.parse(window.sessionStorage.getItem("betting_pool") || "{}")[
-        option
-      ] ?? bettingPool[option])
-    : bettingPool[option];
+interface BettingSocketDependencies {
+  socket: BettingContextType["socket"];
+  bettingRoomInfo: BettingContextType["bettingRoomInfo"];
+  bettingPool: BettingContextType["bettingPool"];
+  updateBettingPool: BettingContextType["updateBettingPool"];
 }
 
-function initialJoinRoom(
-  socket: ReturnType<typeof useSocketIO>,
-  bettingRoomInfo: BettingRoomInfo,
-) {
-  if (!socket.isConnected) return;
-  socket.emit("fetchBetRoomInfo", {
-    roomId: bettingRoomInfo.channel.id,
-  });
-}
-
-function useBettingSocket() {
+function useBettingRoomInfo(dependencies: BettingSocketDependencies) {
   const { socket, bettingRoomInfo, bettingPool, updateBettingPool } =
-    useBettingContext();
+    dependencies;
 
   const prevOption1Ref = React.useRef<Partial<BettingPool["option1"]>>(
-    getSessionBettingPool("option1", bettingPool),
+    bettingPool.option1,
   );
   const prevOption2Ref = React.useRef<Partial<BettingPool["option2"]>>(
-    getSessionBettingPool("option2", bettingPool),
+    bettingPool.option2,
   );
 
   React.useEffect(() => {
-    initialJoinRoom(socket, bettingRoomInfo);
-  }, [socket, bettingRoomInfo]);
-
-  React.useEffect(() => {
-    if (!socket.isConnected) return;
-    socket.emit("fetchBetRoomInfo", {
-      roomId: bettingRoomInfo.channel.id,
-    });
-  }, [socket, bettingRoomInfo]);
-
-  React.useEffect(() => {
     if (!socket.isConnected) return;
 
-    socket.on("fetchBetRoomInfo", (data) => {
+    socket.on("fetchBetRoomInfo", async (data) => {
       const result = bettingRoomSchema.safeParse(data);
       if (!result.success) {
         console.error(result.error.errors);
@@ -86,4 +59,4 @@ function useBettingSocket() {
   }, [socket, updateBettingPool, bettingPool, bettingRoomInfo]);
 }
 
-export { useBettingSocket };
+export { useBettingRoomInfo };
