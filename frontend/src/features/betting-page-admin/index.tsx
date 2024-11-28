@@ -209,6 +209,30 @@ function BettingPageAdmin() {
     });
   };
 
+  const handleBetOption1 = () => {
+    socket.emit("joinBet", {
+      sender: {
+        betAmount: 100,
+        selectOption: "option1",
+      },
+      channel: {
+        roomId,
+      },
+    });
+  };
+
+  const handleBetOption2 = () => {
+    socket.emit("joinBet", {
+      sender: {
+        betAmount: 100,
+        selectOption: "option2",
+      },
+      channel: {
+        roomId,
+      },
+    });
+  };
+
   return (
     <div className="bg-layout-main flex h-full w-full flex-col justify-between">
       <div className="flex flex-col gap-5">
@@ -295,6 +319,8 @@ function BettingPageAdmin() {
           </div>
         </div>
       </div>
+      <button onClick={handleBetOption1}>투표1</button>
+      <button onClick={handleBetOption2}>투표2</button>
       <BettingSharedLink />
     </div>
   );
