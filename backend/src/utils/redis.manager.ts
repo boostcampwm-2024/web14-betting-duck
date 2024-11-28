@@ -137,7 +137,7 @@ export class RedisManager {
     return await this.client.get(`room:${roomId}:status`);
   }
 
-  async updateBetting(roomId: string, option: string, betAmount: number) {
+  async increaseBettingInfo(roomId: string, option: string, betAmount: number) {
     await Promise.all([
       this.client.hincrby(`room:${roomId}:${option}`, "currentBets", betAmount),
       this.client.hincrby(`room:${roomId}:${option}`, "participants", 1),
