@@ -1,34 +1,19 @@
 import { DuckCoinIcon } from "@/shared/icons";
 import { cn } from "@/shared/misc";
+import { useBettingContext } from "../betting-page/hook/useBettingContext";
 
-interface BettingStats {
-  coinAmount: number;
-  bettingRate: string;
-  participant: number;
-  percentage: number;
-}
-
-interface BettingRoom {
-  title: string;
-  timeRemaining: number;
-  option1: {
-    content: string;
-    stats: BettingStats;
-  };
-  option2: {
-    content: string;
-    stats: BettingStats;
-  };
+interface BettingPool {
+  totalAmount: number;
+  participants: number;
 }
 
 function BettingResult({
-  option,
+  content,
+  bettingPool,
   uses,
 }: {
-  option: {
-    content: string;
-    stats: BettingStats;
-  };
+  content: string;
+  bettingPool: BettingPool;
   uses: "winning" | "losing";
 }) {
   const color = uses === "winning" ? "text-bettingBlue" : "text-bettingPink";
@@ -37,19 +22,19 @@ function BettingResult({
     <div className={`flex flex-col items-center justify-center ${color}`}>
       <DuckCoinIcon />
       <div className="flex flex-col items-center pt-4">
-        <p className="text-2xl font-extrabold">{option.content}</p>
+        <p className="text-2xl font-extrabold">{content}</p>
         <div className="flex flex-row gap-2">
           <DuckCoinIcon width={36} height={36} />
           <span className="text-xl font-extrabold">
-            {option.stats.coinAmount}!
+            {bettingPool.totalAmount}!
           </span>
         </div>
       </div>
       <div className="text-default-disabled text-md text-pretty break-all">
         <span>
-          {option.stats.participant} 명에게{" "}
+          {bettingPool.participants} 명에게{" "}
           <DuckCoinIcon width={16} height={16} className="inline-block" />{" "}
-          {option.stats.coinAmount * option.stats.participant} 포인트를 드립니다
+          {bettingPool.totalAmount} 포인트를 드립니다
         </span>
       </div>
     </div>
@@ -57,28 +42,9 @@ function BettingResult({
 }
 
 function DecideBettingResult() {
-  const bettingData: BettingRoom = {
-    title: "KBO 우승은 KIA다!",
-    timeRemaining: 445,
-    option1: {
-      content: "삼성",
-      stats: {
-        coinAmount: 1000,
-        bettingRate: "1:12",
-        participant: 100,
-        percentage: 62,
-      },
-    },
-    option2: {
-      content: "KIA",
-      stats: {
-        coinAmount: 1000,
-        bettingRate: "1:12",
-        participant: 100,
-        percentage: 62,
-      },
-    },
-  };
+  const { bettingPool, bettingRoomInfo } = useBettingContext();
+  const { channel } = bettingRoomInfo;
+
   return (
     <form
       className={cn(
@@ -91,7 +57,11 @@ function DecideBettingResult() {
       </h1>
       <div className="flex h-full flex-row items-center">
         <div className="flex w-[50cqw] flex-col items-center gap-6">
-          <BettingResult uses={"winning"} option={bettingData.option1} />
+          <BettingResult
+            uses="winning"
+            bettingPool={bettingPool.option1}
+            content={channel.options.option1.name}
+          />
           <button
             className="bg-bettingBlue text-layout-main w-[40cqw] rounded-lg py-2"
             type="submit"
@@ -100,7 +70,11 @@ function DecideBettingResult() {
           </button>
         </div>
         <div className="flex w-[50cqw] flex-col items-center gap-6">
-          <BettingResult uses={"losing"} option={bettingData.option2} />
+          <BettingResult
+            uses="losing"
+            bettingPool={bettingPool.option2}
+            content={channel.options.option2.name}
+          />
           <button
             className="bg-bettingPink text-layout-main w-[40cqw] rounded-lg py-2"
             type="submit"
@@ -112,5 +86,4 @@ function DecideBettingResult() {
     </form>
   );
 }
-
 export { DecideBettingResult };
