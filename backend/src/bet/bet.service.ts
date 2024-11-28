@@ -46,14 +46,17 @@ export class BetService {
           : targetChannel.option2;
 
       if (selectedOption) {
-        await this.redisManager.deductDuck(userId, betAmount);
-        await this.saveDeductedDuck(userId, betAmount);
-
-        await this.redisManager.updateBetting(
+        const deductedDuck = await this.redisManager.deductDuck(
+          userId,
+          betAmount,
+        );
+        await this.saveUserDeductedDuck(userId, deductedDuck);
+        await this.redisManager.increaseBettingInfo(
           channel.roomId,
           sender.selectOption,
           betAmount,
         );
+
         const updatedChannel = await this.getUpdatedChannel(
           channel.roomId,
           targetChannel,
@@ -101,7 +104,7 @@ export class BetService {
     const userDuck = userInfo.duck;
 
     if (!userDuck || userDuck < betAmount) {
-      throw new Error("보유한 duck이 부족합니다.");
+      throw new BadRequestException("보유한 duck이 부족합니다.");
     }
   }
 
@@ -120,10 +123,10 @@ export class BetService {
     return updatedChannel;
   }
 
-  private async saveDeductedDuck(userId: number, betAmount: number) {
-    const userInfo = await this.getUserInfo(userId);
-    const userDuck = userInfo.duck;
-    const deductedDuck = userDuck - betAmount;
+  private async saveUserDeductedDuck(userId: number, deductedDuck: number) {
+    if (deductedDuck < 0) {
+      throw new BadRequestException("베팅 이후 남은 금액이 0보다 작습니다.");
+    }
     await this.userRepository.update(userId, { duck: deductedDuck });
   }
 
