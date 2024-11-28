@@ -238,6 +238,7 @@ export class UserService {
 
   // DBManager 테스트용 메서드
   async dbTest(userId: number) {
-    await this.dbManager.setUser(userId, { duck: 100 });
+    await this.dbManager.setUser(userId, { duck: 300 });
+    await this.dbManager.setBet(2, { betAmount: 300 });
   }
 }

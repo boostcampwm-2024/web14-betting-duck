@@ -6,7 +6,9 @@ import { UserRepository } from "./user.repository";
 import { User } from "./user.entity";
 import { JwtModule } from "@nestjs/jwt";
 import { RedisManagerModule } from "src/utils/redis-manager.module";
+
 import { DBManagerModule } from "src/utils/db.manager.module";
+import { Bet } from "src/bet/bet.entity";
 
 @Module({
   imports: [
@@ -15,6 +17,7 @@ import { DBManagerModule } from "src/utils/db.manager.module";
       secret: process.env.JWT_SECRET || "secret",
       signOptions: { expiresIn: "1h" },
     }),
+    TypeOrmModule.forFeature([User, Bet]),
     RedisManagerModule,
     DBManagerModule,
   ],
