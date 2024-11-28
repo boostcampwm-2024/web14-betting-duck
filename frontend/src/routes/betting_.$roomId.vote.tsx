@@ -20,6 +20,7 @@ interface RouteLoaderData {
   duckCoin: number;
 }
 
+const STORAGE_KEY = "betting_pool";
 async function getUserInfo() {
   const response = await fetch("/api/users/userInfo");
   if (!response.ok) {
@@ -90,6 +91,8 @@ export const Route = createFileRoute("/betting_/$roomId/vote")({
   onLeave: () => {
     const rootLayout = document.getElementById("root-layout");
     if (rootLayout) rootLayout.classList.remove("betting-page");
+    if (!window) return;
+    window.sessionStorage.removeItem(STORAGE_KEY);
   },
 });
 
