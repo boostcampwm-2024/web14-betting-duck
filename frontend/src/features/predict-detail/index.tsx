@@ -5,6 +5,8 @@ import { useBettingContext } from "../betting-page/hook/useBettingContext";
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "@/app/provider/UserProvider";
 import { GuestFooter } from "./ui/GuestFooter";
+import { BettingResult } from "./ui/UserBettingResult";
+import { AdminBettingResult } from "./ui/AdminBettingResult";
 
 interface BetResultResponse {
   status: number;
@@ -60,7 +62,27 @@ function PredictDetail() {
     };
 
     fetchBetResults();
-  }, []);
+  }, [channel.id]);
+
+  // Utility functions
+  const getWinningOptionName = () =>
+    channel.options[betResults.data.winning_option].name;
+
+  const getTotalParticipants = () =>
+    Number(betResults.data.option_1_total_participants) +
+    Number(betResults.data.option_2_total_participants);
+
+  const renderWinningIcon = () => (
+    <DuckCoinIcon
+      className={
+        betResults.data.winning_option === "option1"
+          ? "text-bettingBlue"
+          : "text-bettingPink"
+      }
+      width={24}
+      height={24}
+    />
+  );
 
   return (
     <div className="bg-layout-main flex h-full w-full flex-col items-center justify-between gap-4">
@@ -71,7 +93,7 @@ function PredictDetail() {
         </div>
         <h1 className="text-layout-main flex items-center gap-4 text-2xl font-extrabold">
           <TrophyIcon className="font-extrabold" width={32} height={32} />
-          승리 : {channel.options[betResults.data.winning_option].name}
+          승리 : {getWinningOptionName()}
         </h1>
       </div>
 
@@ -85,11 +107,7 @@ function PredictDetail() {
             <div className="flex flex-row items-center gap-2">
               <PeoplesIcon className="text-default" />총 참여자
             </div>
-            <span>
-              {betResults.data.option_1_total_participants +
-                betResults.data.option_2_total_participants}
-              명
-            </span>
+            <span>{getTotalParticipants()}명</span>
           </div>
           <div>
             <div className="flex justify-between">
@@ -99,10 +117,7 @@ function PredictDetail() {
               </span>
             </div>
             <ProgressBar
-              max={Number(
-                betResults.data.option_1_total_participants +
-                  betResults.data.option_2_total_participants,
-              )}
+              max={getTotalParticipants()}
               value={Number(betResults.data.option_1_total_participants)}
               uses={"winning"}
               label="승리에 참여한 사용자 비율"
@@ -114,10 +129,7 @@ function PredictDetail() {
               <span>{betResults.data.option_2_total_participants}명</span>
             </div>
             <ProgressBar
-              max={Number(
-                betResults.data.option_1_total_participants +
-                  betResults.data.option_2_total_participants,
-              )}
+              max={getTotalParticipants()}
               value={Number(betResults.data.option_2_total_participants)}
               uses={"losing"}
               label="패배에 참여한 사용자 비율"
@@ -127,68 +139,20 @@ function PredictDetail() {
       </div>
 
       {/* PredictDetail result */}
-      <div className="bg-secondary w-[90cqw] rounded-lg px-8 py-4 shadow-inner">
-        <div>
-          <h2 className="flex flex-row items-center gap-2 text-lg font-extrabold">
-            배팅 결과
-          </h2>
-        </div>
-        <div className="flex flex-col gap-2 pt-4">
-          <div className="flex justify-between">
-            <div className="flex flex-row items-center gap-2">
-              {betResults.data.winning_option === "option1" ? (
-                <DuckCoinIcon
-                  className="text-bettingBlue"
-                  width={24}
-                  height={24}
-                />
-              ) : (
-                <DuckCoinIcon
-                  className="text-bettingPink"
-                  width={24}
-                  height={24}
-                />
-              )}
-              배팅 금액
-            </div>
-            <span className="text-default font-extrabold">300 포인트</span>
-          </div>
-          <div className="flex justify-between">
-            <span>선택 옵션</span>
-            {betResults.data.winning_option === "option1" ? (
-              <span className="text-bettingBlue font-extrabold">
-                {channel.options.option1.name}
-              </span>
-            ) : (
-              <span className="text-bettingPink font-extrabold">
-                {channel.options.option2.name}
-              </span>
-            )}
-          </div>
-          <div className="flex justify-between">
-            <span>얻은 금액</span>
-            {betResults.data.winning_option === "option1" ? (
-              <div className="text-bettingBlue flex flex-row gap-2 font-extrabold">
-                <DuckCoinIcon
-                  className="text-bettingBlue"
-                  width={24}
-                  height={24}
-                />
-                + 300 코인
-              </div>
-            ) : (
-              <div className="text-bettingPink flex flex-row gap-2 font-extrabold">
-                <DuckCoinIcon
-                  className="text-bettingPink"
-                  width={24}
-                  height={24}
-                />
-                + 300 코인
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      {role === "admin" ? (
+        <AdminBettingResult
+          winningOption="option1"
+          winner={getWinningOptionName()}
+          winnerCount={Number(betResults.data.option_1_total_participants)}
+        />
+      ) : (
+        <BettingResult
+          renderWinningIcon={renderWinningIcon}
+          winningOption={betResults.data.winning_option}
+          options={channel.options}
+          earnedAmount={300}
+        />
+      )}
 
       {/* PredictDetail footer */}
       <div className="flex w-[90cqw] flex-col gap-2 pt-8">
