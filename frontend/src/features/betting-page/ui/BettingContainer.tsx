@@ -1,7 +1,7 @@
 import { cn } from "@/shared/misc";
 import { BettingHeader } from "./BettingHeader";
-import { BettingStatsDisplay } from "./BettingStatsDisplay";
-import { PercentageDisplay } from "./PercentageDisplay";
+import { BettingStatsDisplay } from "@/shared/components/BettingStatsDisplay/BettingStatsDisplay";
+import { PercentageDisplay } from "@/shared/components/PercentageDisplay/PercentageDisplay";
 import { useBettingContext } from "../hook/useBettingContext";
 import { BettingFooter } from "./BettingFooter";
 import { useBettingConnection } from "../hook/useBettingRoomConnection";

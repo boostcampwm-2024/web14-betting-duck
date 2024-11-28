@@ -1,7 +1,7 @@
 import { BettingProvider } from "./provider/BettingProvider";
 import { BettingContainer } from "./ui/BettingContainer";
-import { BettingTimer } from "./ui/BettingTimer";
-import { BettingSharedLink } from "./ui/BettingSharedLink";
+import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
+import { BettingSharedLink } from "@/shared/components/BettingSharedLink/BettingSharedLink";
 
 function BettingPage() {
   return (

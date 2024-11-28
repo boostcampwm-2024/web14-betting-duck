@@ -23,6 +23,7 @@ import { Route as BettingRoomIdWaitingImport } from "./routes/betting_.$roomId.w
 import { Route as BettingRoomIdVoteImport } from "./routes/betting_.$roomId.vote";
 import { Route as BettingRoomIdVoteVotingImport } from "./routes/betting_.$roomId.vote.voting";
 import { Route as BettingRoomIdVoteDecideImport } from "./routes/betting_.$roomId.vote.decide";
+import { Route as BettingRoomIdVoteAdminImport } from "./routes/betting_.$roomId.vote.admin";
 
 // Create/Update Routes
 
@@ -95,6 +96,12 @@ const BettingRoomIdVoteVotingRoute = BettingRoomIdVoteVotingImport.update({
 const BettingRoomIdVoteDecideRoute = BettingRoomIdVoteDecideImport.update({
   id: "/decide",
   path: "/decide",
+  getParentRoute: () => BettingRoomIdVoteRoute,
+} as any);
+
+const BettingRoomIdVoteAdminRoute = BettingRoomIdVoteAdminImport.update({
+  id: "/admin",
+  path: "/admin",
   getParentRoute: () => BettingRoomIdVoteRoute,
 } as any);
 
@@ -172,6 +179,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof BettingRoomIdWaitingImport;
       parentRoute: typeof rootRoute;
     };
+    "/betting_/$roomId/vote/admin": {
+      id: "/betting_/$roomId/vote/admin";
+      path: "/admin";
+      fullPath: "/betting/$roomId/vote/admin";
+      preLoaderRoute: typeof BettingRoomIdVoteAdminImport;
+      parentRoute: typeof BettingRoomIdVoteImport;
+    };
     "/betting_/$roomId/vote/decide": {
       id: "/betting_/$roomId/vote/decide";
       path: "/decide";
@@ -192,11 +206,13 @@ declare module "@tanstack/react-router" {
 // Create and export the route tree
 
 interface BettingRoomIdVoteRouteChildren {
+  BettingRoomIdVoteAdminRoute: typeof BettingRoomIdVoteAdminRoute;
   BettingRoomIdVoteDecideRoute: typeof BettingRoomIdVoteDecideRoute;
   BettingRoomIdVoteVotingRoute: typeof BettingRoomIdVoteVotingRoute;
 }
 
 const BettingRoomIdVoteRouteChildren: BettingRoomIdVoteRouteChildren = {
+  BettingRoomIdVoteAdminRoute: BettingRoomIdVoteAdminRoute,
   BettingRoomIdVoteDecideRoute: BettingRoomIdVoteDecideRoute,
   BettingRoomIdVoteVotingRoute: BettingRoomIdVoteVotingRoute,
 };
@@ -215,6 +231,7 @@ export interface FileRoutesByFullPath {
   "/betting": typeof BettingIndexRoute;
   "/betting/$roomId/vote": typeof BettingRoomIdVoteRouteWithChildren;
   "/betting/$roomId/waiting": typeof BettingRoomIdWaitingRoute;
+  "/betting/$roomId/vote/admin": typeof BettingRoomIdVoteAdminRoute;
   "/betting/$roomId/vote/decide": typeof BettingRoomIdVoteDecideRoute;
   "/betting/$roomId/vote/voting": typeof BettingRoomIdVoteVotingRoute;
 }
@@ -230,6 +247,7 @@ export interface FileRoutesByTo {
   "/betting": typeof BettingIndexRoute;
   "/betting/$roomId/vote": typeof BettingRoomIdVoteRouteWithChildren;
   "/betting/$roomId/waiting": typeof BettingRoomIdWaitingRoute;
+  "/betting/$roomId/vote/admin": typeof BettingRoomIdVoteAdminRoute;
   "/betting/$roomId/vote/decide": typeof BettingRoomIdVoteDecideRoute;
   "/betting/$roomId/vote/voting": typeof BettingRoomIdVoteVotingRoute;
 }
@@ -246,6 +264,7 @@ export interface FileRoutesById {
   "/betting/": typeof BettingIndexRoute;
   "/betting_/$roomId/vote": typeof BettingRoomIdVoteRouteWithChildren;
   "/betting_/$roomId/waiting": typeof BettingRoomIdWaitingRoute;
+  "/betting_/$roomId/vote/admin": typeof BettingRoomIdVoteAdminRoute;
   "/betting_/$roomId/vote/decide": typeof BettingRoomIdVoteDecideRoute;
   "/betting_/$roomId/vote/voting": typeof BettingRoomIdVoteVotingRoute;
 }
@@ -263,6 +282,7 @@ export interface FileRouteTypes {
     | "/betting"
     | "/betting/$roomId/vote"
     | "/betting/$roomId/waiting"
+    | "/betting/$roomId/vote/admin"
     | "/betting/$roomId/vote/decide"
     | "/betting/$roomId/vote/voting";
   fileRoutesByTo: FileRoutesByTo;
@@ -277,6 +297,7 @@ export interface FileRouteTypes {
     | "/betting"
     | "/betting/$roomId/vote"
     | "/betting/$roomId/waiting"
+    | "/betting/$roomId/vote/admin"
     | "/betting/$roomId/vote/decide"
     | "/betting/$roomId/vote/voting";
   id:
@@ -291,6 +312,7 @@ export interface FileRouteTypes {
     | "/betting/"
     | "/betting_/$roomId/vote"
     | "/betting_/$roomId/waiting"
+    | "/betting_/$roomId/vote/admin"
     | "/betting_/$roomId/vote/decide"
     | "/betting_/$roomId/vote/voting";
   fileRoutesById: FileRoutesById;
@@ -371,12 +393,17 @@ export const routeTree = rootRoute
     "/betting_/$roomId/vote": {
       "filePath": "betting_.$roomId.vote.tsx",
       "children": [
+        "/betting_/$roomId/vote/admin",
         "/betting_/$roomId/vote/decide",
         "/betting_/$roomId/vote/voting"
       ]
     },
     "/betting_/$roomId/waiting": {
       "filePath": "betting_.$roomId.waiting.tsx"
+    },
+    "/betting_/$roomId/vote/admin": {
+      "filePath": "betting_.$roomId.vote.admin.tsx",
+      "parent": "/betting_/$roomId/vote"
     },
     "/betting_/$roomId/vote/decide": {
       "filePath": "betting_.$roomId.vote.decide.tsx",

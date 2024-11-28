@@ -1,5 +1,5 @@
 import React from "react";
-import { useBettingContext } from "../hook/useBettingContext";
+import { useBettingContext } from "@/features/betting-page/hook/useBettingContext";
 import { TimerIcon } from "@/shared/icons";
 import { ProgressBar } from "@/shared/components/ProgressBar";
 
