@@ -60,12 +60,14 @@ export class UserService {
     if (user && (await bcrypt.compare(password, user.password))) {
       const nickname = user.nickname;
 
-      await this.redisManager.setUser({
-        userId: String(user.id),
-        nickname: nickname,
-        role: role,
-        duck: user.duck,
-      });
+      if (!(await this.redisManager.findUser(String(user.id)))) {
+        await this.redisManager.setUser({
+          userId: String(user.id),
+          nickname: nickname,
+          role: role,
+          duck: user.duck,
+        });
+      }
 
       const payload = {
         id: user.id,
