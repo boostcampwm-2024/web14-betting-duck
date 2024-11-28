@@ -1,10 +1,10 @@
 import { Image } from "@/shared/components/Image";
 import pondImage from "@/assets/images/pond.png";
 import { DuckCoinIcon } from "@/shared/icons";
-import { useDuckCoin } from "@/shared/hooks/useDuckCoin";
+import { Route } from "@/routes/my-page";
 
 function MyPage() {
-  const duckCoin = useDuckCoin();
+  const { duck } = Route.useLoaderData();
 
   return (
     <div className="w-ful bg-layout-main flex flex-col items-center justify-between gap-2">
@@ -15,7 +15,7 @@ function MyPage() {
         </div>
         <div className="flex w-full items-center justify-center gap-4">
           <DuckCoinIcon width={32} height={32} />
-          <span className="text-2xl font-bold">{duckCoin ?? 0}</span>
+          <span className="text-2xl font-bold">{duck ?? 0}</span>
         </div>
         <div className="w-full px-5">
           <Image src={pondImage} alt="Pond" />
