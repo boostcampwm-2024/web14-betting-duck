@@ -1,5 +1,5 @@
 import React from "react";
-import { BettingPool } from "../utils/bettingOdds";
+import { BettingPool } from "@/shared/utils/bettingOdds";
 import { useBettingContext } from "./useBettingContext";
 import { bettingRoomSchema } from "../model/schema";
 

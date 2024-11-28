@@ -1,9 +1,6 @@
 import { DuckCoinIcon } from "@/shared/icons";
 import { useBettingContext } from "../betting-page/hook/useBettingContext";
-import {
-  calculateWinnings,
-  calculateOdds,
-} from "../betting-page/utils/bettingOdds";
+import { calculateWinnings, calculateOdds } from "@/shared/utils/bettingOdds";
 import { endBetRoom } from "../betting-page/api/endBetroom";
 import { getBettingRoomInfo } from "../betting-page/api/getBettingRoomInfo";
 
