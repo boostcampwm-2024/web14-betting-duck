@@ -8,17 +8,26 @@ function BettingHeader({
   content: string;
   contextValue: ReturnType<typeof useBettingContext>;
 }) {
-  const { socket, bettingPool, updateBettingPool } = contextValue;
+  const { socket, bettingPool, updateBettingPool, updateBettingRoomInfo } =
+    contextValue;
 
   React.useEffect(() => {
-    socket.on("timeover", () => updateBettingPool({ isBettingEnd: true }));
+    socket.on("timeover", () => {
+      updateBettingRoomInfo();
+      updateBettingPool({ isBettingEnd: true });
+    });
 
-    return () => socket.off("timeover");
-  }, [socket, updateBettingPool]);
+    return () => {
+      socket.off("timeover");
+    };
+  }, [socket, updateBettingPool, updateBettingRoomInfo]);
 
   return (
     <div className="bg-secondary mb-4 rounded-lg p-3 text-center shadow-inner">
-      <h1 className="mb-1 text-4xl font-bold">
+      <h1 className="text-default-disabled text-md mb-1 font-bold">
+        배팅 주제
+      </h1>
+      <h1 className="mb-1 pt-2 text-4xl font-bold">
         {bettingPool.isBettingEnd ? "투표 시간이 종료 되었습니다!" : content}
       </h1>
       <p className="text-m">

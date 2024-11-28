@@ -40,15 +40,12 @@ function BettingTimer() {
       }
     };
 
-    // 초기 상태 설정
     updateTimer();
 
-    // 타이머 시작
     if (Date.now() < adjustedEndTime) {
       timerRef.current = setInterval(updateTimer, 50);
     }
 
-    // 서버의 timeover 이벤트 처리
     const handleTimeover = () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -76,18 +73,21 @@ function BettingTimer() {
   };
 
   return (
-    <div className="bg-layout-main px-8 pt-4">
-      <div className="flex items-center gap-4">
-        <TimerIcon width={24} height={24} />
-        <ProgressBar
-          label="투표 진행 시간 타이머"
-          uses="default"
-          max={100}
-          value={progress}
-          className="w-full"
-        />
+    <div className="px-4">
+      <div className="bg-primary text-layout-main flex w-full flex-col items-start rounded-lg px-4 py-4">
+        <div className="flex w-full items-center gap-4">
+          <TimerIcon width={24} height={24} />
+          <ProgressBar
+            label="투표 진행 시간 타이머"
+            uses="default"
+            max={100}
+            value={progress}
+          />
+        </div>
+        <div className="text-lg">
+          {timerActive ? formatTime(remainingTime) : "투표 종료"}
+        </div>
       </div>
-      <div>{timerActive ? formatTime(remainingTime) : "투표 종료"}</div>
     </div>
   );
 }

@@ -17,7 +17,8 @@ function useBettingConnection(
   }, [socket, bettingRoomInfo]);
 
   React.useEffect(() => {
-    if (!socket.isConnected) return;
+    if (!socket.isConnected || bettingRoomInfo.channel.status !== "active")
+      return;
     socket.emit("fetchBetRoomInfo", {
       roomId: bettingRoomInfo.channel.id,
     });

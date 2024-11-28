@@ -24,7 +24,8 @@ function useBettingRoomInfo(dependencies: BettingSocketDependencies) {
   );
 
   React.useEffect(() => {
-    if (!socket.isConnected) return;
+    if (!socket.isConnected || bettingRoomInfo.channel.status !== "active")
+      return socket.off("fetchBetRoomInfo");
 
     socket.on("fetchBetRoomInfo", async (data) => {
       const result = bettingRoomSchema.safeParse(data);

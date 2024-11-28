@@ -6,6 +6,7 @@ import { z } from "zod";
 import { type BettingPool, getBettingSummary } from "../utils/bettingOdds";
 import { useSessionStorage } from "@/shared/hooks/useSessionStorage";
 import { useEffectOnce } from "@/shared/hooks/useEffectOnce";
+import { getBettingRoomInfo } from "../api/getBettingRoomInfo";
 
 interface BettingContextType {
   socket: ReturnType<typeof useSocketIO>;
@@ -13,6 +14,7 @@ interface BettingContextType {
   bettingPool: ContextBettingPool;
   bettingSummary: ReturnType<typeof getBettingSummary>;
   updateBettingPool: (partialPool: PartialBettingPool) => void;
+  updateBettingRoomInfo: () => void;
 }
 
 type PartialBettingPool = Partial<{
@@ -69,6 +71,8 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
   if (!bettingRoomInfoTypeGuard(bettingRoomInfo)) {
     throw new Error("배팅 방 정보를 가져오는데 실패했습니다.");
   }
+  const [currentBettingRoomInfo, setCurrentBettingRoomInfo] =
+    React.useState(bettingRoomInfo);
 
   const updateBettingPool = React.useCallback(
     async (partialPool: PartialBettingPool) => {
@@ -93,6 +97,22 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
     },
     [setSessionItem, bettingPool],
   );
+
+  const updateBettingRoomInfo = React.useCallback(async () => {
+    const updatedBettingRoomInfo = await getBettingRoomInfo(
+      bettingRoomInfo.channel.id,
+    );
+    console.log(updatedBettingRoomInfo);
+    if (
+      !updatedBettingRoomInfo ||
+      !bettingRoomInfoTypeGuard(updatedBettingRoomInfo)
+    ) {
+      console.error("새로운 방 정보를 가져오는데 실패했습니다.");
+      return;
+    }
+
+    setCurrentBettingRoomInfo(updatedBettingRoomInfo);
+  }, [bettingRoomInfo.channel.id]);
 
   useEffectOnce(() => {
     async function initializedBettingPool() {
@@ -131,12 +151,20 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
   const value = React.useMemo(
     () => ({
       socket,
-      bettingRoomInfo,
+      bettingRoomInfo: currentBettingRoomInfo,
       bettingPool,
       bettingSummary,
       updateBettingPool,
+      updateBettingRoomInfo,
     }),
-    [socket, bettingRoomInfo, bettingPool, bettingSummary, updateBettingPool],
+    [
+      socket,
+      currentBettingRoomInfo,
+      bettingPool,
+      bettingSummary,
+      updateBettingPool,
+      updateBettingRoomInfo,
+    ],
   );
 
   return (
