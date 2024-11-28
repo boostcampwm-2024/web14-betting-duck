@@ -60,12 +60,14 @@ export class UserService {
     if (user && (await bcrypt.compare(password, user.password))) {
       const nickname = user.nickname;
 
-      await this.redisManager.setUser({
-        userId: String(user.id),
-        nickname: nickname,
-        role: role,
-        duck: user.duck,
-      });
+      if (!(await this.redisManager.findUser(String(user.id)))) {
+        await this.redisManager.setUser({
+          userId: String(user.id),
+          nickname: nickname,
+          role: role,
+          duck: user.duck,
+        });
+      }
 
       const payload = {
         id: user.id,
@@ -131,8 +133,6 @@ export class UserService {
   }
 
   async getUserInfo(req: Request) {
-    // TODO: 사용자 인증 필요, 자신의 정보만 조회 가능하도록
-    console.log(req["user"]);
     const userId = req["user"].id;
 
     const cachedUserInfo = await this.redisManager.getUser(String(userId));
@@ -142,6 +142,12 @@ export class UserService {
 
     const userInfo = await this.userRepository.findOneById(userId);
     if (userInfo) {
+      await this.redisManager.setUser({
+        userId: String(userInfo.id),
+        nickname: userInfo.nickname,
+        role: req["user"].role,
+        duck: userInfo.duck,
+      });
       return userInfo;
     }
 

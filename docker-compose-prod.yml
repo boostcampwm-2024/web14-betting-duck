@@ -1,0 +1,72 @@
+version: '3.8'
+
+
+services:
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx-server
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./frontend/dist:/static
+      # SSL 설정
+      - ./fullchain.pem:/ssl/fullchain.pem
+      - ./privkey.pem:/ssl/privkey.pem
+
+  betting_duck_app:
+    image: node:22.11.0-alpine
+    container_name: betting_duck_app
+    working_dir: /app/backend
+    volumes:
+      - ./:/app
+    ports:
+      - "${SERVER_PORT}:3000"
+    # 배포용 커맨드
+    command: >
+      sh -c " npm install -g pnpm && \
+      cd ../backend && pnpm install && \
+      pnpm run start "
+    environment:
+      POSTGRES_HOSTNAME: ${POSTGRES_HOSTNAME}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB_NAME_DB_SYNCHRONIZE: ${POSTGRES_DB_NAME_DB_SYNCHRONIZE}
+      REDIS_HOSTNAME: ${REDIS_HOSTNAME}
+      REDIS_PORT: ${REDIS_PORT}
+    
+  frontend_builder:
+    image: node:22.11.0-alpine
+    container_name: frontend_builder
+    working_dir: /app/frontend
+    volumes:
+      - ./:/app
+    command: >
+      sh -c " npm install -g pnpm && \
+      pnpm install && \
+      pnpm run build "
+
+  postgres_db:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "${REDIS_PORT}:6379"
+
+volumes:
+  postgres_data:
