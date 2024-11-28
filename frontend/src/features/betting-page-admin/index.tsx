@@ -226,9 +226,7 @@ function BettingPageAdmin() {
                 "투표가 진행 중입니다. 투표를 취소할 수 있습니다."
               ) : (
                 <>
-                  투표가 종료되었습니다.
-                  <br /> 투표를 취소하거나 종료할 수 있습니다. <br /> 투표를
-                  취소하게 되면{" "}
+                  투표를 취소하게 되면{" "}
                   <span className="text-bettingPink font-extrabold">
                     모든 베팅 금액이 환불되고 베팅이 종료되며, 돌이킬 수
                     없습니다.
