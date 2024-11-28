@@ -22,7 +22,6 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     if (socket.isConnected) {
-      console.log(userInfo.roomId);
       socket.emit("joinRoom", {
         sender: {
           nickname: userInfo.nickname,
