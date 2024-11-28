@@ -46,7 +46,7 @@ function MemberFooter() {
   }
 
   function participateVote() {
-    navigate({ to: "../vote" });
+    navigate({ to: "../vote/voting" });
   }
 
   return (
