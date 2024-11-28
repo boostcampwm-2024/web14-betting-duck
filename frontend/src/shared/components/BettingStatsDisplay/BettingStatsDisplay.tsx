@@ -36,9 +36,7 @@ const BettingStatsDisplay = React.memo(
     );
 
     return (
-      <div
-        className={`flex flex-1 flex-row justify-between pl-8 pr-4 ${color}`}
-      >
+      <div className={`flex flex-1 flex-row justify-between ${color}`}>
         <div className="text-md flex max-w-[35cqw] flex-col gap-2">
           {bettingStats.map(({ icon: Icon, alt, stat }) => (
             <div

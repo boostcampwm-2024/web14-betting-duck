@@ -21,7 +21,7 @@ const PercentageDisplay = React.memo(function PercentageDisplay({
       <ProgressBar
         value={percentage}
         uses={index === 0 ? "winning" : "losing"}
-        className="w-[30cqw] -scale-x-100"
+        className="w-full -scale-x-100"
       />
     </div>
   );
