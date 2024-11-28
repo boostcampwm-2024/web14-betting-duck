@@ -1,11 +1,21 @@
 import React from "react";
 import { Image } from "@/shared/components/Image";
 import userPlusImage from "@/assets/images/user-plus.png";
+import { useNavigate } from "@tanstack/react-router";
 
 function GuestFooter() {
+  const navigate = useNavigate();
+
+  const handleJoinClick = () => {
+    navigate({ to: "/login" });
+  };
+
   return (
     <React.Fragment>
-      <button className="bg-default text-layout-main flex w-full items-center justify-center gap-4 rounded-lg py-2 text-lg font-extrabold">
+      <button
+        className="bg-default text-layout-main flex w-full items-center justify-center gap-4 rounded-lg py-2 text-lg font-extrabold"
+        onClick={handleJoinClick}
+      >
         <Image
           src={userPlusImage}
           width={24}
