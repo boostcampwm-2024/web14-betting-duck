@@ -1,16 +1,12 @@
 import { PeoplesIcon, DuckCoinIcon, TrophyIcon } from "@/shared/icons";
 import { ProgressBar } from "@/shared/components/ProgressBar";
-import { Route } from "@/routes/predict-detail.$userType";
 import { UserFooter } from "./ui/UserFooter";
-import { GuestFooter } from "./ui/GuestFooter";
 
 function PredictDetail() {
-  const { userType } = Route.useParams();
-
   return (
-    <div className="bg-layout-main flex h-full w-full flex-col gap-4 px-4 pt-8">
+    <div className="bg-layout-main flex h-full w-full flex-col items-center justify-between gap-4">
       {/* PredictDetail Header */}
-      <div className="bg-primary shadow-middle flex flex-col items-center justify-center rounded-2xl py-4">
+      <div className="bg-primary shadow-middle flex w-[90cqw] flex-col items-center justify-center rounded-2xl px-4 py-4">
         <div className="text-layout-main text-lg font-extrabold">
           <span>KBO 우승은 KIA다!</span>
         </div>
@@ -21,7 +17,7 @@ function PredictDetail() {
       </div>
 
       {/* PredictDetail statistics */}
-      <div className="bg-secondary rounded-lg px-8 py-4 shadow-inner">
+      <div className="bg-secondary w-[90cqw] rounded-lg px-8 py-4 shadow-inner">
         <div className="flex flex-row items-center gap-2 text-lg font-extrabold">
           <h2>배팅 통계</h2>
         </div>
@@ -60,7 +56,7 @@ function PredictDetail() {
       </div>
 
       {/* PredictDetail result */}
-      <div className="bg-secondary rounded-lg px-8 py-4 shadow-inner">
+      <div className="bg-secondary w-[90cqw] rounded-lg px-8 py-4 shadow-inner">
         <div>
           <h2 className="flex flex-row items-center gap-2 text-lg font-extrabold">
             배팅 결과
@@ -97,9 +93,11 @@ function PredictDetail() {
       </div>
 
       {/* PredictDetail footer */}
-      <div className="flex flex-col gap-2 pt-8">
-        {userType === "user" ? <UserFooter /> : <GuestFooter />}
+      <div className="flex w-[90cqw] flex-col gap-2 pt-8">
+        <UserFooter />
+        {/* {userType === "user" ? <UserFooter /> : <GuestFooter />} */}
       </div>
+      <div className="h-[60px] w-[100cqw] bg-[#e6edf8]" />
     </div>
   );
 }

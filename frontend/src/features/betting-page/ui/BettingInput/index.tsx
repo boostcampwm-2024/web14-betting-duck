@@ -102,7 +102,6 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
           )}
           type="text"
           pattern={"[0-9]*"}
-          placeholder="베팅 금액을 입력하세요"
           value={value}
           onChange={handleOnChange}
           maxLength={10}

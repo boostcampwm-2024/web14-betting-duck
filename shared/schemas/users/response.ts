@@ -30,7 +30,7 @@ export const responseUserInfoSchema = z.object({
   message: StatusMessageSchema,
   role: z.enum(USER_ROLE),
   nickname: z.string().min(2, "닉네임은 2자 이상이어야 합니다."),
-  duck: z.coerce.number().int().positive(),
+  duck: z.coerce.number().int().nonnegative(),
 });
 
 export const rejectResponseSchema = commonUserSchema;

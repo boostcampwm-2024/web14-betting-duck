@@ -46,7 +46,9 @@ const BettingStatsDisplay = React.memo(
               className="flex items-center justify-between gap-4 space-x-1 text-center text-lg"
             >
               <Icon width={24} height={24} />
-              <span className="h-[24px]">{stat}</span>
+              <span className="group relative mt-auto h-[24px] w-full max-w-[40px] truncate text-end text-lg font-bold">
+                {stat}
+              </span>
             </div>
           ))}
         </div>
