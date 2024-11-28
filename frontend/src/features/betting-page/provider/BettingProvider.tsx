@@ -3,7 +3,10 @@ import { useLoaderData } from "@tanstack/react-router";
 import React from "react";
 import { responseBetRoomInfo } from "@betting-duck/shared";
 import { z } from "zod";
-import { type BettingPool, getBettingSummary } from "../utils/bettingOdds";
+import {
+  type BettingPool,
+  getBettingSummary,
+} from "@/shared/utils/bettingOdds";
 import { useSessionStorage } from "@/shared/hooks/useSessionStorage";
 import { useEffectOnce } from "@/shared/hooks/useEffectOnce";
 import { getBettingRoomInfo } from "../api/getBettingRoomInfo";
