@@ -1,11 +1,10 @@
 import { Image } from "@/shared/components/Image";
 import pondImage from "@/assets/images/pond.png";
 import { DuckCoinIcon } from "@/shared/icons";
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { Route } from "@/routes/my-page";
 
 function MyPage() {
-  const { userInfo } = useUserContext();
-  const { duck } = userInfo;
+  const { duck } = Route.useLoaderData();
 
   return (
     <div className="w-ful bg-layout-main flex flex-col items-center justify-between gap-2">

@@ -1,6 +1,6 @@
 import { UserInfo } from "@/app/provider/UserProvider";
-import { useChat } from "@/features/chat/hook/use-chat";
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { useChat } from "@/features/chat/hook/useChat";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 import React from "react";
 
 function generateRandomNickname(userInfo: UserInfo) {

@@ -1,11 +1,12 @@
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 import { LogoIcon } from "@/shared/icons";
 import { Image } from "@/shared/components/Image";
 import waitingUserImage from "@assets/images/waiting-user.png";
+import { Link } from "@tanstack/react-router";
 
 function UserInfo({ nickname }: { nickname: string }) {
   return (
-    <div className="flex h-fit w-full items-center justify-end gap-3 p-4 font-bold">
+    <div className="flex h-fit w-full select-none items-center justify-end gap-3 p-4 font-bold">
       <div>
         <Image
           src={waitingUserImage}
@@ -25,10 +26,13 @@ function RootHeader() {
 
   return (
     <div className="header flex-start flex items-center gap-2 pl-[60px]">
-      <div className="flex w-full flex-row items-center gap-2">
+      <Link
+        to={"/"}
+        className="flex w-full select-none flex-row items-center gap-2"
+      >
         <LogoIcon />
         <h1>Betting Duck</h1>
-      </div>
+      </Link>
       {nickname && <UserInfo nickname={nickname} />}
     </div>
   );

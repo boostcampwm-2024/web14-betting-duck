@@ -7,7 +7,7 @@ import { EditIcon, InfoIcon } from "@/shared/icons";
 import { EditFormStatusForm } from "./EditFormStatusForm";
 import { useWaitingContext } from "../../hooks/use-waiting-context";
 import React from "react";
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 
 const VotingStatusCard = React.memo(() => {
   const { bettingRoomInfo } = useWaitingContext();

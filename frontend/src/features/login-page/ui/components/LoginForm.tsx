@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "../../model/store";
 import { Warning } from "./Warning";
 import { useNavigate } from "@tanstack/react-router";
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
