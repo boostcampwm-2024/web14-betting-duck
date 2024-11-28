@@ -89,7 +89,7 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
       <div
         className={cn(
           bgColor,
-          "relative flex min-h-[45px] w-[90cqw] rounded-lg",
+          "relative flex min-h-[45px] w-[40cqw] rounded-lg",
         )}
       >
         <div className="mx-4 flex min-w-[24px] items-center justify-center">

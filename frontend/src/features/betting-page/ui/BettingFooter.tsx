@@ -8,9 +8,13 @@ function BettingFooter() {
   const { duckCoin } = Route.useLoaderData();
   const [currentDuckCoin, setCurrentDuckCoin] = React.useState(duckCoin);
 
+  const { isPlaceBet, placeBetAmount } = userInfo;
+
   React.useEffect(() => {
-    setCurrentDuckCoin(duckCoin - (userInfo.placeBetAmount ?? 0));
-  }, [userInfo.placeBetAmount, duckCoin]);
+    if (isPlaceBet) {
+      setCurrentDuckCoin(duckCoin - (placeBetAmount ?? 0));
+    }
+  }, [placeBetAmount, duckCoin, isPlaceBet]);
 
   return (
     <div className="flex items-center justify-between gap-2 px-4 pt-4 text-center font-bold text-gray-600">
@@ -18,7 +22,7 @@ function BettingFooter() {
         배팅 금액:{" "}
         <span className="flex items-center gap-2 font-extrabold">
           <DuckCoinIcon width={26} height={26} />
-          {userInfo.placeBetAmount ?? 0}
+          {placeBetAmount ?? 0}
         </span>
       </div>
       <div className="flex items-center gap-2">

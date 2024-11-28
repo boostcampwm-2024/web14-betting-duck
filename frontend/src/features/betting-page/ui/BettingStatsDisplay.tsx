@@ -39,7 +39,7 @@ const BettingStatsDisplay = React.memo(
       <div
         className={`flex flex-1 flex-row justify-between pl-8 pr-4 ${color}`}
       >
-        <div className="text-md flex max-w-[25cqw] flex-col gap-2">
+        <div className="text-md flex max-w-[35cqw] flex-col gap-2">
           {bettingStats.map(({ icon: Icon, alt, stat }) => (
             <div
               key={alt}
@@ -50,7 +50,7 @@ const BettingStatsDisplay = React.memo(
             </div>
           ))}
         </div>
-        <div className="group relative mt-auto flex w-full max-w-[70cqw] flex-col items-end truncate text-end text-2xl font-extrabold">
+        <div className="group relative mt-auto flex w-full max-w-[30cqw] flex-col items-end truncate text-end text-2xl font-extrabold">
           {content}
           {children}
         </div>

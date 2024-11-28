@@ -7,9 +7,13 @@ import { BettingFooter } from "./BettingFooter";
 import { useBettingConnection } from "../hook/useBettingRoomConnection";
 import { useBettingRoomInfo } from "../hook/useBettingRoomInfo";
 import { BettingInput } from "./BettingInput";
+import { placeBetting } from "../utils/placeBetting";
+import { useUserContext } from "@/shared/hooks/useUserContext";
+import { responseUserInfoSchema } from "@betting-duck/shared";
 
 function BettingContainer() {
   const contextValue = useBettingContext();
+  const { userInfo } = useUserContext();
   const {
     socket,
     bettingRoomInfo,
@@ -36,20 +40,38 @@ function BettingContainer() {
     >
       <button
         onClick={() =>
-          socket.emit("joinBet", {
-            sender: {
-              betAmount: 300,
-              selectOption: "option1", // enum option1, option2
-            },
-            channel: {
-              roomId: bettingRoomInfo.channel.id,
-            },
+          placeBetting({
+            socket,
+            selectedOption: "option1",
+            bettingAmount: 400,
+            roomId: channel.id,
+            isPlaceBet: userInfo.isPlaceBet || false,
           })
         }
       >
         ㅇㅇ
       </button>
-      <div className="flex h-full flex-col">
+      <button
+        onClick={async () => {
+          const response = await fetch("/api/users/userInfo");
+          if (!response.ok) {
+            throw new Error("사용자 정보를 불러오는데 실패했습니다.");
+          }
+
+          const { data } = await response.json();
+          console.log(data);
+          const result = responseUserInfoSchema.safeParse(data);
+          if (!result.success) {
+            console.error(result.error);
+            throw new Error("사용자 정보를 불러오는데 실패했습니다.");
+          }
+
+          return data;
+        }}
+      >
+        읽기
+      </button>
+      <div className="flex h-full flex-col justify-around">
         <BettingHeader content={channel.title} contextValue={contextValue} />
         <div className="flex w-full">
           <div className="flex justify-between">
@@ -78,7 +100,7 @@ function BettingContainer() {
           </div>
           {/* <BettingForm /> */}
         </div>
-        <div className="flex">
+        <div className="flex justify-around">
           <BettingInput uses={"winning"} />
           <BettingInput uses={"losing"} />
         </div>

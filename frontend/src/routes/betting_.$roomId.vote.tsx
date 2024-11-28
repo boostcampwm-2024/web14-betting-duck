@@ -1,16 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Chat } from "@/features/chat";
-import { useNavigate } from "@tanstack/react-router";
-import { validateAccess } from "@/shared/lib/validateAccess";
 import {
-  responseBetRoomInfo,
-  responseUserInfoSchema,
-} from "@betting-duck/shared";
+  createFileRoute,
+  Outlet,
+  ErrorComponent,
+} from "@tanstack/react-router";
+import { Chat } from "@/features/chat";
+import { BettingProvider } from "@/features/betting-page/provider/BettingProvider";
+import { cn } from "@/shared/misc";
+import { responseBetRoomInfo } from "@betting-duck/shared";
+import { z } from "zod";
+import { validateAccess } from "@/shared/lib/validateAccess";
+import { getBettingRoomInfo } from "@/features/betting-page/api/getBettingRoomInfo";
+import { getUserInfo } from "@/features/betting-page/api/getUserInfo";
+import { AccessError } from "@/features/waiting-room/error/AccessError";
 import { Unauthorized } from "@/features/waiting-room/error/Unauthorized";
 import { Forbidden } from "@/features/waiting-room/error/Forbidden";
-import { AccessError } from "@/features/waiting-room/error/AccessError";
-import { z } from "zod";
-import { BettingPage } from "@/features/betting-page";
 
 type BetRoomResponse = z.infer<typeof responseBetRoomInfo>;
 
@@ -21,37 +24,13 @@ interface RouteLoaderData {
 }
 
 const STORAGE_KEY = "betting_pool";
-async function getUserInfo() {
-  const response = await fetch("/api/users/userInfo");
-  if (!response.ok) {
-    throw new Error("사용자 정보를 불러오는데 실패했습니다.");
-  }
-
-  const { data } = await response.json();
-  const result = responseUserInfoSchema.safeParse(data);
-  if (!result.success) {
-    console.error(result.error);
-    throw new Error("사용자 정보를 불러오는데 실패했습니다.");
-  }
-
-  return data;
-}
-
-async function getBettingRoomInfo(roomId: string) {
-  return fetch(`/api/betrooms/${roomId}`)
-    .then((res) => res.json())
-    .then(({ data }) => {
-      const result = responseBetRoomInfo.safeParse(data);
-      if (!result.success) {
-        console.error(result.error.errors);
-        return;
-      }
-      return result.data;
-    });
-}
 
 let returnToken = "";
 export const Route = createFileRoute("/betting_/$roomId/vote")({
+  beforeLoad: () => {
+    const rootLayout = document.getElementById("root-layout");
+    rootLayout?.classList.add("betting-page");
+  },
   loader: async ({ params }): Promise<RouteLoaderData> => {
     const { roomId } = params;
     returnToken = roomId;
@@ -69,6 +48,12 @@ export const Route = createFileRoute("/betting_/$roomId/vote")({
     } finally {
       abortController.abort();
     }
+  },
+  onLeave: () => {
+    const rootLayout = document.getElementById("root-layout");
+    if (rootLayout) rootLayout.classList.remove("betting-page");
+    if (!window) return;
+    window.sessionStorage.removeItem(STORAGE_KEY);
   },
   component: RouteComponent,
   errorComponent: ({ error }) => {
@@ -88,62 +73,22 @@ export const Route = createFileRoute("/betting_/$roomId/vote")({
     }
     return <ErrorComponent error={error} />;
   },
-  onLeave: () => {
-    const rootLayout = document.getElementById("root-layout");
-    if (rootLayout) rootLayout.classList.remove("betting-page");
-    if (!window) return;
-    window.sessionStorage.removeItem(STORAGE_KEY);
-  },
 });
 
 function RouteComponent() {
-  const rootLayout = document.getElementById("root-layout");
-  if (rootLayout) rootLayout.classList.add("betting-page");
   return (
     <div className="flex">
       <Chat />
-      <BettingPage />
-    </div>
-  );
-}
-
-function ErrorComponent({ error }: { error: Error }) {
-  const navigate = useNavigate();
-
-  return (
-    <div
-      className="text-layout-main absolute left-0 top-0 z-50 flex h-full w-full flex-col items-center justify-center gap-16 px-8"
-      style={{
-        backgroundColor: "oklch(37.92% 0.039 257.29 / 70%)",
-        backdropFilter: "blur(10px)",
-      }}
-    >
-      <div className="flex flex-col items-center">
-        <span>{error.message}</span>
-        <h1 className="text-xl font-extrabold">로그인 후 이용 해주세요!</h1>
-      </div>
-      <div className="text-layout-main pt-16">
-        <p className="text-lg font-normal">
-          채팅 기능을 이용하기 위해서는 로그인이 필요합니다!
-        </p>
-        <p>
-          로그인 이 귀찮으시다면{" "}
-          <span className="bg-layout-main text-default mx-1 rounded-sm px-1 py-1 text-lg font-extrabold">
-            비회원
-          </span>{" "}
-          로그인을 해주세요!
-        </p>
-      </div>
-      <button
-        className="text-decoration-none text-layout-main inline-block w-full cursor-pointer rounded-[15px] border border-[rgba(255,255,255,0.1)] bg-[oklch(49.07%_0.2412_292.58/30%)] px-8 py-4 text-[14px] uppercase tracking-[2px] backdrop-blur-[30px]"
-        onClick={() => {
-          navigate({
-            to: "/demo-login",
-          });
-        }}
+      <div
+        className={cn(
+          "betting-container",
+          "border-secondary flex min-w-0.5 border-l-8",
+        )}
       >
-        로그인 하러 가기
-      </button>
+        <BettingProvider>
+          <Outlet />
+        </BettingProvider>
+      </div>
     </div>
   );
 }

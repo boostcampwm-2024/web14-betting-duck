@@ -233,7 +233,8 @@
     min-width: 70%;
     width: 100%;
     height: 100%;
-    border-left: 16px solid #e6edf8;
+    background: #f0f4fa;
+    padding-top: 1rem;
   }
 }
 
