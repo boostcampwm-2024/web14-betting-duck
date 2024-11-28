@@ -11,12 +11,16 @@ interface UserInfo {
   nickname?: string;
   role?: "user" | "guest" | "admin" | "member";
   roomId?: string;
+  isPlaceBet?: boolean;
+  placeBetAmount?: number;
 }
 
 const defaultUserInfo: UserInfo = {
   nickname: "",
   role: "guest",
   roomId: undefined,
+  isPlaceBet: false,
+  placeBetAmount: 0,
 };
 
 const UserContext = React.createContext<UserContextType | null>(null);
