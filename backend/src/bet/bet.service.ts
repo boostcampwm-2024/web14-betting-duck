@@ -46,13 +46,14 @@ export class BetService {
           : targetChannel.option2;
 
       if (selectedOption) {
-        await this.redisManager.deductDuck(userId, sender.betAmount);
+        await this.redisManager.deductDuck(userId, betAmount);
+        await this.saveDeductedDuck(userId, betAmount);
+
         await this.redisManager.updateBetting(
           channel.roomId,
           sender.selectOption,
-          sender.betAmount,
+          betAmount,
         );
-
         const updatedChannel = await this.getUpdatedChannel(
           channel.roomId,
           targetChannel,
@@ -80,7 +81,7 @@ export class BetService {
           return {
             betAmount: savedBet.betAmount,
             selectedOption: savedBet.selectedOption,
-            betRoom: { id: savedBet.betRoom.id }, // 관계 데이터에서 필요한 값만 추출
+            betRoom: { id: savedBet.betRoom.id },
             status: savedBet.status,
             createdAt: savedBet.createdAt,
           };
@@ -99,21 +100,9 @@ export class BetService {
     const userInfo = await this.getUserInfo(userId);
     const userDuck = userInfo.duck;
 
-    if (!userDuck || Number(userDuck) < betAmount) {
+    if (!userDuck || userDuck < betAmount) {
       throw new Error("보유한 duck이 부족합니다.");
     }
-  }
-
-  private async getUserInfo(userId: number) {
-    const cachedUserInfo = await this.redisManager.getUser(String(userId));
-    if (cachedUserInfo?.nickname) {
-      return cachedUserInfo;
-    }
-    const userInfo = await this.userRepository.findOneById(userId);
-    if (userInfo) {
-      return userInfo;
-    }
-    throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
   }
 
   private async getUpdatedChannel(roomId: string, targetChannel: Channel) {
@@ -129,5 +118,27 @@ export class BetService {
       option2: updatedOption2,
     };
     return updatedChannel;
+  }
+
+  private async saveDeductedDuck(userId: number, betAmount: number) {
+    const userInfo = await this.getUserInfo(userId);
+    const userDuck = userInfo.duck;
+    const deductedDuck = userDuck - betAmount;
+    await this.userRepository.update(userId, { duck: deductedDuck });
+  }
+
+  private async getUserInfo(userId: number) {
+    const cachedUserInfo = await this.redisManager.getUser(String(userId));
+    if (cachedUserInfo?.nickname) {
+      return {
+        ...cachedUserInfo,
+        duck: Number(cachedUserInfo.duck),
+      };
+    }
+    const userInfo = await this.userRepository.findOneById(userId);
+    if (userInfo) {
+      return userInfo;
+    }
+    throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
   }
 }
