@@ -115,7 +115,7 @@ export class BetRoomService {
           });
         } catch (error) {
           throw new InternalServerErrorException(
-            "자동 베팅 환불이 실패했습니다." + error,
+            "자동 베팅 환불이 실패했습니다." + error.message,
           );
         }
       },
@@ -137,7 +137,7 @@ export class BetRoomService {
           }
         } catch (error) {
           throw new InternalServerErrorException(
-            "자동 베팅 환불이 실패했습니다." + error,
+            "자동 베팅 환불이 실패했습니다." + error.message,
           );
         }
       },
