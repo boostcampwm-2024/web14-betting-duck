@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  InternalServerErrorException,
 } from "@nestjs/common";
 import { BetRoomRepository } from "./bet-room.repository";
 import { BetResultRepository } from "src/bet-result/bet-result.repository";
@@ -103,29 +104,41 @@ export class BetRoomService {
 
     setTimeout(
       async () => {
-        await this.betRoomRepository.update(betRoomId, {
-          status: "timeover",
-        });
-        await this.redisManager.setRoomStatus(betRoomId, "timeover");
-        this.betGateway.server.to(betRoomId).emit("timeover", {
-          message: "베팅 시간이 종료되었습니다.",
-          roomId: betRoomId,
-        });
+        try {
+          await this.betRoomRepository.update(betRoomId, {
+            status: "timeover",
+          });
+          await this.redisManager.setRoomStatus(betRoomId, "timeover");
+          this.betGateway.server.to(betRoomId).emit("timeover", {
+            message: "베팅 시간이 종료되었습니다.",
+            roomId: betRoomId,
+          });
+        } catch (error) {
+          throw new InternalServerErrorException(
+            "자동 베팅 환불이 실패했습니다." + error,
+          );
+        }
       },
       Number(duration) * 1000,
     );
 
     setTimeout(
       async () => {
-        const betRoom = await this.betRoomRepository.findOneById(betRoomId);
-        if (betRoom.status === "timeover") {
-          await this.saveRefundedData(betRoomId);
-          this.betGateway.server.to(betRoomId).emit("finished", {
-            message: "배팅 정산이 취소되었습니다",
-            roomId: betRoomId,
-          });
-          await this.processBetRoomRefund(betRoomId);
-          await this.redisManager.deleteChannelData(betRoomId);
+        try {
+          const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+          if (betRoom.status === "timeover") {
+            await this.saveRefundedData(betRoomId);
+            this.betGateway.server.to(betRoomId).emit("finished", {
+              message: "배팅 정산이 취소되었습니다",
+              roomId: betRoomId,
+            });
+            await this.processBetRoomRefund(betRoomId);
+            await this.redisManager.deleteChannelData(betRoomId);
+          }
+        } catch (error) {
+          throw new InternalServerErrorException(
+            "자동 베팅 환불이 실패했습니다." + error,
+          );
         }
       },
       (Number(duration) + 3 * 60) * 1000,
