@@ -35,7 +35,7 @@ const EditFormStatusForm = React.memo(({ info }: { info: WaitingRoomInfo }) => {
               option2: formData.get("loseCase") as string,
             },
             settings: {
-              duration: Number(formData.get("timer")),
+              duration: Number(formData.get("timer")) * 60,
               defaultBetAmount: Number(formData.get("coin")),
             },
           },

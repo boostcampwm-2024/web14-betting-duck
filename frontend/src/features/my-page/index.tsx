@@ -1,11 +1,12 @@
 import { Image } from "@/shared/components/Image";
 import pondImage from "@/assets/images/pond.png";
 import { DuckCoinIcon } from "@/shared/icons";
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { Route } from "@/routes/my-page";
+import { useNavigate } from "@tanstack/react-router";
 
 function MyPage() {
-  const { userInfo } = useUserContext();
-  const { duck } = userInfo;
+  const navigate = useNavigate();
+  const { duck } = Route.useLoaderData();
 
   return (
     <div className="w-ful bg-layout-main flex flex-col items-center justify-between gap-2">
@@ -26,7 +27,14 @@ function MyPage() {
             <DuckCoinIcon width={32} height={33} />
             <span>-30</span>
           </button>
-          <button className="bg-default text-layout-main rounded-xl px-6 py-3 text-xl">
+          <button
+            className="bg-default text-layout-main rounded-xl px-6 py-3 text-xl"
+            onClick={() =>
+              navigate({
+                to: "/create-vote",
+              })
+            }
+          >
             방 만들러 가기
           </button>
         </div>

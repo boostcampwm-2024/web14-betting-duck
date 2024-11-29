@@ -1,8 +1,8 @@
 import React from "react";
-import { useChat } from "../../hook/use-chat";
+import { useChat } from "../../hook/useChat";
 import { MessageList } from "./ui/MessageList";
 import { messageResponseSchema } from "@betting-duck/shared";
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 import Message from "./ui/Message";
 
 interface Message {

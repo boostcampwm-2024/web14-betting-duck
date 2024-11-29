@@ -24,13 +24,6 @@ async function getBettingRoomInfo(roomId: string) {
 let returnToken = "";
 export const Route = createFileRoute("/betting_/$roomId/waiting")({
   component: WaitingRoom,
-  beforeLoad: async ({ params }) => {
-    const { roomId } = params;
-    returnToken = roomId;
-
-    const abortController = new AbortController();
-    await validateAccess(roomId, abortController.signal);
-  },
   loader: async ({
     params,
   }): Promise<{
@@ -40,6 +33,8 @@ export const Route = createFileRoute("/betting_/$roomId/waiting")({
     const { roomId } = params;
     returnToken = roomId;
 
+    const abortController = new AbortController();
+    await validateAccess(roomId, abortController.signal);
     try {
       const bettingRoomInfo = await getBettingRoomInfo(roomId);
       return { roomId, bettingRoomInfo };

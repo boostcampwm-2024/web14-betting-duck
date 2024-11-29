@@ -1,5 +1,5 @@
-import { useSocketIO } from "@/shared/hooks/use-socket-io";
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { useSocketIO } from "@/shared/hooks/useSocketIo";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 import React from "react";
 
 interface ChatContextType {
@@ -22,7 +22,6 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     if (socket.isConnected) {
-      console.log(userInfo.roomId);
       socket.emit("joinRoom", {
         sender: {
           nickname: userInfo.nickname,

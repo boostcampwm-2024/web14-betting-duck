@@ -1,6 +1,6 @@
 import React from "react";
 import { WaitingError } from "@/features/waiting-room/ui/WaitingError";
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { ROUTES } from "@/shared/config/route";
 import { responseBetRoomInfo } from "@betting-duck/shared";
@@ -20,9 +20,16 @@ export const Route = createFileRoute("/betting/")({
       <WaitingError />
     </ErrorComponent>
   ),
+  onLeave: () => {
+    const rootLayout = document.getElementById("root-layout");
+    if (rootLayout) rootLayout.classList.remove("betting-page");
+  },
 });
 
 function RouteComponent() {
+  const rootLayout = document.getElementById("root-layout");
+  if (rootLayout) rootLayout.classList.add("betting-page");
+
   const navigate = useNavigate();
   const { userInfo } = useUserContext();
   const { roomId } = userInfo;

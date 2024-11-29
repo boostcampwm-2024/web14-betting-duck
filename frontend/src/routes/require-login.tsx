@@ -5,6 +5,7 @@ import { z } from "zod";
 import { ErrorMyPage } from "@/features/my-page/error";
 import { ROUTE_PATH_ENUM, ROUTES } from "@/shared/config/route";
 import { WaitingError } from "@/features/waiting-room/ui/WaitingError";
+import { GuestErrorComponent } from "@/shared/components/Error/GuestError";
 
 const searchSchema = z.object({
   from: z
@@ -30,6 +31,22 @@ function RouteComponent() {
       <ErrorComponent feature="투표 생성 페이지" to="/login">
         <CreateVoteError />
       </ErrorComponent>
+    );
+  }
+
+  if (from === ROUTES.GUEST_CREATE_VOTE) {
+    return (
+      <GuestErrorComponent feature="게스트 로그인" to="/login">
+        <CreateVoteError />
+      </GuestErrorComponent>
+    );
+  }
+
+  if (from === ROUTES.GUEST_LOGIN) {
+    return (
+      <GuestErrorComponent feature="게스트 로그인" to="/login">
+        <ErrorMyPage />
+      </GuestErrorComponent>
     );
   }
 

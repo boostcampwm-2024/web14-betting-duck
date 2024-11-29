@@ -1,4 +1,4 @@
-import useToggle from "@/shared/hooks/use-trigger";
+import useToggle from "@/shared/hooks/useTrigger";
 import styles from "./style.module.css";
 import emoticonImage from "@assets/images/emoticon.png";
 

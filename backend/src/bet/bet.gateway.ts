@@ -6,6 +6,7 @@ import {
   WebSocketServer,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
+// import * as fs from "fs";
 import { RedisManager } from "src/utils/redis.manager";
 import {
   joinRoomRequestSchema,
@@ -18,10 +19,21 @@ import {
   fetchBetRoomInfoRequestType,
 } from "@shared/schemas/bet/socket/request";
 import { JwtUtils } from "src/utils/jwt.utils";
+import { UseFilters } from "@nestjs/common";
+import { GlobalWsExceptionFilter } from "src/utils/filters/global-ws-exception.filter";
 
+
+@UseFilters(new GlobalWsExceptionFilter())
 @WebSocketGateway({
   namespace: "api/betting",
-  cors: true,
+  cors: {
+    origin: "*",
+    credentials: true,
+  },
+  // serverOptions: {
+  //   key: fs.readFileSync("src/privkey.pem"),
+  //   cert: fs.readFileSync("src/fullchain.pem"),
+  // },
 })
 export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
