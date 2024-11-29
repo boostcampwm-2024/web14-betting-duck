@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
-  InternalServerErrorException,
 } from "@nestjs/common";
 import { BetRoomRepository } from "./bet-room.repository";
 import { BetResultRepository } from "src/bet-result/bet-result.repository";
@@ -140,25 +139,8 @@ export class BetRoomService {
           console.error("자동 베팅 환불 처리 중 예외 발생:", error);
         }
       },
-      (Number(duration) + 1 * 60) * 1000,
+      (Number(duration) + 3 * 60) * 1000,
     );
-
-    // setTimeout(
-    //   async () => {
-    //     const betRoom = await this.betRoomRepository.findOneById(betRoomId);
-    //     if (betRoom.status === "timeover") {
-    //       await this.saveRefundedData(betRoomId);
-    //       this.betGateway.server.to(betRoomId).emit("finished", {
-    //         message: "배팅 정산이 취소되었습니다",
-    //         roomId: betRoomId,
-    //       });
-    //       await this.processBetRoomRefund(betRoomId);
-    //       await this.redisManager.deleteChannelData(betRoomId);
-    //     }
-    //   },
-    //   (Number(duration) + 3 * 60) * 1000,
-    // );
-
     return updateResult;
   }
 
