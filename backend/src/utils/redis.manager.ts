@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { RedisService } from "@liaoliaots/nestjs-redis";
 import { Redis } from "ioredis";
 import { randomUUID } from "crypto";
@@ -162,7 +162,7 @@ export class RedisManager {
 
     if (results.some((result) => result instanceof Error)) {
       console.error("레디스 트랜잭션 실패", results);
-      throw new Error("레디스 트랜잭션 실패");
+      throw new InternalServerErrorException("레디스 트랜잭션 실패");
     }
   }
 
@@ -183,7 +183,7 @@ export class RedisManager {
 
     if (results.some((result) => result instanceof Error)) {
       console.error("레디스 트랜잭션 실패", results);
-      throw new Error("레디스 트랜잭션 실패");
+      throw new InternalServerErrorException("레디스 트랜잭션 실패");
     }
   }
 
