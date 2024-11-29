@@ -34,7 +34,6 @@
     "@nestjs/swagger": "^8.0.7",
     "@nestjs/typeorm": "^10.0.2",
     "@nestjs/websockets": "^10.4.7",
-    "@socket.io/redis-adapter": "^8.3.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "ioredis": "^5.4.1",
