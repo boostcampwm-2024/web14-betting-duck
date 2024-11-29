@@ -48,6 +48,7 @@ const channelSchema = z.object({
   urls: z.object({
     invite: z.string().url(),
   }),
+  isAdmin: z.boolean(),
 });
 
 const responseBetRoomInfo = z.object({

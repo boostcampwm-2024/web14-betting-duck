@@ -3,11 +3,11 @@ import { ParticipantsList } from "./ui/ParticipantsList";
 import { ShareLinkCard } from "@/features/waiting-room/ui/SharedLinkCard";
 import { AdminFooter } from "./ui/AdminFooter";
 import { MemberFooter } from "./ui/MemberFooter";
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 import { WaitingRoomProvider } from "./provider/WaitingRoomProvider";
 import React from "react";
 import { useLoaderData } from "@tanstack/react-router";
-import { useEffectOnce } from "@/shared/hooks/use-effect-once";
+import { useEffectOnce } from "@/shared/hooks/useEffectOnce";
 
 function WaitingRoom() {
   const { userInfo, setUserInfo } = useUserContext();

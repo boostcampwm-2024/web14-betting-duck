@@ -2,13 +2,58 @@ import { DuckIcon } from "@/shared/icons";
 import { cn } from "@/shared/misc";
 import React from "react";
 import { z } from "zod";
+import { useBettingContext } from "../../hook/useBettingContext";
+import { responseBetRoomInfo } from "@betting-duck/shared";
+import { useSocketIO } from "@/shared/hooks/useSocketIo";
+import { useUserContext } from "@/shared/hooks/useUserContext";
+import { Route } from "@/routes/betting_.$roomId.vote";
 
 const numberSchema = z.coerce.number().int().positive();
 
+function placeBet(
+  socket: ReturnType<typeof useSocketIO>,
+  bettingRoomInfo: z.infer<typeof responseBetRoomInfo>,
+  value: string,
+  uses: "winning" | "losing",
+) {
+  socket.emit("joinBet", {
+    sender: {
+      betAmount: parseInt(value),
+      selectOption: uses === "winning" ? "option1" : "option2",
+    },
+    channel: {
+      roomId: bettingRoomInfo.channel.id,
+    },
+  });
+}
+
+function errorText(
+  isText: boolean,
+  isLongText: boolean,
+  isOverDuckCoin: boolean,
+) {
+  if (isOverDuckCoin) return "보유 코인보다 많이 베팅할 수 없어요~";
+  if (isLongText) return "최대 입력 수는 10글자에요~";
+  if (isText) return "문자 말고 숫자를 입력 해주세요~";
+  return "숫자 입력 중";
+}
+
+function getVisibleText(
+  isText: boolean,
+  isLongText: boolean,
+  isOverDuckCoin: boolean,
+) {
+  return `opacity-${isText == true || isLongText == true || isOverDuckCoin == true ? 1 : 0} ${isText == true || isLongText == true || isOverDuckCoin == true ? "visible" : "invisible"}`;
+}
+
 function BettingInput({ uses }: { uses: "winning" | "losing" }) {
+  const { duckCoin } = Route.useLoaderData();
+  const { socket, bettingRoomInfo } = useBettingContext();
+  const { setUserInfo, userInfo } = useUserContext();
   const [value, setValue] = React.useState("");
   const [isText, setIsText] = React.useState(false);
   const [isLongText, setIsLongText] = React.useState(false);
+  const [isOverDuckCoin, setIsOverDuckCoin] = React.useState(false);
   const bgColor =
     uses === "winning"
       ? "bg-bettingBlue-behind text-bettingBlue"
@@ -31,7 +76,9 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
       return updateState("", false);
     }
 
-    if (value.length === 10) setIsLongText(true);
+    if (parseInt(value) > parseInt(duckCoin)) return setIsOverDuckCoin(true);
+    else setIsOverDuckCoin(false);
+    if (value.length === 10) return setIsLongText(true);
     else setIsLongText(false);
     const isValidNumber = numberSchema.safeParse(value).success;
     return updateState(isValidNumber ? value : value, !isValidNumber);
@@ -42,7 +89,7 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
       <div
         className={cn(
           bgColor,
-          "relative flex min-h-[65px] w-[50cqw] rounded-lg",
+          "relative flex min-h-[45px] w-[40cqw] rounded-lg",
         )}
       >
         <div className="mx-4 flex min-w-[24px] items-center justify-center">
@@ -51,11 +98,10 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
         <input
           className={cn(
             inputColor,
-            "flex w-full items-center justify-end whitespace-normal break-all pr-2 text-end text-lg font-extrabold",
+            "flex w-full items-center justify-end whitespace-normal break-all p-2 pr-2 text-end text-lg font-extrabold",
           )}
           type="text"
           pattern={"[0-9]*"}
-          placeholder="베팅 금액을 입력하세요"
           value={value}
           onChange={handleOnChange}
           maxLength={10}
@@ -64,7 +110,11 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
           inputMode="numeric"
         />
         <button
-          disabled={isText}
+          disabled={isText || userInfo.isPlaceBet}
+          onClick={() => {
+            placeBet(socket, bettingRoomInfo, value, uses);
+            setUserInfo({ isPlaceBet: true, placeBetAmount: parseInt(value) });
+          }}
           type="button"
           className={cn(
             buttonColor,
@@ -75,11 +125,12 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
         </button>
       </div>
       <p
-        className={`pt-2 font-bold text-red-600 opacity-${isText == true || isLongText == true ? 1 : 0} ${isText == true || isLongText == true ? "visible" : "invisible"}`}
+        className={cn(
+          getVisibleText(isText, isLongText, isOverDuckCoin),
+          `text-md font-bold text-red-600`,
+        )}
       >
-        {isLongText
-          ? "최대 입력 수는 10글자에요~"
-          : "문자 말고 숫자를 입력 해주세요~"}
+        {errorText(isText, isLongText, isOverDuckCoin)}
       </p>
     </div>
   );

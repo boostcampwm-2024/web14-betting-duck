@@ -64,6 +64,21 @@
     font-display: swap;
   }
 
+  @keyframes slideIn3D {
+    0% {
+      opacity: 0;
+      transform: translateY(-100%) rotateX(90deg);
+    }
+    50% {
+      opacity: 0.5;
+      transform: translateY(-50%) rotateX(45deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) rotateX(0);
+    }
+  }
+
   body {
     @apply font-sans;
     font-family:
@@ -124,11 +139,11 @@
   ::-webkit-scrollbar {
     width: var(--scrollbar-width, 12px);
     height: var(--scrollbar-height, 12px);
-    background-color: #e6edf8;
+    background-color: #f0f4fa;
   }
 
   ::-webkit-scrollbar-thumb {
-    border-radius: 8px;
+    border-radius: 4px;
     border: 2px solid
       color-mix(in oklch, oklch(83.94% 0.0561 267.19) 20%, transparent);
     background-color: color-mix(
@@ -140,7 +155,7 @@
 
   ::-webkit-scrollbar-track {
     border-radius: 8px;
-    background: #e6edf8;
+    background: #f0f4fa;
   }
 }
 
@@ -158,6 +173,11 @@
     height: 100vh;
     box-shadow: var(--shadow-elevation-high);
     border-radius: 8px;
+    transition: all 100ms ease-in-out;
+  }
+
+  .layout.betting-page {
+    @apply max-w-[1200px];
   }
 
   /* 각 영역에 대한 grid-area 설정 */
@@ -185,7 +205,6 @@
 
   .betting-container {
     container: betting-container / inline-size;
-    min-width: 750px;
     /* min-height: 430px; */
     width: fit-content;
     height: fit-content;
@@ -195,6 +214,27 @@
     container: message-container / size;
     width: 100%;
     height: 100%;
+  }
+
+  .digit {
+    backface-visibility: hidden;
+    transform-origin: center center;
+  }
+
+  .chatting-container {
+    container: chatting-container / inline-size;
+    width: 70%;
+    min-width: 40%;
+    height: 100%;
+  }
+
+  .betting-container {
+    container: betting-container / inline-size;
+    min-width: 70%;
+    width: 100%;
+    height: 100%;
+    background: #f0f4fa;
+    padding-top: 1rem;
   }
 }
 

@@ -1,22 +1,34 @@
-import { useSocketIO } from "@/shared/hooks/use-socket-io";
+import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { useLoaderData } from "@tanstack/react-router";
 import React from "react";
 import { responseBetRoomInfo } from "@betting-duck/shared";
 import { z } from "zod";
-import { type BettingPool, getBettingSummary } from "../utils/bettingOdds";
+import {
+  type BettingPool,
+  getBettingSummary,
+} from "@/shared/utils/bettingOdds";
+import { useSessionStorage } from "@/shared/hooks/useSessionStorage";
+import { useEffectOnce } from "@/shared/hooks/useEffectOnce";
+import { getBettingRoomInfo } from "../api/getBettingRoomInfo";
 
 interface BettingContextType {
   socket: ReturnType<typeof useSocketIO>;
   bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
-  bettingPool: BettingPool;
+  bettingPool: ContextBettingPool;
   bettingSummary: ReturnType<typeof getBettingSummary>;
   updateBettingPool: (partialPool: PartialBettingPool) => void;
+  updateBettingRoomInfo: () => void;
 }
 
 type PartialBettingPool = Partial<{
   option1: Partial<BettingPool["option1"]>;
   option2: Partial<BettingPool["option2"]>;
+  isBettingEnd?: boolean;
 }>;
+
+interface ContextBettingPool extends BettingPool {
+  isBettingEnd: boolean;
+}
 
 const BettingContext = React.createContext<BettingContextType | null>(null);
 
@@ -28,26 +40,17 @@ function bettingRoomInfoTypeGuard(
 
 const STORAGE_KEY = "betting_pool";
 function BettingProvider({ children }: { children: React.ReactNode }) {
-  const [bettingPool, setBettingPool] = React.useState<BettingPool>(() => {
-    try {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch (error) {
-      console.error("Failed to load betting pool from sessionStorage:", error);
-    }
-
-    return {
-      option1: {
-        totalAmount: 0,
-        participants: 0,
-      },
-      option2: {
-        totalAmount: 0,
-        participants: 0,
-      },
-    };
+  const { getSessionItem, setSessionItem } = useSessionStorage();
+  const [bettingPool, setBettingPool] = React.useState<ContextBettingPool>({
+    option1: {
+      totalAmount: 0,
+      participants: 0,
+    },
+    option2: {
+      totalAmount: 0,
+      participants: 0,
+    },
+    isBettingEnd: false,
   });
 
   const bettingSummary = React.useMemo(() => {
@@ -71,35 +74,64 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
   if (!bettingRoomInfoTypeGuard(bettingRoomInfo)) {
     throw new Error("배팅 방 정보를 가져오는데 실패했습니다.");
   }
+  const [currentBettingRoomInfo, setCurrentBettingRoomInfo] =
+    React.useState(bettingRoomInfo);
 
   const updateBettingPool = React.useCallback(
-    (partialPool: PartialBettingPool) => {
-      setBettingPool((currentPool) => {
-        const newPool = {
-          option1: {
-            ...currentPool.option1,
-            ...(partialPool.option1 || {}),
-          },
-          option2: {
-            ...currentPool.option2,
-            ...(partialPool.option2 || {}),
-          },
-        };
+    async (partialPool: PartialBettingPool) => {
+      const newPool = {
+        option1: {
+          ...bettingPool.option1,
+          ...(partialPool.option1 || {}),
+        },
+        option2: {
+          ...bettingPool.option2,
+          ...(partialPool.option2 || {}),
+        },
+        isBettingEnd: partialPool.isBettingEnd ?? bettingPool.isBettingEnd,
+      };
 
-        try {
-          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(newPool));
-        } catch (error) {
-          console.error(
-            "Failed to save betting pool to sessionStorage:",
-            error,
-          );
-        }
-
-        return newPool;
-      });
+      try {
+        await setSessionItem(STORAGE_KEY, JSON.stringify(newPool));
+        setBettingPool(newPool);
+      } catch (error) {
+        console.error("Failed to save betting pool to sessionStorage:", error);
+      }
     },
-    [],
+    [setSessionItem, bettingPool],
   );
+
+  const updateBettingRoomInfo = React.useCallback(async () => {
+    const updatedBettingRoomInfo = await getBettingRoomInfo(
+      bettingRoomInfo.channel.id,
+    );
+    console.log(updatedBettingRoomInfo);
+    if (
+      !updatedBettingRoomInfo ||
+      !bettingRoomInfoTypeGuard(updatedBettingRoomInfo)
+    ) {
+      console.error("새로운 방 정보를 가져오는데 실패했습니다.");
+      return;
+    }
+
+    setCurrentBettingRoomInfo(updatedBettingRoomInfo);
+  }, [bettingRoomInfo.channel.id]);
+
+  useEffectOnce(() => {
+    async function initializedBettingPool() {
+      try {
+        const storedPool = await getSessionItem(STORAGE_KEY);
+        if (storedPool) {
+          const parsedPool = JSON.parse(storedPool);
+          setBettingPool(parsedPool);
+        }
+      } catch (error) {
+        console.error("Failed to initialize betting pool:", error);
+      }
+    }
+
+    initializedBettingPool();
+  });
 
   React.useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
@@ -122,12 +154,20 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
   const value = React.useMemo(
     () => ({
       socket,
-      bettingRoomInfo,
+      bettingRoomInfo: currentBettingRoomInfo,
       bettingPool,
       bettingSummary,
       updateBettingPool,
+      updateBettingRoomInfo,
     }),
-    [socket, bettingRoomInfo, bettingPool, bettingSummary, updateBettingPool],
+    [
+      socket,
+      currentBettingRoomInfo,
+      bettingPool,
+      bettingSummary,
+      updateBettingPool,
+      updateBettingRoomInfo,
+    ],
   );
 
   return (

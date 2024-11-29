@@ -1,10 +1,10 @@
-import { useUserContext } from "@/shared/hooks/use-user-context";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 import { createPrediction } from "./api";
 import { formatPredictionData } from "./helpers/formatData";
 import { useNavigate } from "@tanstack/react-router";
 
 function usePredictionStore() {
-  const { setUserInfo, userInfo } = useUserContext();
+  const { setUserInfo } = useUserContext();
   const navigate = useNavigate();
   const submitPrediction = async (formData: FormData) => {
     const requestData = formatPredictionData({
@@ -17,7 +17,7 @@ function usePredictionStore() {
     try {
       const result = await createPrediction(requestData);
       if (!result) throw new Error("실패");
-      setUserInfo({ ...userInfo, roomId: result.data.roomId, role: "admin" });
+      setUserInfo({ roomId: result.data.roomId, role: "admin" });
       navigate({
         to: `/betting/${result.data.roomId}/waiting`,
       });
