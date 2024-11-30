@@ -1,6 +1,6 @@
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { responseBetRoomInfo } from "@betting-duck/shared";
-import { useLoaderData, useLocation, useRouter } from "@tanstack/react-router";
+import { useLoaderData } from "@tanstack/react-router";
 import React from "react";
 import { z } from "zod";
 
@@ -18,8 +18,6 @@ interface WaitingRoomContextType {
 const WaitingRoomContext = React.createContext<WaitingRoomContextType>(null!);
 
 function WaitingRoomProvider({ children }: { children: React.ReactNode }) {
-  const location = useLocation();
-  const router = useRouter();
   const { roomId, bettingRoomInfo } = useLoaderData({
     from: "/betting_/$roomId/waiting",
   });
@@ -62,28 +60,6 @@ function WaitingRoomProvider({ children }: { children: React.ReactNode }) {
       setIsBettingStarted,
     ],
   );
-
-  React.useEffect(() => {
-    const unsubscribeRouteChange = router.subscribe(
-      "onBeforeNavigate",
-      (navigation) => {
-        const currentPath = location.pathname;
-        const nextPath = navigation.toLocation.pathname;
-
-        if (
-          currentPath === navigation.fromLocation.pathname &&
-          nextPath !== currentPath &&
-          socket.isConnected
-        ) {
-          socket.disconnect();
-        }
-      },
-    );
-
-    return () => {
-      unsubscribeRouteChange();
-    };
-  }, [socket, router, location.pathname]);
 
   return (
     <WaitingRoomContext.Provider value={value}>
