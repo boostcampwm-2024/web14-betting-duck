@@ -8,12 +8,11 @@ import { BettingProvider } from "@/features/betting-page/provider/BettingProvide
 import { cn } from "@/shared/misc";
 import { responseBetRoomInfo } from "@betting-duck/shared";
 import { z } from "zod";
-import { validateAccess } from "@/shared/lib/validateAccess";
-import { getBettingRoomInfo } from "@/features/betting-page/api/getBettingRoomInfo";
-import { getUserInfo } from "@/features/betting-page/api/getUserInfo";
 import { AccessError } from "@/features/waiting-room/error/AccessError";
 import { Unauthorized } from "@/features/waiting-room/error/Unauthorized";
 import { Forbidden } from "@/features/waiting-room/error/Forbidden";
+import { loadBetRoomData } from "@/shared/lib/loader/useBetRoomLoader";
+import { queryClient } from "@/shared/lib/auth/authQuery";
 
 type BetRoomResponse = z.infer<typeof responseBetRoomInfo>;
 
@@ -27,31 +26,19 @@ const STORAGE_KEY = "betting_pool";
 
 let returnToken = "";
 export const Route = createFileRoute("/betting_/$roomId/vote")({
-  beforeLoad: () => {
-    const rootLayout = document.getElementById("root-layout");
-    rootLayout?.classList.add("betting-page");
-  },
-  loader: async ({ params }): Promise<RouteLoaderData> => {
+  loader: async ({ params, abortController }): Promise<RouteLoaderData> => {
     const { roomId } = params;
     returnToken = roomId;
 
-    const abortController = new AbortController();
-    try {
-      await validateAccess(roomId, abortController.signal);
-      const bettingRoomInfo = await getBettingRoomInfo(roomId);
-      if (!bettingRoomInfo) {
-        throw new Error("베팅 룸 데이터를 불러오는데 실패했습니다.");
-      }
+    const { bettingRoomInfo, userInfo } = await loadBetRoomData({
+      roomId,
+      signal: abortController.signal,
+      queryClient,
+    });
 
-      const { duck } = await getUserInfo();
-      return { roomId, bettingRoomInfo, duckCoin: duck };
-    } finally {
-      abortController.abort();
-    }
+    return { roomId, bettingRoomInfo, duckCoin: userInfo.duck };
   },
   onLeave: () => {
-    const rootLayout = document.getElementById("root-layout");
-    if (rootLayout) rootLayout.classList.remove("betting-page");
     if (!window) return;
     window.sessionStorage.removeItem(STORAGE_KEY);
   },

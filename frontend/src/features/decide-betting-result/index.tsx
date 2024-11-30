@@ -1,8 +1,9 @@
 import { DuckCoinIcon } from "@/shared/icons";
 import { useBettingContext } from "../betting-page/hook/useBettingContext";
 import { calculateWinnings, calculateOdds } from "@/shared/utils/bettingOdds";
-import { endBetRoom } from "../betting-page/api/endBetroom";
+import { endBetRoom } from "./api/endBetRoom";
 import { getBettingRoomInfo } from "../betting-page/api/getBettingRoomInfo";
+import { useNavigate } from "@tanstack/react-router";
 
 interface BettingPool {
   totalAmount: number;
@@ -88,21 +89,42 @@ function BettingResult({
 function DecideBettingResult() {
   const { bettingPool, bettingRoomInfo } = useBettingContext();
   const { channel } = bettingRoomInfo;
+  const navigate = useNavigate();
+
+  console.log(bettingPool);
+  const handleDecideClick = async (option: "option1" | "option2") => {
+    try {
+      const roomId = channel.id;
+      const message = await endBetRoom(roomId, option);
+      console.log(message);
+      navigate({ to: `/betting/${roomId}/vote/resultDetail` });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("API 요청 실패:", error.message);
+      } else {
+        console.error("알 수 없는 오류 발생");
+      }
+    }
+  };
 
   return (
-    <div className={"bg-layout-main h-full w-full rounded-lg p-6"}>
+    <div
+      className={
+        "bg-layout-main flex h-full w-full flex-col justify-center gap-10 rounded-lg p-6"
+      }
+    >
       <button
         onClick={async () => {
           const a = await getBettingRoomInfo(channel.id);
           console.log(a);
         }}
       >
-        dd
+        정보 출력 버튼
       </button>
-      <h1 className="w-full text-center text-lg font-bold">
+      <h1 className="w-full text-center text-2xl font-bold">
         승리한 팀을 선택 해주세요!
       </h1>
-      <div className="flex h-full flex-row items-center">
+      <div className="flex flex-row items-center">
         <div className="flex w-[50cqw] flex-col items-center gap-6">
           <BettingResult
             uses="winning"
@@ -110,9 +132,9 @@ function DecideBettingResult() {
             content={channel.options.option1.name}
           />
           <button
-            className="bg-bettingBlue text-layout-main w-[40cqw] rounded-lg py-2"
+            className="bg-bettingBlue hover:bg-bettingBlue-behind hover:text-default text-layout-main w-[40cqw] rounded-lg py-2 hover:font-bold"
             type="submit"
-            onClick={() => endBetRoom(channel.id, "option1")}
+            onClick={() => handleDecideClick("option1")}
           >
             파란팀의 승리!
           </button>
@@ -124,8 +146,8 @@ function DecideBettingResult() {
             content={channel.options.option2.name}
           />
           <button
-            className="bg-bettingPink text-layout-main w-[40cqw] rounded-lg py-2"
-            onClick={() => endBetRoom(channel.id, "option2")}
+            className="bg-bettingPink hover:bg-bettingPink-disabled hover:text-default text-layout-main w-[40cqw] rounded-lg py-2 hover:font-bold"
+            onClick={() => handleDecideClick("option2")}
           >
             빨간팀의 승리!
           </button>

@@ -2,21 +2,20 @@ import { AccessError } from "@/features/waiting-room/error/AccessError";
 
 async function validateAccess(roomId: string, signal: AbortSignal) {
   try {
-    const tokenResponse = await fetch("/api/users/token", { signal });
+    const [tokenResponse, roomResponse] = await Promise.all([
+      fetch("/api/users/token", { signal }),
+      fetch(`/api/betrooms/${roomId}`, { signal }),
+    ]);
     if (!tokenResponse.ok) {
       throw AccessError.unauthorized("토큰이 존재하지 않습니다.", {
         requiredRole: "user",
       });
     }
-
-    const roomResponse = await fetch(`/api/betrooms/${roomId}`, { signal });
     if (!roomResponse.ok) {
       throw AccessError.forbidden("방에 접근할 수 없습니다.", {
         roomId,
       });
     }
-
-    return roomId;
   } catch (error) {
     if (error instanceof AccessError) {
       throw error;

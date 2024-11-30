@@ -1,20 +1,21 @@
 import { BettingStatsDisplay } from "@/shared/components/BettingStatsDisplay/BettingStatsDisplay";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
-import { BettingSummary, getBettingSummary } from "@/shared/utils/bettingOdds";
+import { BettingSummary } from "@/shared/utils/bettingOdds";
 import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
 import { BettingSharedLink } from "@/shared/components/BettingSharedLink/BettingSharedLink";
-import { BettingStats, FetchBetRoomInfoData } from "./model/types";
+import { BettingStats } from "./model/types";
 import { useBettingContext } from "../betting-page/hook/useBettingContext";
 import { PercentageDisplay } from "@/shared/components/PercentageDisplay/PercentageDisplay";
 import { refund } from "./model/api";
+import { EndPredictButton } from "./EndPredictButton";
 
 function BettingPageAdmin() {
-  const [title, setTitle] = useState("");
-  const [option1, setOption1] = useState("");
-  const [option2, setOption2] = useState("");
-  const [bettingSummary, setBettingSummary] = useState<BettingSummary>({
+  const [title] = useState("");
+  const [option1] = useState("");
+  const [option2] = useState("");
+  const [bettingSummary] = useState<BettingSummary>({
     totalParticipants: 0,
     totalAmount: 0,
     option1Percentage: "0.0",
@@ -32,29 +33,26 @@ function BettingPageAdmin() {
       returnRate: 1,
     },
   });
-  const [stats1, setStats1] = useState<BettingStats>({
+  const [stats1] = useState<BettingStats>({
     totalAmount: 0,
     returnRate: 1,
     participants: 0,
     multiplier: 0,
   });
 
-  const [stats2, setStats2] = useState<BettingStats>({
+  const [stats2] = useState<BettingStats>({
     totalAmount: 0,
     returnRate: 1,
     participants: 0,
     multiplier: 0,
   });
 
-  const [timer, setTimer] = useState(1);
-  const [defaultBetAmount, setDefaultBetAmount] = useState(0);
+  const [timer] = useState(1);
+  const [defaultBetAmount] = useState(0);
   const { roomId } = useParams({ from: "/betting_/$roomId/vote" });
 
-  const { bettingRoomInfo, updateBettingRoomInfo, updateBettingPool } =
-    useBettingContext();
-  const [status, setStatus] = useState(
-    bettingRoomInfo.channel.status || "active",
-  );
+  const { bettingRoomInfo } = useBettingContext();
+  const [status] = useState(bettingRoomInfo.channel.status || "active");
   const navigate = useNavigate();
 
   const socket = useSocketIO({
@@ -70,125 +68,138 @@ function BettingPageAdmin() {
     },
   });
 
-  useEffect(() => {
-    socket.on("timeover", () => {
-      updateBettingRoomInfo();
-      updateBettingPool({ isBettingEnd: true });
-    });
+  // useEffect(() => {
+  //   socket.on("timeover", () => {
+  //     updateBettingRoomInfo();
+  //     updateBettingPool({ isBettingEnd: true });
+  //   });
 
-    return () => {
-      socket.off("timeover");
-    };
-  }, [socket, updateBettingPool, updateBettingRoomInfo]);
+  //   return () => {
+  //     socket.off("timeover");
+  //   };
+  // }, [socket, updateBettingPool, updateBettingRoomInfo]);
 
-  useEffect(() => {
-    if (!socket.isConnected) return;
-    socket.emit("joinRoom", {
-      channel: {
-        roomId: bettingRoomInfo.channel.id,
-      },
-    });
-  }, [socket, bettingRoomInfo]);
+  // useEffect(() => {
+  //   if (!socket.isConnected) return;
+  //   socket.emit("joinRoom", {
+  //     channel: {
+  //       roomId: bettingRoomInfo.channel.id,
+  //     },
+  //   });
+  // }, [socket, bettingRoomInfo]);
 
-  useEffect(() => {
-    if (!socket.isConnected || bettingRoomInfo.channel.status !== "active")
-      return;
-    socket.emit("fetchBetRoomInfo", {
-      roomId: bettingRoomInfo.channel.id,
-    });
-  }, [socket, bettingRoomInfo]);
+  // useEffect(() => {
+  //   if (!socket.isConnected || bettingRoomInfo.channel.status !== "active")
+  //     return;
+  //   socket.emit("fetchBetRoomInfo", {
+  //     roomId: bettingRoomInfo.channel.id,
+  //   });
+  // }, [socket, bettingRoomInfo]);
 
-  useEffect(() => {
-    console.log(bettingRoomInfo.channel.status);
-    setStatus((prev) => {
-      if (prev !== bettingRoomInfo.channel.status) {
-        return bettingRoomInfo.channel.status;
-      }
-      return prev;
-    });
-  }, [bettingRoomInfo]);
+  // useEffect(() => {
+  //   console.log(bettingRoomInfo.channel.status);
+  //   setStatus((prev) => {
+  //     if (prev !== bettingRoomInfo.channel.status) {
+  //       return bettingRoomInfo.channel.status;
+  //     }
+  //     return prev;
+  //   });
+  // }, [bettingRoomInfo]);
 
-  useEffect(() => {
-    const handleFetchBetRoomInfo = (data: unknown) => {
-      const roomInfo = data as FetchBetRoomInfoData;
+  // useEffect(() => {
+  //   const handleFetchBetRoomInfo = (data: unknown) => {
+  //     if (!socket.isConnected || bettingRoomInfo.channel.status !== "active")
+  //       return;
+  //     const roomInfo = data as FetchBetRoomInfoData;
 
-      const { option1, option2 } = roomInfo.channel;
+  //     const { option1, option2 } = roomInfo.channel;
 
-      const bettingPool = {
-        option1: {
-          totalAmount: Number(option1.currentBets),
-          participants: Number(option1.participants),
-        },
-        option2: {
-          totalAmount: Number(option2.currentBets),
-          participants: Number(option2.participants),
-        },
-      };
+  //     updateBettingPool({
+  //       option1: {
+  //         participants: Number(option1.participants),
+  //         totalAmount: Number(option1.currentBets),
+  //       },
+  //       option2: {
+  //         participants: Number(option2.participants),
+  //         totalAmount: Number(option2.currentBets),
+  //       },
+  //     });
 
-      const newBettingSummary = getBettingSummary(bettingPool);
+  //     const bettingPool = {
+  //       option1: {
+  //         totalAmount: Number(option1.currentBets),
+  //         participants: Number(option1.participants),
+  //       },
+  //       option2: {
+  //         totalAmount: Number(option2.currentBets),
+  //         participants: Number(option2.participants),
+  //       },
+  //     };
 
-      setBettingSummary((prev) => {
-        if (JSON.stringify(prev) !== JSON.stringify(newBettingSummary)) {
-          return newBettingSummary;
-        }
-        return prev;
-      });
+  //     const newBettingSummary = getBettingSummary(bettingPool);
 
-      setStats1((prev) => {
-        const newStats = {
-          totalAmount: newBettingSummary.option1.totalAmount,
-          returnRate: newBettingSummary.option1.returnRate,
-          participants: newBettingSummary.option1.participants,
-          multiplier: newBettingSummary.option1.multiplier,
-        };
+  //     setBettingSummary((prev) => {
+  //       if (JSON.stringify(prev) !== JSON.stringify(newBettingSummary)) {
+  //         return newBettingSummary;
+  //       }
+  //       return prev;
+  //     });
 
-        if (JSON.stringify(prev) !== JSON.stringify(newStats)) {
-          return newStats;
-        }
-        return prev;
-      });
+  //     setStats1((prev) => {
+  //       const newStats = {
+  //         totalAmount: newBettingSummary.option1.totalAmount,
+  //         returnRate: newBettingSummary.option1.returnRate,
+  //         participants: newBettingSummary.option1.participants,
+  //         multiplier: newBettingSummary.option1.multiplier,
+  //       };
 
-      setStats2((prev) => {
-        const newStats = {
-          totalAmount: newBettingSummary.option2.totalAmount,
-          returnRate: newBettingSummary.option2.returnRate,
-          participants: newBettingSummary.option2.participants,
-          multiplier: newBettingSummary.option1.multiplier,
-        };
+  //       if (JSON.stringify(prev) !== JSON.stringify(newStats)) {
+  //         return newStats;
+  //       }
+  //       return prev;
+  //     });
 
-        if (JSON.stringify(prev) !== JSON.stringify(newStats)) {
-          return newStats;
-        }
+  //     setStats2((prev) => {
+  //       const newStats = {
+  //         totalAmount: newBettingSummary.option2.totalAmount,
+  //         returnRate: newBettingSummary.option2.returnRate,
+  //         participants: newBettingSummary.option2.participants,
+  //         multiplier: newBettingSummary.option1.multiplier,
+  //       };
 
-        return prev;
-      });
-    };
+  //       if (JSON.stringify(prev) !== JSON.stringify(newStats)) {
+  //         return newStats;
+  //       }
 
-    socket.on("fetchBetRoomInfo", handleFetchBetRoomInfo);
+  //       return prev;
+  //     });
+  //   };
 
-    return () => {
-      socket.off("fetchBetRoomInfo");
-    };
-  }, [socket, bettingRoomInfo]);
+  //   socket.on("fetchBetRoomInfo", handleFetchBetRoomInfo);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`/api/betrooms/${roomId}`);
-        if (response.ok) {
-          const { data } = await response.json();
-          setTitle(data.channel.title);
-          setOption1(data.channel.options.option1.name);
-          setOption2(data.channel.options.option2.name);
-          setTimer(data.channel.settings.duration);
-          setDefaultBetAmount(data.channel.settings.defaultBetAmount);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    if (roomId) fetchData();
-  }, [roomId]);
+  //   return () => {
+  //     socket.off("fetchBetRoomInfo");
+  //   };
+  // }, [socket, bettingRoomInfo, updateBettingPool]);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await fetch(`/api/betrooms/${roomId}`);
+  //       if (response.ok) {
+  //         const { data } = await response.json();
+  //         setTitle(data.channel.title);
+  //         setOption1(data.channel.options.option1.name);
+  //         setOption2(data.channel.options.option2.name);
+  //         setTimer(data.channel.settings.duration);
+  //         setDefaultBetAmount(data.channel.settings.defaultBetAmount);
+  //       }
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   };
+  //   if (roomId) fetchData();
+  // }, [roomId]);
 
   const handleCancelClick = async () => {
     refund(roomId)
@@ -209,6 +220,30 @@ function BettingPageAdmin() {
     });
   };
 
+  const handleBetOption1 = () => {
+    socket.emit("joinBet", {
+      sender: {
+        betAmount: 100,
+        selectOption: "option1",
+      },
+      channel: {
+        roomId,
+      },
+    });
+  };
+
+  const handleBetOption2 = () => {
+    socket.emit("joinBet", {
+      sender: {
+        betAmount: 100,
+        selectOption: "option2",
+      },
+      channel: {
+        roomId,
+      },
+    });
+  };
+
   return (
     <div className="bg-layout-main flex h-full w-full flex-col justify-between">
       <div className="flex flex-col gap-5">
@@ -222,9 +257,17 @@ function BettingPageAdmin() {
               {title}
             </h1>
             <p>
-              {status === "active"
-                ? "투표가 진행 중입니다. 투표를 취소할 수 있습니다."
-                : "투표가 종료되었습니다. 투표를 취소하거나 종료할 수 있습니다."}
+              {status === "active" ? (
+                "투표가 진행 중입니다. 투표를 취소할 수 있습니다."
+              ) : (
+                <>
+                  투표를 취소하게 되면{" "}
+                  <span className="text-bettingPink font-extrabold">
+                    모든 베팅 금액이 환불되고 베팅이 종료되며, 돌이킬 수
+                    없습니다.
+                  </span>
+                </>
+              )}
             </p>
             <h1 className="text-default-disabled text-md mb-1 font-bold">
               베팅 정보
@@ -283,10 +326,13 @@ function BettingPageAdmin() {
               >
                 승부 예측 종료
               </button>
+              <EndPredictButton />
             </div>
           </div>
         </div>
       </div>
+      <button onClick={handleBetOption1}>투표1</button>
+      <button onClick={handleBetOption2}>투표2</button>
       <BettingSharedLink />
     </div>
   );

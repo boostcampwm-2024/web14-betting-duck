@@ -41,7 +41,6 @@ function BettingContainer() {
       <button
         onClick={() =>
           placeBetting({
-            socket,
             selectedOption: "option1",
             bettingAmount: 400,
             roomId: channel.id,
@@ -73,12 +72,13 @@ function BettingContainer() {
       </button>
       <div className="flex h-full flex-col justify-around">
         <BettingHeader content={channel.title} contextValue={contextValue} />
-        <div className="flex w-full">
-          <div className="flex justify-between">
+        <div className="flex w-full justify-around">
+          <div className="flex w-full max-w-[45cqw] justify-between">
             <BettingStatsDisplay
               stats={bettingSummary.option1}
               content={channel.options.option1.name}
               uses="winning"
+              className="min-w-[35cqw]"
             >
               <PercentageDisplay
                 index={0}
@@ -86,11 +86,12 @@ function BettingContainer() {
               />
             </BettingStatsDisplay>
           </div>
-          <div className="flex flex-col gap-6">
+          <div className="flex w-full max-w-[45cqw] justify-between">
             <BettingStatsDisplay
               stats={bettingSummary.option2}
               content={channel.options.option2.name}
               uses="losing"
+              className="min-w-[35cqw]"
             >
               <PercentageDisplay
                 index={1}
