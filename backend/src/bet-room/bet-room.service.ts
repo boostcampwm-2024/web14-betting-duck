@@ -102,45 +102,14 @@ export class BetRoomService {
     });
 
     setTimeout(
-      async () => {
-        try {
-          const betRoom = await this.betRoomRepository.findOneById(betRoomId);
-          if (betRoom.status === "active") {
-            await this.betRoomRepository.update(betRoomId, {
-              status: "timeover",
-            });
-            await this.redisManager.setRoomStatus(betRoomId, "timeover");
-            this.betGateway.server.to(betRoomId).emit("timeover", {
-              message: "베팅 시간이 종료되었습니다.",
-              roomId: betRoomId,
-            });
-          }
-        } catch (error) {
-          console.error("베팅 시간 종료에 문제가 있습니다.:", error);
-        }
-      },
+      () => this.handleBettingTimeOver(betRoomId),
       Number(duration) * 1000,
     );
 
-    setTimeout(
-      async () => {
-        try {
-          const betRoom = await this.betRoomRepository.findOneById(betRoomId);
-          if (betRoom.status === "timeover") {
-            await this.saveRefundedData(betRoomId);
-            this.betGateway.server.to(betRoomId).emit("finished", {
-              message: "배팅 정산이 취소되었습니다",
-              roomId: betRoomId,
-            });
-            await this.processBetRoomRefund(betRoomId);
-            await this.redisManager.deleteChannelData(betRoomId);
-          }
-        } catch (error) {
-          console.error("자동 베팅 환불 처리 중 예외 발생:", error);
-        }
-      },
-      (Number(duration) + 3 * 60) * 1000,
-    );
+    // setTimeout(
+    //   () => this.handleBettingRefund(betRoomId),
+    //   (Number(duration) + 5 * 60) * 1000,
+    // );
     return updateResult;
   }
 
@@ -204,7 +173,6 @@ export class BetRoomService {
       status: "finished",
     });
     await this.redisManager.setRoomStatus(betRoomId, "finished");
-    console.log(`saveRefundedData update: ${JSON.stringify(updateResult)}`);
     const {
       option1Participants,
       option2Participants,
@@ -295,6 +263,41 @@ export class BetRoomService {
       option1TotalBet,
       option2TotalBet,
     };
+  }
+
+  private async handleBettingTimeOver(betRoomId: string) {
+    try {
+      const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+      if (betRoom.status === "active") {
+        await this.betRoomRepository.update(betRoomId, {
+          status: "timeover",
+        });
+        await this.redisManager.setRoomStatus(betRoomId, "timeover");
+        this.betGateway.server.to(betRoomId).emit("timeover", {
+          message: "베팅 시간이 종료되었습니다.",
+          roomId: betRoomId,
+        });
+      }
+    } catch (error) {
+      console.error("베팅 시간 종료에 문제가 있습니다.:", error);
+    }
+  }
+
+  private async handleBettingRefund(betRoomId: string) {
+    try {
+      const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+      if (betRoom.status === "timeover") {
+        await this.saveRefundedData(betRoomId);
+        this.betGateway.server.to(betRoomId).emit("finished", {
+          message: "배팅 정산이 취소되었습니다",
+          roomId: betRoomId,
+        });
+        await this.processBetRoomRefund(betRoomId);
+        await this.redisManager.deleteChannelData(betRoomId);
+      }
+    } catch (error) {
+      console.error("자동 베팅 환불 처리 중 예외 발생:", error);
+    }
   }
 
   private async saveBetResult(
