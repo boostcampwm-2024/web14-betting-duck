@@ -34,7 +34,9 @@ function WaitingRoomProvider({ children }: { children: React.ReactNode }) {
     },
     onDisconnect: (reason) => {
       console.error("투표 대기 방에서 소켓이 끊어졌습니다.");
-      console.error(reason);
+      if (reason === "io server disconnect") {
+        socket.reconnect();
+      }
     },
     onError: (error) => {
       console.error("투표 대기 방에서 소켓 에러가 발생했습니다.");
@@ -62,12 +64,6 @@ function WaitingRoomProvider({ children }: { children: React.ReactNode }) {
   );
 
   React.useEffect(() => {
-    function handleVisibilityChange() {
-      if (document.visibilityState === "hidden" && socket.isConnected) {
-        socket.disconnect();
-      }
-    }
-
     const unsubscribeRouteChange = router.subscribe(
       "onBeforeNavigate",
       (navigation) => {
@@ -84,10 +80,7 @@ function WaitingRoomProvider({ children }: { children: React.ReactNode }) {
       },
     );
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
     return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
       unsubscribeRouteChange();
     };
   }, [socket, router, location.pathname]);

@@ -1,9 +1,17 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useWaitingContext } from "../../hooks/use-waiting-context";
+import { responseBetRoomInfo } from "@betting-duck/shared";
+import { z } from "zod";
 
-function StartVotingButton() {
+function StartVotingButton({
+  bettingRoomInfo,
+}: {
+  bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
+}) {
   const navigate = useNavigate();
-  const { roomId, setIsBettingStarted } = useWaitingContext();
+  const { channel } = bettingRoomInfo;
+  const roomId = channel.id;
+  const { setIsBettingStarted, socket } = useWaitingContext();
 
   async function startBettingRoom() {
     try {
@@ -12,7 +20,8 @@ function StartVotingButton() {
       });
       if (!response.ok) throw new Error("배팅 시작에 실패했습니다.");
       setIsBettingStarted(true);
-      navigate({ to: "../vote/admin" });
+      socket.emit("leaveRoom", { roomId });
+      navigate({ to: "/betting/$roomId/vote/voting", params: { roomId } });
     } catch (error) {
       console.error(error);
     }
