@@ -22,8 +22,6 @@ interface RouteLoaderData {
   duckCoin: number;
 }
 
-const STORAGE_KEY = "betting_pool";
-
 let returnToken = "";
 export const Route = createFileRoute("/betting_/$roomId/vote")({
   loader: async ({ params, abortController }): Promise<RouteLoaderData> => {
@@ -37,10 +35,6 @@ export const Route = createFileRoute("/betting_/$roomId/vote")({
     });
 
     return { roomId, bettingRoomInfo, duckCoin: userInfo.duck };
-  },
-  onLeave: () => {
-    if (!window) return;
-    window.sessionStorage.removeItem(STORAGE_KEY);
   },
   component: RouteComponent,
   errorComponent: ({ error }) => {
