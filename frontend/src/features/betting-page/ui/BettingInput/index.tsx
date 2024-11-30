@@ -3,7 +3,6 @@ import { cn } from "@/shared/misc";
 import React from "react";
 import { z } from "zod";
 import { useBettingContext } from "../../hook/useBettingContext";
-import { useUserContext } from "@/shared/hooks/useUserContext";
 import { Route } from "@/routes/betting_.$roomId.vote";
 import { placeBetting } from "../../utils/placeBetting";
 
@@ -30,8 +29,8 @@ function getVisibleText(
 
 function BettingInput({ uses }: { uses: "winning" | "losing" }) {
   const { duckCoin } = Route.useLoaderData();
-  const { bettingRoomInfo } = useBettingContext();
-  const { setUserInfo, userInfo } = useUserContext();
+  const { bettingRoomInfo, updateBettingPool, bettingPool } =
+    useBettingContext();
   const [value, setValue] = React.useState("");
   const [isText, setIsText] = React.useState(false);
   const [isLongText, setIsLongText] = React.useState(false);
@@ -92,15 +91,15 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
           inputMode="numeric"
         />
         <button
-          disabled={isText || userInfo.isPlaceBet}
+          disabled={isText || bettingPool.isPlaceBet}
           onClick={() => {
             placeBetting({
               selectedOption: uses === "winning" ? "option1" : "option2",
               bettingAmount: parseInt(value),
               roomId: bettingRoomInfo.channel.id,
-              isPlaceBet: userInfo.isPlaceBet ?? true,
+              isPlaceBet: bettingPool.isPlaceBet ?? true,
+              updateBettingPool,
             });
-            setUserInfo({ isPlaceBet: true, placeBetAmount: parseInt(value) });
           }}
           type="button"
           className={cn(
