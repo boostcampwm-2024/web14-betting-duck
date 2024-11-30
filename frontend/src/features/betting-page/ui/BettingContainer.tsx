@@ -8,12 +8,10 @@ import { useBettingConnection } from "../hook/useBettingRoomConnection";
 import { useBettingRoomInfo } from "../hook/useBettingRoomInfo";
 import { BettingInput } from "./BettingInput";
 import { placeBetting } from "../utils/placeBetting";
-import { useUserContext } from "@/shared/hooks/useUserContext";
 import { responseUserInfoSchema } from "@betting-duck/shared";
 
 function BettingContainer() {
   const contextValue = useBettingContext();
-  const { userInfo } = useUserContext();
   const {
     socket,
     bettingRoomInfo,
@@ -44,7 +42,8 @@ function BettingContainer() {
             selectedOption: "option1",
             bettingAmount: 400,
             roomId: channel.id,
-            isPlaceBet: userInfo.isPlaceBet || false,
+            isPlaceBet: bettingPool.isPlaceBet || false,
+            updateBettingPool,
           })
         }
       >
@@ -99,7 +98,6 @@ function BettingContainer() {
               />
             </BettingStatsDisplay>
           </div>
-          {/* <BettingForm /> */}
         </div>
         <div className="flex justify-around">
           <BettingInput uses={"winning"} />

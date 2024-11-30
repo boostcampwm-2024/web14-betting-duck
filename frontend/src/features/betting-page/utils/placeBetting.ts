@@ -1,10 +1,19 @@
 import { responseUserInfoSchema } from "@betting-duck/shared";
+import { BettingPool } from "@/shared/utils/bettingOdds";
 
 interface PlaceBettingParams {
   selectedOption: "option1" | "option2";
   roomId: string;
   bettingAmount: number;
   isPlaceBet: boolean;
+  updateBettingPool: (
+    partialPool: Partial<{
+      option1: Partial<BettingPool["option1"]>;
+      option2: Partial<BettingPool["option2"]>;
+      isPlaceBet: boolean;
+      placeBetAmount: number;
+    }>,
+  ) => void;
 }
 
 async function getUserInfo() {
@@ -28,6 +37,7 @@ async function placeBetting({
   roomId,
   bettingAmount,
   isPlaceBet,
+  updateBettingPool,
 }: PlaceBettingParams) {
   const { duck } = await getUserInfo();
 
@@ -46,7 +56,7 @@ async function placeBetting({
     },
     body: JSON.stringify({
       sender: {
-        betAmount: 300,
+        betAmount: bettingAmount,
         selectOption: selectedOption,
       },
       channel: {
@@ -54,10 +64,10 @@ async function placeBetting({
       },
     }),
   });
-  console.log(response);
   if (!response.ok) {
     throw new Error("배팅에 실패했습니다.");
   }
+  updateBettingPool({ placeBetAmount: bettingAmount, isPlaceBet: true });
 }
 
 export { placeBetting };
