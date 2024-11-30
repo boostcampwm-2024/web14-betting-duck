@@ -15,8 +15,11 @@ function User({ nickname }: { nickname: string }) {
         width={20}
         height={15}
         alt="대기 중인 사용자 이미지"
-        loading="lazy"
-        decoding="async"
+        loading="eager"
+        decoding="sync"
+        className="flex-shrink-0 object-contain"
+        // @ts-expect-error fetchpriority is not yet recognized by TypeScript
+        fetchpriority="high" // 소문자로 수정
       />
       <div className="group relative mt-auto w-full max-w-[100px] truncate text-end text-lg font-bold">
         {nickname}
@@ -28,8 +31,8 @@ function User({ nickname }: { nickname: string }) {
 function ParticipantsList() {
   const { socket, roomId } = useWaitingContext();
   const [participantsList, setParticipantsList] = React.useState<
-    ParticipantInfo[]
-  >([]);
+    Set<ParticipantInfo>
+  >(new Set());
 
   React.useEffect(() => {
     socket.on("fetchRoomUsers", (data) => {
@@ -40,12 +43,14 @@ function ParticipantsList() {
       const currentParticipantsList = parsedData.data;
 
       if (
-        currentParticipantsList.length !== participantsList.length ||
+        currentParticipantsList.length !== participantsList.size ||
         currentParticipantsList.every(
           (participant, i) => currentParticipantsList[i] === participant,
         )
       ) {
-        setParticipantsList(currentParticipantsList);
+        setParticipantsList(
+          (prev) => new Set([...prev, ...currentParticipantsList]),
+        );
       }
     });
 
@@ -72,7 +77,7 @@ function ParticipantsList() {
     <div className="bg-secondary flex select-none flex-col gap-4 rounded-lg px-6 pb-4 pt-2 shadow-inner">
       <div className="font-extrabold">참가 중인 사용자</div>
       <ul className="max flex w-full max-w-[366px] flex-row gap-4 overflow-x-scroll pb-2 font-bold">
-        {participantsList.map((nickname, i) => (
+        {[...participantsList.values()].map((nickname, i) => (
           <User key={`${nickname}-${i}th-player`} nickname={nickname} />
         ))}
       </ul>
