@@ -10,8 +10,10 @@ import { useBettingContext } from "../betting-page/hook/useBettingContext";
 import { PercentageDisplay } from "@/shared/components/PercentageDisplay/PercentageDisplay";
 import { refund } from "./model/api";
 import { EndPredictButton } from "./EndPredictButton";
+import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 
 function BettingPageAdmin() {
+  useLayoutShift();
   const [title] = useState("");
   const [option1] = useState("");
   const [option2] = useState("");
