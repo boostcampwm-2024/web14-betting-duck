@@ -3,29 +3,11 @@ import { cn } from "@/shared/misc";
 import React from "react";
 import { z } from "zod";
 import { useBettingContext } from "../../hook/useBettingContext";
-import { responseBetRoomInfo } from "@betting-duck/shared";
-import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { useUserContext } from "@/shared/hooks/useUserContext";
 import { Route } from "@/routes/betting_.$roomId.vote";
+import { placeBetting } from "../../utils/placeBetting";
 
 const numberSchema = z.coerce.number().int().positive();
-
-function placeBet(
-  socket: ReturnType<typeof useSocketIO>,
-  bettingRoomInfo: z.infer<typeof responseBetRoomInfo>,
-  value: string,
-  uses: "winning" | "losing",
-) {
-  socket.emit("joinBet", {
-    sender: {
-      betAmount: parseInt(value),
-      selectOption: uses === "winning" ? "option1" : "option2",
-    },
-    channel: {
-      roomId: bettingRoomInfo.channel.id,
-    },
-  });
-}
 
 function errorText(
   isText: boolean,
@@ -48,7 +30,7 @@ function getVisibleText(
 
 function BettingInput({ uses }: { uses: "winning" | "losing" }) {
   const { duckCoin } = Route.useLoaderData();
-  const { socket, bettingRoomInfo } = useBettingContext();
+  const { bettingRoomInfo } = useBettingContext();
   const { setUserInfo, userInfo } = useUserContext();
   const [value, setValue] = React.useState("");
   const [isText, setIsText] = React.useState(false);
@@ -76,7 +58,7 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
       return updateState("", false);
     }
 
-    if (parseInt(value) > parseInt(duckCoin)) return setIsOverDuckCoin(true);
+    if (parseInt(value) > duckCoin) return setIsOverDuckCoin(true);
     else setIsOverDuckCoin(false);
     if (value.length === 10) return setIsLongText(true);
     else setIsLongText(false);
@@ -112,7 +94,12 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
         <button
           disabled={isText || userInfo.isPlaceBet}
           onClick={() => {
-            placeBet(socket, bettingRoomInfo, value, uses);
+            placeBetting({
+              selectedOption: uses === "winning" ? "option1" : "option2",
+              bettingAmount: parseInt(value),
+              roomId: bettingRoomInfo.channel.id,
+              isPlaceBet: userInfo.isPlaceBet ?? true,
+            });
             setUserInfo({ isPlaceBet: true, placeBetAmount: parseInt(value) });
           }}
           type="button"

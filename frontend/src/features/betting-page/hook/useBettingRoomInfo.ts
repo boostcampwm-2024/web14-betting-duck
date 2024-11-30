@@ -29,6 +29,7 @@ function useBettingRoomInfo(dependencies: BettingSocketDependencies) {
 
     socket.on("fetchBetRoomInfo", async (data) => {
       const result = bettingRoomSchema.safeParse(data);
+      console.log("betting point", result);
       if (!result.success) {
         console.error(result.error.errors);
         throw new Error("배팅 방 정보를 가져오는데 실패했습니다.");

@@ -1,8 +1,6 @@
-import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { responseUserInfoSchema } from "@betting-duck/shared";
 
 interface PlaceBettingParams {
-  socket: ReturnType<typeof useSocketIO>;
   selectedOption: "option1" | "option2";
   roomId: string;
   bettingAmount: number;
@@ -26,7 +24,6 @@ async function getUserInfo() {
 }
 
 async function placeBetting({
-  socket,
   selectedOption,
   roomId,
   bettingAmount,
@@ -36,22 +33,31 @@ async function placeBetting({
 
   if (isPlaceBet) {
     console.error("이미 배팅을 했습니다.");
-    return;
   }
 
   if (duck - bettingAmount < 0) {
     throw new Error("소유한 덕코인보다 더 많은 금액을 배팅할 수 없습니다.");
   }
 
-  socket.emit("placeBet", {
-    sender: {
-      betAmount: 300,
-      selectOption: selectedOption,
+  const response = await fetch("/api/bets", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
-    channel: {
-      roomId,
-    },
+    body: JSON.stringify({
+      sender: {
+        betAmount: 300,
+        selectOption: selectedOption,
+      },
+      channel: {
+        roomId,
+      },
+    }),
   });
+  console.log(response);
+  if (!response.ok) {
+    throw new Error("배팅에 실패했습니다.");
+  }
 }
 
 export { placeBetting };
