@@ -1,5 +1,6 @@
 import React from "react";
 import { DuckCoinIcon, PeoplesIcon, TrophyIcon } from "@/shared/icons";
+import { cn } from "@/shared/misc";
 
 interface BettingStats {
   participants: number;
@@ -8,18 +9,16 @@ interface BettingStats {
   returnRate: number;
 }
 
+interface BettingStatsDisplayProps
+  extends React.HTMLAttributes<HTMLDivElement> {
+  stats: BettingStats;
+  content: string;
+  uses: "winning" | "losing";
+  children?: React.ReactNode;
+}
+
 const BettingStatsDisplay = React.memo(
-  ({
-    stats,
-    content,
-    uses,
-    children,
-  }: {
-    stats: BettingStats;
-    content: string;
-    uses: "winning" | "losing";
-    children?: React.ReactNode;
-  }) => {
+  ({ stats, content, uses, children, ...props }: BettingStatsDisplayProps) => {
     const color = uses === "winning" ? "text-bettingBlue" : "text-bettingPink";
 
     const bettingStats = React.useMemo(
@@ -36,22 +35,31 @@ const BettingStatsDisplay = React.memo(
     );
 
     return (
-      <div className={`flex flex-1 flex-row justify-between ${color}`}>
-        <div className="text-md flex max-w-[35cqw] flex-col gap-2">
+      <div
+        className={cn(
+          `flex flex-1 flex-row justify-between ${color}`,
+          props.className,
+        )}
+      >
+        <div className="text-md flex w-full max-w-[18cqw] flex-col gap-2">
           {bettingStats.map(({ icon: Icon, alt, stat }) => (
             <div
               key={alt}
-              className="flex items-center justify-between gap-4 space-x-1 text-center text-lg"
+              className="flex items-center justify-between gap-4 text-center text-lg"
             >
-              <Icon width={24} height={24} />
-              <span className="group relative mt-auto h-[24px] w-full max-w-[40px] truncate text-end text-lg font-bold">
-                {stat}
-              </span>
+              <Icon className="flex-shrink-0" width={24} height={24} />
+              <div className="min-w-0 flex-1">
+                <span className="block truncate text-end text-lg font-bold">
+                  {stat}
+                </span>
+              </div>
             </div>
           ))}
         </div>
         <div className="group relative mt-auto flex w-full max-w-[30cqw] flex-col items-end truncate text-end text-2xl font-extrabold">
-          {content}
+          <div className="w-full truncate pl-4 text-end text-2xl font-extrabold">
+            {content}
+          </div>
           {children}
         </div>
       </div>

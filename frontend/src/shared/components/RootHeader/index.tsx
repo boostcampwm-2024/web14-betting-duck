@@ -1,8 +1,9 @@
-import { useUserContext } from "@/shared/hooks/useUserContext";
 import { LogoIcon } from "@/shared/icons";
 import { Image } from "@/shared/components/Image";
 import waitingUserImage from "@assets/images/waiting-user.png";
 import { Link } from "@tanstack/react-router";
+import { Route as RootRoute } from "@/routes/__root";
+import { RootLoaderData } from "@/shared/types";
 
 function UserInfo({ nickname }: { nickname: string }) {
   return (
@@ -21,7 +22,7 @@ function UserInfo({ nickname }: { nickname: string }) {
 }
 
 function RootHeader() {
-  const { userInfo } = useUserContext();
+  const { userInfo } = RootRoute.useLoaderData() as RootLoaderData;
   const { nickname } = userInfo;
 
   return (

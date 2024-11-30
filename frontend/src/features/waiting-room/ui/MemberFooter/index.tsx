@@ -46,7 +46,8 @@ function MemberFooter() {
   }
 
   function participateVote() {
-    navigate({ to: "../vote/voting" });
+    socket.emit("leaveRoom", { roomId });
+    navigate({ to: "/betting/$roomId/vote", params: { roomId } });
   }
 
   return (
