@@ -43,17 +43,20 @@ function RouteComponent() {
       const { channel } = result.data;
       if (channel.status === "active") {
         return navigate({
-          to: `/betting/${roomId}/vote`,
+          to: `/betting/${roomId}/vote/voting`,
+        });
+      }
+      if (channel.status === "waiting") {
+        return navigate({
+          to: `/betting/${roomId}/waiting`,
         });
       }
 
-      return navigate({
-        to: `/betting/${roomId}/waiting`,
-      });
+      navigate({ to: "/require-roomId" });
     })();
   }, [roomId, navigate]);
 
-  return <WaitingError />;
+  return <div className="bg-layout-main h-full w-full" />;
 }
 
 function ErrorComponent({
