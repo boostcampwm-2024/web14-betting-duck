@@ -1,5 +1,4 @@
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
-// import { useLoaderData } from "@tanstack/react-router";
 import React from "react";
 import { responseBetRoomInfo } from "@betting-duck/shared";
 import { z } from "zod";
@@ -7,10 +6,10 @@ import {
   type BettingPool,
   getBettingSummary,
 } from "@/shared/utils/bettingOdds";
-// import { useSessionStorage } from "@/shared/hooks/useSessionStorage";
-// import { useEffectOnce } from "@/shared/hooks/useEffectOnce";
 import { getBettingRoomInfo } from "../api/getBettingRoomInfo";
-import { Route } from "@/routes/betting_.$roomId.vote.voting";
+import { Route } from "@/routes/betting_.$roomId.vote";
+import { useSessionStorage } from "@/shared/hooks/useSessionStorage";
+import { STORAGE_KEY } from "../model/var";
 
 interface BettingContextType {
   socket: ReturnType<typeof useSocketIO>;
@@ -24,10 +23,14 @@ interface BettingContextType {
 type PartialBettingPool = Partial<{
   option1: Partial<BettingPool["option1"]>;
   option2: Partial<BettingPool["option2"]>;
-  isBettingEnd?: boolean;
+  isPlaceBet: boolean;
+  placeBetAmount: number;
+  isBettingEnd: boolean;
 }>;
 
 interface ContextBettingPool extends BettingPool {
+  isPlaceBet: boolean;
+  placeBetAmount: number;
   isBettingEnd: boolean;
 }
 
@@ -40,6 +43,13 @@ function bettingRoomInfoTypeGuard(
 }
 
 function BettingProvider({ children }: { children: React.ReactNode }) {
+  const { setSessionItem } = useSessionStorage();
+  const { bettingRoomInfo } = Route.useLoaderData();
+  if (!bettingRoomInfoTypeGuard(bettingRoomInfo)) {
+    throw new Error("배팅 방 정보를 가져오는데 실패했습니다.");
+  }
+  const [currentBettingRoomInfo, setCurrentBettingRoomInfo] =
+    React.useState(bettingRoomInfo);
   const [bettingPool, setBettingPool] = React.useState<ContextBettingPool>({
     option1: {
       totalAmount: 0,
@@ -49,6 +59,8 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
       totalAmount: 0,
       participants: 0,
     },
+    isPlaceBet: false,
+    placeBetAmount: 0,
     isBettingEnd: false,
   });
 
@@ -69,14 +81,6 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const { bettingRoomInfo } = Route.useLoaderData();
-  console.log(bettingRoomInfo);
-  if (!bettingRoomInfoTypeGuard(bettingRoomInfo)) {
-    throw new Error("배팅 방 정보를 가져오는데 실패했습니다.");
-  }
-  const [currentBettingRoomInfo, setCurrentBettingRoomInfo] =
-    React.useState(bettingRoomInfo);
-
   const updateBettingPool = React.useCallback(
     async (partialPool: PartialBettingPool) => {
       const newPool = {
@@ -88,11 +92,18 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
           ...bettingPool.option2,
           ...(partialPool.option2 || {}),
         },
-        isBettingEnd: partialPool.isBettingEnd ?? bettingPool.isBettingEnd,
+        isPlaceBet: partialPool.isPlaceBet || false,
+        placeBetAmount: partialPool.placeBetAmount || 0,
+        isBettingEnd: partialPool.isBettingEnd || false,
       };
-      setBettingPool(newPool);
+      try {
+        await setSessionItem(STORAGE_KEY, JSON.stringify(newPool));
+        setBettingPool(newPool);
+      } catch (error) {
+        console.error("배팅 풀을 업데이트하는데 실패했습니다.", error);
+      }
     },
-    [bettingPool],
+    [bettingPool, setSessionItem],
   );
 
   const updateBettingRoomInfo = React.useCallback(async () => {
