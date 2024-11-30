@@ -29,9 +29,9 @@ function changeNavigatorPosition(href: string) {
   let nextPosition = 0;
   if (href.includes("my-page") || href.includes("guest-login")) {
     nextPosition = 0;
-  } else if (href.includes("create-vote") || href.includes("vote")) {
+  } else if (href.includes("create-vote")) {
     nextPosition = 1;
-  } else if (href.includes("betting") || href.includes("roomId")) {
+  } else if (href.includes("betting") || href.includes("vote")) {
     nextPosition = 2.2;
   } else if (href.includes("login")) {
     nextPosition = 9.9;

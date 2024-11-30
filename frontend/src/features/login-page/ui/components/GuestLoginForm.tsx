@@ -10,7 +10,7 @@ function GuestLoginForm() {
   const { error, handleGuestLogin } = useAuthStore();
   const [isSignedUp, setIsSignedUp] = useState(false);
 
-  const { refreshUserInfo } = useUserContext();
+  const { setUserInfo } = useUserContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,14 +47,13 @@ function GuestLoginForm() {
     const result = await handleGuestLogin({ nickname: `익명의 ${nickname}` });
 
     if (result.success) {
-      refreshUserInfo().then(() =>
-        navigate({
-          to: "/my-page",
-          search: {
-            nickname: decodeURIComponent(nickname),
-          },
-        }),
-      );
+      setUserInfo({ role: "guest", nickname: result.data.nickname });
+      navigate({
+        to: "/my-page",
+        search: {
+          nickname: decodeURIComponent(nickname),
+        },
+      });
     }
   };
   return (
