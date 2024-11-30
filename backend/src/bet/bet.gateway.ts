@@ -6,7 +6,6 @@ import {
   WebSocketServer,
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
-// import * as fs from "fs";
 import { RedisManager } from "src/utils/redis.manager";
 import {
   joinRoomRequestSchema,
@@ -21,7 +20,6 @@ import {
 import { JwtUtils } from "src/utils/jwt.utils";
 import { UseFilters } from "@nestjs/common";
 import { GlobalWsExceptionFilter } from "src/utils/filters/global-ws-exception.filter";
-
 
 @UseFilters(new GlobalWsExceptionFilter())
 @WebSocketGateway({
