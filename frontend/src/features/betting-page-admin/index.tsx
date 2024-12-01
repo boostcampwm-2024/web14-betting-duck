@@ -1,22 +1,17 @@
 import { BettingStatsDisplay } from "@/shared/components/BettingStatsDisplay/BettingStatsDisplay";
-import { useNavigate, useParams } from "@tanstack/react-router";
-import { useState } from "react";
+import { useLoaderData, useNavigate } from "@tanstack/react-router";
+import { useCallback, useRef, useState } from "react";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { BettingSummary } from "@/shared/utils/bettingOdds";
 import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
 import { BettingSharedLink } from "@/shared/components/BettingSharedLink/BettingSharedLink";
 import { BettingStats } from "./model/types";
-import { useBettingContext } from "../betting-page/hook/useBettingContext";
 import { PercentageDisplay } from "@/shared/components/PercentageDisplay/PercentageDisplay";
 import { refund } from "./model/api";
-import { EndPredictButton } from "./EndPredictButton";
 import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 
 function BettingPageAdmin() {
   useLayoutShift();
-  const [title] = useState("");
-  const [option1] = useState("");
-  const [option2] = useState("");
   const [bettingSummary] = useState<BettingSummary>({
     totalParticipants: 0,
     totalAmount: 0,
@@ -49,26 +44,63 @@ function BettingPageAdmin() {
     multiplier: 0,
   });
 
-  const [timer] = useState(1);
-  const [defaultBetAmount] = useState(0);
-  const { roomId } = useParams({ from: "/betting_/$roomId/vote/admin" });
+  const { bettingRoomInfo } = useLoaderData({
+    from: "/betting_/$roomId/vote/admin",
+  });
+  const { channel } = bettingRoomInfo;
 
-  const { bettingRoomInfo } = useBettingContext();
+  // Room Information
+  const roomId = channel.id;
+  const option1 = channel.options.option1;
+  const option2 = channel.options.option2;
+  const defaultBetAmount = channel.settings.defaultBetAmount;
+  const timer = channel.settings.duration;
+
   const [status] = useState(bettingRoomInfo.channel.status || "active");
   const navigate = useNavigate();
+  const joinRoomRef = useRef(false);
+  const fetchBetRoomInfoRef = useRef(false);
 
   const socket = useSocketIO({
     url: "/api/betting",
     onConnect: () => {
-      console.log("관리 페이지 소켓 연결");
+      console.log("관리자 페이지에 소켓이 연결 되었습니다.");
+      handleSocketConnection();
     },
     onDisconnect: (reason) => {
-      console.log("베팅 페이지 소켓 연결 해제", reason);
+      console.log("관리자 페이지에 소켓 연결이 끊겼습니다.", reason);
+      joinRoomRef.current = false;
+      fetchBetRoomInfoRef.current = false;
     },
     onError: (error) => {
-      console.error("베팅 페이지 소켓 오류: ", error);
+      console.error("관리자 페이지에 소켓 에러가 발생했습니다.", error);
     },
   });
+
+  const handleSocketConnection = useCallback(() => {
+    // 방 참여가 아직 안 된 경우
+    if (!joinRoomRef.current) {
+      console.log(22);
+      joinRoomRef.current = true;
+      socket.emit("joinRoom", {
+        channel: {
+          roomId: channel.id,
+        },
+      });
+    }
+
+    // 방이 활성화 상태이고 정보를 아직 가져오지 않은 경우
+    if (
+      bettingRoomInfo.channel.status === "active" &&
+      !fetchBetRoomInfoRef.current
+    ) {
+      console.log(33);
+      fetchBetRoomInfoRef.current = true;
+      socket.emit("fetchBetRoomInfo", {
+        roomId: channel.id,
+      });
+    }
+  }, [channel.id, bettingRoomInfo.channel.status, socket]);
 
   // useEffect(() => {
   //   socket.on("timeover", () => {
@@ -222,28 +254,36 @@ function BettingPageAdmin() {
     });
   };
 
-  const handleBetOption1 = () => {
-    socket.emit("joinBet", {
-      sender: {
-        betAmount: 100,
-        selectOption: "option1",
-      },
-      channel: {
-        roomId,
-      },
-    });
-  };
+  const handleBetClick = async (
+    roomId: string,
+    option: "option1" | "option2",
+  ) => {
+    try {
+      const response = await fetch("/api/bets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sender: {
+            betAmount: 100,
+            selectOption: option, // option1 또는 option2
+          },
+          channel: {
+            roomId: roomId,
+          },
+        }),
+      });
 
-  const handleBetOption2 = () => {
-    socket.emit("joinBet", {
-      sender: {
-        betAmount: 100,
-        selectOption: "option2",
-      },
-      channel: {
-        roomId,
-      },
-    });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      console.log("Bet successfully posted:", responseData);
+    } catch (error) {
+      console.error("Failed to post bet:", error);
+    }
   };
 
   return (
@@ -256,7 +296,7 @@ function BettingPageAdmin() {
               배팅 주제
             </h1>
             <h1 className="text-primary mb-1 pt-2 text-4xl font-extrabold">
-              {title}
+              {channel.title}
             </h1>
             <p>
               {status === "active" ? (
@@ -294,7 +334,7 @@ function BettingPageAdmin() {
             <BettingStatsDisplay
               stats={stats1}
               uses={"winning"}
-              content={option1}
+              content={option1.name}
             >
               <PercentageDisplay
                 percentage={parseInt(bettingSummary.option1Percentage)}
@@ -304,7 +344,7 @@ function BettingPageAdmin() {
             <BettingStatsDisplay
               stats={stats2}
               uses={"losing"}
-              content={option2}
+              content={option2.name}
             >
               <PercentageDisplay
                 percentage={parseInt(bettingSummary.option2Percentage)}
@@ -328,13 +368,12 @@ function BettingPageAdmin() {
               >
                 승부 예측 종료
               </button>
-              <EndPredictButton />
             </div>
           </div>
         </div>
       </div>
-      <button onClick={handleBetOption1}>투표1</button>
-      <button onClick={handleBetOption2}>투표2</button>
+      <button onClick={() => handleBetClick(roomId, "option1")}>투표1</button>
+      <button onClick={() => handleBetClick(roomId, "option2")}>투표2</button>
       <BettingSharedLink />
     </div>
   );
