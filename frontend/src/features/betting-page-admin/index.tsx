@@ -114,23 +114,6 @@ function BettingPageAdmin() {
   // }, [socket, updateBettingPool, updateBettingRoomInfo]);
 
   // useEffect(() => {
-  //   if (!socket.isConnected) return;
-  //   socket.emit("joinRoom", {
-  //     channel: {
-  //       roomId: bettingRoomInfo.channel.id,
-  //     },
-  //   });
-  // }, [socket, bettingRoomInfo]);
-
-  // useEffect(() => {
-  //   if (!socket.isConnected || bettingRoomInfo.channel.status !== "active")
-  //     return;
-  //   socket.emit("fetchBetRoomInfo", {
-  //     roomId: bettingRoomInfo.channel.id,
-  //   });
-  // }, [socket, bettingRoomInfo]);
-
-  // useEffect(() => {
   //   console.log(bettingRoomInfo.channel.status);
   //   setStatus((prev) => {
   //     if (prev !== bettingRoomInfo.channel.status) {
@@ -215,25 +198,6 @@ function BettingPageAdmin() {
   //     socket.off("fetchBetRoomInfo");
   //   };
   // }, [socket, bettingRoomInfo, updateBettingPool]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await fetch(`/api/betrooms/${roomId}`);
-  //       if (response.ok) {
-  //         const { data } = await response.json();
-  //         setTitle(data.channel.title);
-  //         setOption1(data.channel.options.option1.name);
-  //         setOption2(data.channel.options.option2.name);
-  //         setTimer(data.channel.settings.duration);
-  //         setDefaultBetAmount(data.channel.settings.defaultBetAmount);
-  //       }
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   };
-  //   if (roomId) fetchData();
-  // }, [roomId]);
 
   const handleCancelClick = async () => {
     refund(roomId)
