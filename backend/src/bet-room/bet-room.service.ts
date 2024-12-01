@@ -414,14 +414,14 @@ export class BetRoomService {
     selectedOption: string,
     winningOption: string,
     winningOdds: number,
-  ) {
+  ): Promise<number> {
     const duck = Number(
       (await this.redisManager.client.hget(`user:${userId}`, "duck")) || 0,
     );
     const isWinner = selectedOption === winningOption;
     const duckChange = isWinner ? betAmount * winningOdds : 0;
     const updatedDuck = duck ? duck + duckChange : duckChange;
-    return updatedDuck;
+    return Math.round(updatedDuck);
   }
 
   private async updateBetSettleStatus(
@@ -483,7 +483,7 @@ export class BetRoomService {
       (await this.redisManager.client.hget(`user:${userId}`, "duck")) || 0,
     );
     const refundDuck = duck + betAmount;
-    return refundDuck;
+    return Math.round(refundDuck);
   }
 
   private async updateBetRefundStatus(userId: number, roomId: string) {
