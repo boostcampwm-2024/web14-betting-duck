@@ -7,12 +7,12 @@ import { getBettingRoomInfo } from "../api/getBettingRoomInfo";
 import { Route } from "@/routes/betting_.$roomId.vote";
 import { useSessionStorage } from "@/shared/hooks/useSessionStorage";
 import { STORAGE_KEY } from "../model/var";
+import { useEffectOnce } from "@/shared/hooks/useEffectOnce";
 
 interface BettingContextType {
   socket: ReturnType<typeof useSocketIO>;
   bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
   bettingPool: ContextBettingPool;
-  // bettingSummary: ReturnType<typeof getBettingSummary>;
   updateBettingPool: (partialPool: PartialBettingPool) => void;
   updateBettingRoomInfo: () => void;
 }
@@ -40,7 +40,7 @@ function bettingRoomInfoTypeGuard(
 }
 
 function BettingProvider({ children }: { children: React.ReactNode }) {
-  const { setSessionItem } = useSessionStorage();
+  const { setSessionItem, getSessionItem } = useSessionStorage();
   const { bettingRoomInfo } = Route.useLoaderData();
   if (!bettingRoomInfoTypeGuard(bettingRoomInfo)) {
     throw new Error("배팅 방 정보를 가져오는데 실패했습니다.");
@@ -74,6 +74,23 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  useEffectOnce(() => {
+    (async () => {
+      try {
+        const savedState = await getSessionItem(STORAGE_KEY);
+        if (savedState) {
+          const parsedState = JSON.parse(savedState) as ContextBettingPool;
+          setBettingPool(parsedState);
+        }
+      } catch (error) {
+        console.error(
+          "세션 스토리지에서 초기 상태를 불러오는데 실패했습니다:",
+          error,
+        );
+      }
+    })();
+  });
+
   const updateBettingPool = React.useCallback(
     async (partialPool: PartialBettingPool) => {
       setBettingPool((prevPool) => {
@@ -91,6 +108,7 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
           isBettingEnd: partialPool.isBettingEnd ?? prevPool.isBettingEnd,
         };
 
+        console.log("배팅 풀 업데이트:", newPool);
         setSessionItem(STORAGE_KEY, JSON.stringify(newPool)).catch((error) => {
           console.error("세션 스토리지 업데이트 실패:", error);
         });
