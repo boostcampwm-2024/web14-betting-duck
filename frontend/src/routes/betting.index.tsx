@@ -41,6 +41,9 @@ function RouteComponent() {
         throw new Error("방 정보를 파싱하는데 실패했습니다.");
 
       const { channel } = result.data;
+      if (channel.isAdmin) {
+        return navigate({ to: `/betting/${roomId}/vote/admin` });
+      }
       if (channel.status === "active") {
         return navigate({
           to: `/betting/${roomId}/vote/voting`,
