@@ -1,14 +1,17 @@
 import React from "react";
-import { useBettingContext } from "@/features/betting-page/hook/useBettingContext";
 import { TimerIcon } from "@/shared/icons";
 import { ProgressBar } from "@/shared/components/ProgressBar";
+import { useLoaderData } from "@tanstack/react-router";
+import { useSocketIO } from "@/shared/hooks/useSocketIo";
 
-function BettingTimer() {
+function BettingTimer({ socket }: { socket: ReturnType<typeof useSocketIO> }) {
   const [remainingTime, setRemainingTime] = React.useState(0);
   const [timerActive, setTimerActive] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
-  const { bettingRoomInfo, socket } = useBettingContext();
+  const { bettingRoomInfo } = useLoaderData({
+    from: "/betting_/$roomId/vote",
+  });
   const { endAt, startAt } = bettingRoomInfo.channel.metadata;
 
   React.useEffect(() => {

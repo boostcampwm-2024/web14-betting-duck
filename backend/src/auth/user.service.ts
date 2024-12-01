@@ -123,11 +123,11 @@ export class UserService {
 
   async signOut(req: Request, res: Response) {
     // TODO : 로그아웃 시에도 IP 검증 필요?
-    const userInfo = req["user"];
+    // const userInfo = req["user"];
 
-    if (userInfo.role === "guest") {
-      await this.redisManager.deleteUser(String(userInfo.id));
-    }
+    // if (userInfo.role === "guest") {
+    //   await this.redisManager.deleteUser(String(userInfo.id));
+    // }
 
     res.clearCookie("access_token");
   }

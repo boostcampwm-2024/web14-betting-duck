@@ -5,6 +5,7 @@ interface PlaceBettingParams {
   roomId: string;
   bettingAmount: number;
   isPlaceBet: boolean;
+  refreshBettingAmount: (roomId: string) => Promise<void>;
 }
 
 async function getUserInfo() {
@@ -28,6 +29,7 @@ async function placeBetting({
   roomId,
   bettingAmount,
   isPlaceBet,
+  refreshBettingAmount,
 }: PlaceBettingParams) {
   const { duck } = await getUserInfo();
 
@@ -46,7 +48,7 @@ async function placeBetting({
     },
     body: JSON.stringify({
       sender: {
-        betAmount: 300,
+        betAmount: bettingAmount,
         selectOption: selectedOption,
       },
       channel: {
@@ -54,10 +56,10 @@ async function placeBetting({
       },
     }),
   });
-  console.log(response);
   if (!response.ok) {
     throw new Error("배팅에 실패했습니다.");
   }
+  await refreshBettingAmount(roomId);
 }
 
 export { placeBetting };

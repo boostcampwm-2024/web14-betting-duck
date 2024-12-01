@@ -2,8 +2,7 @@ import { LogoIcon } from "@/shared/icons";
 import { Image } from "@/shared/components/Image";
 import waitingUserImage from "@assets/images/waiting-user.png";
 import { Link } from "@tanstack/react-router";
-import { Route as RootRoute } from "@/routes/__root";
-import { RootLoaderData } from "@/shared/types";
+import { useUserInfo } from "@/shared/hooks/useUserInfo";
 
 function UserInfo({ nickname }: { nickname: string }) {
   return (
@@ -22,8 +21,8 @@ function UserInfo({ nickname }: { nickname: string }) {
 }
 
 function RootHeader() {
-  const { userInfo } = RootRoute.useLoaderData() as RootLoaderData;
-  const { nickname } = userInfo;
+  const userInfo = useUserInfo();
+  const { nickname } = userInfo.data ?? { nickname: "" };
 
   return (
     <div className="header flex-start flex items-center gap-2 pl-[60px]">

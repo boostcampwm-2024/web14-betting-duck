@@ -50,6 +50,7 @@ export class BetService {
           userId,
           betAmount,
         );
+
         if (userRole === "user") {
           await this.saveUserDeductedDuck(userId, deductedDuck);
         }
@@ -145,5 +146,31 @@ export class BetService {
       return userInfo;
     }
     throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
+  }
+
+  async getBetDetail(req: Request, betRoomId: string) {
+    const userId = req["user"].id;
+    const userRole = req["user"].role;
+    const cachedBetDetails = await this.redisManager.getBettingUser(
+      String(userId),
+      betRoomId,
+    );
+
+    if (cachedBetDetails.nickname) {
+      const { betAmount, selectedOption } = cachedBetDetails;
+      return { betAmount: Number(betAmount), selectedOption };
+    }
+
+    if (userRole === "user") {
+      const betDetails = await this.betRepository.findByUserAndRoom(
+        userId,
+        betRoomId,
+      );
+      if (betDetails) {
+        const { betAmount, selectedOption } = betDetails;
+        return { betAmount, selectedOption };
+      }
+    }
+    throw new NotFoundException("해당 유저 베팅 내역을 찾을 수 없습니다.");
   }
 }

@@ -26,7 +26,7 @@ function WaitingRoom() {
 
   return (
     <WaitingRoomProvider>
-      <div className="bg-layout-main flex h-full w-full flex-col justify-between pb-16 pt-8">
+      <div className="bg-layout-main flex h-full w-full flex-col justify-around">
         <WaitingRoomHeader />
         <section className="flex flex-col gap-6 px-4">
           <ParticipantsList />

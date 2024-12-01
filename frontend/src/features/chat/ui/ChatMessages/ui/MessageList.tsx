@@ -15,8 +15,8 @@ function MessageList({ children }: MessageProps) {
   // );
   const heightObserverRef = React.useRef<ResizeObserver | null>(null);
 
-  const scrollTopObserver = React.useRef<IntersectionObserver | null>(null);
-  const scrollBottomObserver = React.useRef<IntersectionObserver | null>(null);
+  // const scrollTopObserver = React.useRef<IntersectionObserver | null>(null);
+  // const scrollBottomObserver = React.useRef<IntersectionObserver | null>(null);
 
   // const [startIndex, setStartIndex] = React.useState(0);
   // const [endIndex, setEndIndex] = React.useState(0);
@@ -32,7 +32,6 @@ function MessageList({ children }: MessageProps) {
 
   const handleScroll = React.useCallback(() => {
     if (!isScrolling) {
-      console.log("Scrolling...");
       setIsScrolling(true);
     }
 
@@ -52,94 +51,94 @@ function MessageList({ children }: MessageProps) {
   }, [children]);
 
   // IntersectionObserver 설정
-  React.useEffect(() => {
-    const scrollTopElement = document.getElementById(
-      "message-container-scroll-top",
-    );
-    if (!scrollTopElement) return;
+  // React.useEffect(() => {
+  //   const scrollTopElement = document.getElementById(
+  //     "message-container-scroll-top",
+  //   );
+  //   if (!scrollTopElement) return;
 
-    scrollTopObserver.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const messageId = entry.target.getAttribute("data-message-id");
-          // getBoundingClientRect()를 사용하여 scrollTopElement와의 실제 겹침 여부 확인
-          const scrollTopRect = scrollTopElement.getBoundingClientRect();
-          const messageRect = entry.target.getBoundingClientRect();
+  //   scrollTopObserver.current = new IntersectionObserver(
+  //     (entries) => {
+  //       entries.forEach((entry) => {
+  //         const messageId = entry.target.getAttribute("data-message-id");
+  //         // getBoundingClientRect()를 사용하여 scrollTopElement와의 실제 겹침 여부 확인
+  //         const scrollTopRect = scrollTopElement.getBoundingClientRect();
+  //         const messageRect = entry.target.getBoundingClientRect();
 
-          const isOverlapping = !(
-            scrollTopRect.right < messageRect.left ||
-            scrollTopRect.left > messageRect.right ||
-            scrollTopRect.bottom < messageRect.top ||
-            scrollTopRect.top > messageRect.bottom
-          );
+  //         const isOverlapping = !(
+  //           scrollTopRect.right < messageRect.left ||
+  //           scrollTopRect.left > messageRect.right ||
+  //           scrollTopRect.bottom < messageRect.top ||
+  //           scrollTopRect.top > messageRect.bottom
+  //         );
 
-          if (isOverlapping && messageId) {
-            console.log("Overlapping message:", messageId);
-          }
-        });
-      },
-      {
-        root: scrollTopElement,
-        // rootMargin을 늘려서 감지 영역을 확장
-        rootMargin: "20px 0px 20px 0px",
-        threshold: [0, 0.1, 0.5, 1],
-      },
-    );
+  //         if (isOverlapping && messageId) {
+  //           console.log("Overlapping message:", messageId);
+  //         }
+  //       });
+  //     },
+  //     {
+  //       root: scrollTopElement,
+  //       // rootMargin을 늘려서 감지 영역을 확장
+  //       rootMargin: "20px 0px 20px 0px",
+  //       threshold: [0, 0.1, 0.5, 1],
+  //     },
+  //   );
 
-    // sentinel 요소들 관찰 시작
-    const sentinels = document.querySelectorAll(".sentinel");
-    sentinels.forEach((sentinel) => {
-      scrollTopObserver.current?.observe(sentinel);
-    });
+  //   // sentinel 요소들 관찰 시작
+  //   const sentinels = document.querySelectorAll(".sentinel");
+  //   sentinels.forEach((sentinel) => {
+  //     scrollTopObserver.current?.observe(sentinel);
+  //   });
 
-    return () => {
-      scrollTopObserver.current?.disconnect();
-    };
-  }, [children, isScrolling]);
+  //   return () => {
+  //     scrollTopObserver.current?.disconnect();
+  //   };
+  // }, [children, isScrolling]);
 
   // 스크롤의 바닥에 있는 컴포넌트의 인덱스를 IntersectionObserver로 계산
-  React.useEffect(() => {
-    const bottomElement = document.getElementById(
-      "message-container-scroll-bottom",
-    );
-    if (!bottomElement) return;
+  // React.useEffect(() => {
+  //   const bottomElement = document.getElementById(
+  //     "message-container-scroll-bottom",
+  //   );
+  //   if (!bottomElement) return;
 
-    scrollBottomObserver.current = new IntersectionObserver(
-      (entries) => {
-        const messageId =
-          entries[entries.length - 1].target.getAttribute("data-message-id");
-        console.log("Bottom element:", messageId);
-        const scrollBottomRect = bottomElement.getBoundingClientRect();
-        const messageRect =
-          entries[entries.length - 1].target.getBoundingClientRect();
+  //   scrollBottomObserver.current = new IntersectionObserver(
+  //     (entries) => {
+  //       const messageId =
+  //         entries[entries.length - 1].target.getAttribute("data-message-id");
+  //       console.log("Bottom element:", messageId);
+  //       const scrollBottomRect = bottomElement.getBoundingClientRect();
+  //       const messageRect =
+  //         entries[entries.length - 1].target.getBoundingClientRect();
 
-        const isOverlapping = !(
-          scrollBottomRect.right < messageRect.left ||
-          scrollBottomRect.left > messageRect.right ||
-          scrollBottomRect.bottom < messageRect.top ||
-          scrollBottomRect.top > messageRect.bottom
-        );
+  //       const isOverlapping = !(
+  //         scrollBottomRect.right < messageRect.left ||
+  //         scrollBottomRect.left > messageRect.right ||
+  //         scrollBottomRect.bottom < messageRect.top ||
+  //         scrollBottomRect.top > messageRect.bottom
+  //       );
 
-        if (isOverlapping && messageId) {
-          console.log("Overlapping bottom message:", messageId);
-        }
-      },
-      {
-        root: bottomElement,
-        rootMargin: "20px 0px 20px 0px",
-        threshold: [0, 0.1, 0.5, 1],
-      },
-    );
+  //       if (isOverlapping && messageId) {
+  //         console.log("Overlapping bottom message:", messageId);
+  //       }
+  //     },
+  //     {
+  //       root: bottomElement,
+  //       rootMargin: "20px 0px 20px 0px",
+  //       threshold: [0, 0.1, 0.5, 1],
+  //     },
+  //   );
 
-    const sentinels = document.querySelectorAll(".sentinel");
-    sentinels.forEach((sentinel) => {
-      scrollBottomObserver.current?.observe(sentinel);
-    });
+  //   const sentinels = document.querySelectorAll(".sentinel");
+  //   sentinels.forEach((sentinel) => {
+  //     scrollBottomObserver.current?.observe(sentinel);
+  //   });
 
-    return () => {
-      scrollBottomObserver.current?.disconnect();
-    };
-  }, [children, isScrolling]);
+  //   return () => {
+  //     scrollBottomObserver.current?.disconnect();
+  //   };
+  // }, [children, isScrolling]);
 
   // 메시지 측정
   const measureMessage = React.useCallback(
