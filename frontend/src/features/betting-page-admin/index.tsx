@@ -1,6 +1,6 @@
 import { BettingStatsDisplay } from "@/shared/components/BettingStatsDisplay/BettingStatsDisplay";
 import { useLoaderData, useNavigate } from "@tanstack/react-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { BettingSummary } from "@/shared/utils/bettingOdds";
 import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
@@ -56,7 +56,9 @@ function BettingPageAdmin() {
   const defaultBetAmount = channel.settings.defaultBetAmount;
   const timer = channel.settings.duration;
 
-  const [status] = useState(bettingRoomInfo.channel.status || "active");
+  const [status, setStatus] = useState(
+    bettingRoomInfo.channel.status || "active",
+  );
   const navigate = useNavigate();
   const joinRoomRef = useRef(false);
   const fetchBetRoomInfoRef = useRef(false);
@@ -102,16 +104,24 @@ function BettingPageAdmin() {
     }
   }, [channel.id, bettingRoomInfo.channel.status, socket]);
 
-  // useEffect(() => {
-  //   socket.on("timeover", () => {
-  //     updateBettingRoomInfo();
-  //     updateBettingPool({ isBettingEnd: true });
-  //   });
+  const handleTimeOver = useCallback(() => {
+    setStatus((prev) => {
+      if (prev !== "timeover") {
+        return "timeover";
+      }
+      return prev;
+    });
+  }, []);
 
-  //   return () => {
-  //     socket.off("timeover");
-  //   };
-  // }, [socket, updateBettingPool, updateBettingRoomInfo]);
+  useEffect(() => {
+    if (!socket) return;
+    console.log("timeover");
+    socket.on("timeover", handleTimeOver);
+
+    return () => {
+      socket.off("timeover");
+    };
+  }, [socket]);
 
   // useEffect(() => {
   //   console.log(bettingRoomInfo.channel.status);
