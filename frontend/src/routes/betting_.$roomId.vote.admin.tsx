@@ -1,5 +1,5 @@
 import { BettingPageAdmin } from "@/features/betting-page-admin";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { loadBetRoomData } from "@/shared/lib/loader/useBetRoomLoader";
 import { queryClient } from "@/shared/lib/auth/authQuery";
 import {
