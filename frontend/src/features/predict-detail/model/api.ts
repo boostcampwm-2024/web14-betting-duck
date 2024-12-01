@@ -1,3 +1,5 @@
+import { bettinResultSchema, type BetResultResponseType } from "./schema";
+
 interface BetResultResponseSuccess {
   status: 200;
   data: {
@@ -21,7 +23,7 @@ type BetResultResponse = BetResultResponseSuccess | BetResultResponseError;
 
 export async function getBetResults(
   betRoomId: string,
-): Promise<BetResultResponse> {
+): Promise<BetResultResponseType> {
   try {
     const response = await fetch(`/api/betresults/${betRoomId}`, {
       method: "GET",
@@ -29,18 +31,17 @@ export async function getBetResults(
         "Content-Type": "application/json",
       },
     });
+    if (!response.ok) {
+      throw new Error("배팅 결과를 가져오는데 실패했습니다.");
+    }
 
     const responseData: BetResultResponse = await response.json();
-
-    if (response.ok) {
-      return responseData;
+    const parsedData = bettinResultSchema.safeParse(responseData.data);
+    if (!parsedData.success) {
+      console.error("Invalid response data:", parsedData.error);
+      throw new Error("배팅 결과를 가져오는데 실패했습니다.");
     }
-
-    if (response.status === 404) {
-      throw new Error(responseData.data.message);
-    }
-
-    throw new Error("Unexpected response status: " + response.status);
+    return parsedData.data;
   } catch (error) {
     console.error("요청 실패:", error);
     throw new Error("Failed to fetch bet results. Please try again.");
