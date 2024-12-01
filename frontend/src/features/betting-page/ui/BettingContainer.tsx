@@ -9,17 +9,25 @@ import { useBettingRoomInfo } from "../hook/useBettingRoomInfo";
 import { BettingInput } from "./BettingInput";
 import { placeBetting } from "../utils/placeBetting";
 import { responseUserInfoSchema } from "@betting-duck/shared";
+import { getBettingSummary } from "@/shared/utils/bettingOdds";
+import React from "react";
 
 function BettingContainer() {
   const contextValue = useBettingContext();
-  const {
-    socket,
-    bettingRoomInfo,
-    bettingPool,
-    updateBettingPool,
-    bettingSummary,
-  } = contextValue;
+  const { socket, bettingRoomInfo, bettingPool, updateBettingPool } =
+    contextValue;
   const { channel } = bettingRoomInfo;
+  const [bettingSummary, setBettingSummary] = React.useState(
+    getBettingSummary(bettingPool),
+  );
+
+  const updateBettingSummary = React.useCallback(() => {
+    setBettingSummary(getBettingSummary(bettingPool));
+  }, [bettingPool]);
+
+  React.useEffect(() => {
+    updateBettingSummary();
+  }, [updateBettingSummary]);
 
   useBettingConnection(socket, bettingRoomInfo);
   useBettingRoomInfo({
@@ -37,15 +45,18 @@ function BettingContainer() {
       )}
     >
       <button
-        onClick={() =>
+        onClick={() => {
           placeBetting({
             selectedOption: "option1",
-            bettingAmount: 400,
+            bettingAmount: 1,
             roomId: channel.id,
             isPlaceBet: bettingPool.isPlaceBet || false,
-            updateBettingPool,
-          })
-        }
+          });
+          updateBettingPool({
+            isPlaceBet: true,
+            placeBetAmount: 1,
+          });
+        }}
       >
         ㅇㅇ
       </button>

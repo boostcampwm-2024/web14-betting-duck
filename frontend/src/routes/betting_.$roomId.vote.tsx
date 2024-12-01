@@ -58,18 +58,18 @@ export const Route = createFileRoute("/betting_/$roomId/vote")({
 
 function RouteComponent() {
   return (
-    <div className="flex">
-      <Chat />
-      <div
-        className={cn(
-          "betting-container",
-          "border-secondary flex min-w-0.5 border-l-8",
-        )}
-      >
-        <BettingProvider>
+    <BettingProvider>
+      <div className="flex">
+        <Chat />
+        <div
+          className={cn(
+            "betting-container",
+            "border-secondary flex min-w-0.5 border-l-8",
+          )}
+        >
           <Outlet />
-        </BettingProvider>
+        </div>
       </div>
-    </div>
+    </BettingProvider>
   );
 }

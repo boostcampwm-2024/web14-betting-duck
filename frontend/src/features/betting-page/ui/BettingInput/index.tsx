@@ -98,7 +98,10 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
               bettingAmount: parseInt(value),
               roomId: bettingRoomInfo.channel.id,
               isPlaceBet: bettingPool.isPlaceBet ?? true,
-              updateBettingPool,
+            });
+            updateBettingPool({
+              isPlaceBet: true,
+              placeBetAmount: parseInt(value),
             });
           }}
           type="button"

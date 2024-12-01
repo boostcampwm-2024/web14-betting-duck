@@ -2,10 +2,7 @@ import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import React from "react";
 import { responseBetRoomInfo } from "@betting-duck/shared";
 import { z } from "zod";
-import {
-  type BettingPool,
-  getBettingSummary,
-} from "@/shared/utils/bettingOdds";
+import { type BettingPool } from "@/shared/utils/bettingOdds";
 import { getBettingRoomInfo } from "../api/getBettingRoomInfo";
 import { Route } from "@/routes/betting_.$roomId.vote";
 import { useSessionStorage } from "@/shared/hooks/useSessionStorage";
@@ -15,7 +12,7 @@ interface BettingContextType {
   socket: ReturnType<typeof useSocketIO>;
   bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
   bettingPool: ContextBettingPool;
-  bettingSummary: ReturnType<typeof getBettingSummary>;
+  // bettingSummary: ReturnType<typeof getBettingSummary>;
   updateBettingPool: (partialPool: PartialBettingPool) => void;
   updateBettingRoomInfo: () => void;
 }
@@ -64,10 +61,6 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
     isBettingEnd: false,
   });
 
-  const bettingSummary = React.useMemo(() => {
-    return getBettingSummary(bettingPool);
-  }, [bettingPool]);
-
   const socket = useSocketIO({
     url: "/api/betting",
     onConnect: () => {
@@ -83,29 +76,30 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
 
   const updateBettingPool = React.useCallback(
     async (partialPool: PartialBettingPool) => {
-      const newPool = {
-        option1: {
-          ...bettingPool.option1,
-          ...(partialPool.option1 || {}),
-        },
-        option2: {
-          ...bettingPool.option2,
-          ...(partialPool.option2 || {}),
-        },
-        isPlaceBet: partialPool.isPlaceBet || false,
-        placeBetAmount: partialPool.placeBetAmount || 0,
-        isBettingEnd: partialPool.isBettingEnd || false,
-      };
-      try {
-        await setSessionItem(STORAGE_KEY, JSON.stringify(newPool));
-        setBettingPool(newPool);
-      } catch (error) {
-        console.error("배팅 풀을 업데이트하는데 실패했습니다.", error);
-      }
-    },
-    [bettingPool, setSessionItem],
-  );
+      setBettingPool((prevPool) => {
+        const newPool = {
+          option1: {
+            ...prevPool.option1,
+            ...(partialPool.option1 || {}),
+          },
+          option2: {
+            ...prevPool.option2,
+            ...(partialPool.option2 || {}),
+          },
+          isPlaceBet: partialPool.isPlaceBet ?? prevPool.isPlaceBet,
+          placeBetAmount: partialPool.placeBetAmount ?? prevPool.placeBetAmount,
+          isBettingEnd: partialPool.isBettingEnd ?? prevPool.isBettingEnd,
+        };
 
+        setSessionItem(STORAGE_KEY, JSON.stringify(newPool)).catch((error) => {
+          console.error("세션 스토리지 업데이트 실패:", error);
+        });
+
+        return newPool;
+      });
+    },
+    [setSessionItem],
+  );
   const updateBettingRoomInfo = React.useCallback(async () => {
     const updatedBettingRoomInfo = await getBettingRoomInfo(
       bettingRoomInfo.channel.id,
@@ -127,7 +121,6 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
       socket,
       bettingRoomInfo: currentBettingRoomInfo,
       bettingPool,
-      bettingSummary,
       updateBettingPool,
       updateBettingRoomInfo,
     }),
@@ -135,7 +128,6 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
       socket,
       currentBettingRoomInfo,
       bettingPool,
-      bettingSummary,
       updateBettingPool,
       updateBettingRoomInfo,
     ],

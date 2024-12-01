@@ -51,7 +51,7 @@ function BettingPageAdmin() {
 
   const [timer] = useState(1);
   const [defaultBetAmount] = useState(0);
-  const { roomId } = useParams({ from: "/betting_/$roomId/vote" });
+  const { roomId } = useParams({ from: "/betting_/$roomId/vote/admin" });
 
   const { bettingRoomInfo } = useBettingContext();
   const [status] = useState(bettingRoomInfo.channel.status || "active");
