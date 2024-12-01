@@ -16,23 +16,29 @@ export class BetRoomRefundService implements OnModuleInit {
 
   async onModuleInit() {
     try {
-      // console.log(
-      //   `[Nest] ${process.pid}  - ${timestamp}       LOG [LoggerMiddleware] Mapped {${originalUrl}, ${method}} route +${duration}ms`,
-      // );
-      console.log("서버 시작 시 미완료 베팅방 환불 프로세스 시작");
+      console.log(
+        "LOG [BetRoomRefundService] 서버 시작 시 미완료 베팅방 환불 프로세스 시작",
+      );
       await this.processUnfinishedRoomRefunds();
     } catch (error) {
-      console.log("환불 프로세스 중 오류 발생", error);
+      console.log(
+        "LOG [BetRoomRefundService] 환불 프로세스 중 오류 발생",
+        error,
+      );
     }
   }
 
   async processUnfinishedRoomRefunds() {
     const unfinishedRooms = await this.betRoomRepository.findUnfinishedRooms();
-    console.log(`미완료 베팅방 수: ${unfinishedRooms.length}`);
+    console.log(
+      `LOG [BetRoomRefundService] 미완료 베팅방 수: ${unfinishedRooms.length}`,
+    );
     for (const room of unfinishedRooms) {
       if (room.status === "waiting") {
         await this.betRoomRepository.updateRoomStatus(room.id, "finished");
-        console.log(`Room ${room.id} 상태를 finished로 변경`);
+        console.log(
+          `LOG [BetRoomRefundService]  Room ${room.id} 상태를 finished로 변경`,
+        );
         continue;
       }
       await this.refundBetsForRoom(room);
@@ -48,14 +54,18 @@ export class BetRoomRefundService implements OnModuleInit {
       const pendingBets = await this.betRepository.findPendingBetsByRoom(
         room.id,
       );
-      console.log(`Room ${room.id}의 pending 베팅 수: ${pendingBets.length}`);
+      console.log(
+        `LOG [BetRoomRefundService] Room ${room.id}의 pending 베팅 수: ${pendingBets.length}`,
+      );
 
       const betIdsToRefund: number[] = [];
       for (const bet of pendingBets) {
         await this.userRepository.refundDuck(bet.user.id, bet.betAmount);
 
         betIdsToRefund.push(bet.id);
-        console.log(`사용자 ${bet.user.id}에게 ${bet.betAmount} duck 환불`);
+        console.log(
+          `LOG [BetRoomRefundService] 사용자 ${bet.user.id}에게 ${bet.betAmount} duck 환불`,
+        );
       }
 
       // 베팅 상태를 refunded로 변경
@@ -67,7 +77,10 @@ export class BetRoomRefundService implements OnModuleInit {
       await queryRunner.commitTransaction();
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      console.log(`Room ${room.id} 환불 처리 중 오류 발생`, error);
+      console.log(
+        `LOG [BetRoomRefundService] Room ${room.id} 환불 처리 중 오류 발생`,
+        error,
+      );
     } finally {
       await queryRunner.release();
     }

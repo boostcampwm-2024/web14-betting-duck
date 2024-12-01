@@ -50,7 +50,9 @@ export class BetService {
           userId,
           betAmount,
         );
-        await this.saveUserDeductedDuck(userId, deductedDuck);
+        if (userRole === "user") {
+          await this.saveUserDeductedDuck(userId, deductedDuck);
+        }
         await this.redisManager.increaseBettingInfo(
           channel.roomId,
           sender.selectOption,
