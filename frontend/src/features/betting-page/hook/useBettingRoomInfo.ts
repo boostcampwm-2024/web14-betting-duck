@@ -2,11 +2,12 @@ import React from "react";
 import { BettingPool } from "@/shared/utils/bettingOdds";
 import { useBettingContext } from "./useBettingContext";
 import { bettingRoomSchema } from "../model/schema";
+import { useSocketIO } from "@/shared/hooks/useSocketIo";
 
 type BettingContextType = ReturnType<typeof useBettingContext>;
 
 interface BettingSocketDependencies {
-  socket: BettingContextType["socket"];
+  socket: ReturnType<typeof useSocketIO>;
   bettingRoomInfo: BettingContextType["bettingRoomInfo"];
   bettingPool: BettingContextType["bettingPool"];
   updateBettingPool: BettingContextType["updateBettingPool"];
@@ -24,15 +25,13 @@ function useBettingRoomInfo(dependencies: BettingSocketDependencies) {
   );
 
   React.useEffect(() => {
-    if (!socket.isConnected || bettingRoomInfo.channel.status !== "active")
-      return socket.off("fetchBetRoomInfo");
-
-    socket.on("fetchBetRoomInfo", async (data) => {
+    // 1. 이벤트 핸들러를 밖으로 분리
+    const handleBetRoomInfo = async (data: unknown) => {
+      console.log("fetchBetRoomInfo", data);
       const result = bettingRoomSchema.safeParse(data);
-      console.log("betting point", result);
       if (!result.success) {
         console.error(result.error.errors);
-        throw new Error("배팅 방 정보를 가져오는데 실패했습니다.");
+        return; // throw 대신 early return 사용
       }
 
       const { channel } = result.data;
@@ -53,12 +52,25 @@ function useBettingRoomInfo(dependencies: BettingSocketDependencies) {
         prevOption1Ref.current = channel.option1;
         prevOption2Ref.current = channel.option2;
       }
-    });
-
-    return () => {
-      socket.off("fetchBetRoomInfo");
     };
-  }, [socket, updateBettingPool, bettingPool, bettingRoomInfo]);
+
+    // 2. 조건부 리스너 등록
+    if (socket.isConnected && bettingRoomInfo.channel.status === "active") {
+      socket.on("fetchBetRoomInfo", handleBetRoomInfo);
+
+      // 3. 항상 cleanup 함수 반환
+      return () => {
+        socket.off("fetchBetRoomInfo");
+      };
+    }
+
+    return () => {}; // 조건이 맞지 않을 때도 cleanup 함수 반환
+  }, [
+    socket,
+    socket.isConnected,
+    bettingRoomInfo.channel.status,
+    updateBettingPool,
+  ]);
 }
 
 export { useBettingRoomInfo };
