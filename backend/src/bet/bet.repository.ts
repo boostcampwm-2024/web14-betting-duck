@@ -1,5 +1,5 @@
 import { InternalServerErrorException, Injectable } from "@nestjs/common";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Bet } from "./bet.entity";
 
@@ -40,6 +40,38 @@ export class BetRepository {
     } catch {
       throw new InternalServerErrorException(
         "베팅을 조회하는 데 실패했습니다.",
+      );
+    }
+  }
+
+  async findPendingBetsByRoom(roomId: string): Promise<Bet[]> {
+    try {
+      return await this.betRepository.find({
+        where: {
+          betRoom: { id: roomId },
+          status: "pending",
+        },
+        relations: ["user"],
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        "pending 베팅 조회에 실패했습니다.",
+      );
+    }
+  }
+
+  async bulkUpdateBetStatus(betIds: number[]) {
+    try {
+      return await this.betRepository.update(
+        { id: In(betIds) },
+        {
+          status: "refunded",
+          settledAmount: 0,
+        },
+      );
+    } catch {
+      throw new InternalServerErrorException(
+        "베팅 상태 일괄 업데이트에 실패했습니다.",
       );
     }
   }

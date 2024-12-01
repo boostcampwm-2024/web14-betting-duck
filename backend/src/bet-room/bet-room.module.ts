@@ -10,6 +10,7 @@ import { RedisManagerModule } from "src/utils/redis-manager.module";
 import { BetResultRepository } from "src/bet-result/bet-result.repository";
 import { BetResult } from "src/bet-result/bet-result.entity";
 import { BetModule } from "src/bet/bet.module";
+import { BetRoomRefundService } from "src/bet-room/bet-room.refund.service";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { BetModule } from "src/bet/bet.module";
     BetRoomRepository,
     UserRepository,
     BetResultRepository,
+    BetRoomRefundService,
   ],
 })
 export class BetRoomModule {}

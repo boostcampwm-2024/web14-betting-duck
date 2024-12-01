@@ -1,5 +1,5 @@
 import { InternalServerErrorException, Injectable } from "@nestjs/common";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { InjectRepository } from "@nestjs/typeorm";
 import { BetRoom } from "./bet-room.entity";
 
@@ -45,6 +45,31 @@ export class BetRoomRepository {
       await this.betRoomRepository.delete(betRoomId);
     } catch {
       throw new InternalServerErrorException("베팅 방 삭제에 실패했습니다");
+    }
+  }
+
+  async findUnfinishedRooms(): Promise<BetRoom[]> {
+    try {
+      return await this.betRoomRepository.find({
+        where: {
+          status: In(["waiting", "active", "timeover"]),
+        },
+        relations: ["bets", "bets.user"],
+      });
+    } catch {
+      throw new InternalServerErrorException(
+        "미완료 베팅방 조회에 실패했습니다.",
+      );
+    }
+  }
+
+  async updateRoomStatus(roomId: string, status: BetRoom["status"]) {
+    try {
+      return await this.betRoomRepository.update(roomId, { status });
+    } catch {
+      throw new InternalServerErrorException(
+        "베팅방 상태 업데이트에 실패했습니다.",
+      );
     }
   }
 }
