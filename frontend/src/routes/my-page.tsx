@@ -38,7 +38,7 @@ export const Route = createFileRoute("/my-page")({
   },
   component: MyPage,
   errorComponent: ({ error }) => (
-    <ErrorComponent error={error} feature="마이 페이지" to="/demo-login">
+    <ErrorComponent error={error} feature="마이 페이지" to="/login">
       <ErrorMyPage />
     </ErrorComponent>
   ),

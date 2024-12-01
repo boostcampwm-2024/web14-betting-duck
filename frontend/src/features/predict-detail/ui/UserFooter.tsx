@@ -1,13 +1,17 @@
+import { useUserContext } from "@/shared/hooks/useUserContext";
 import { useNavigate } from "@tanstack/react-router";
 
 function UserFooter() {
   const navigate = useNavigate();
+  const { setUserInfo } = useUserContext();
 
   const handleMyPageClick = () => {
+    setUserInfo({ roomId: "", role: "user" });
     navigate({ to: "/my-page" });
   };
 
   const handleCreateClick = () => {
+    setUserInfo({ roomId: "", role: "user" });
     navigate({ to: "/create-vote" });
   };
 

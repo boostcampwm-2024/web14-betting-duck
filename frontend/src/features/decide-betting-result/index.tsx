@@ -4,6 +4,7 @@ import { calculateWinnings, calculateOdds } from "@/shared/utils/bettingOdds";
 import { endBetRoom } from "./api/endBetRoom";
 import { getBettingRoomInfo } from "../betting-page/api/getBettingRoomInfo";
 import { useNavigate } from "@tanstack/react-router";
+import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 
 interface BettingPool {
   totalAmount: number;
@@ -87,6 +88,7 @@ function BettingResult({
 }
 
 function DecideBettingResult() {
+  useLayoutShift();
   const { bettingPool, bettingRoomInfo } = useBettingContext();
   const { channel } = bettingRoomInfo;
   const navigate = useNavigate();
