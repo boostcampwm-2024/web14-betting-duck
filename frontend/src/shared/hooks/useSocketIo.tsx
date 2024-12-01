@@ -35,65 +35,84 @@ export function useSocketIO(options: SocketOptions) {
     optionsRef.current = options;
   }, [options]);
 
-  const initializeSocket = React.useCallback((accessToken: string) => {
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = undefined;
-    }
-
-    const socket = io(SOCKET_URL + optionsRef.current.url, {
-      withCredentials: true,
-      reconnectionDelayMax: 10000,
-      reconnectionAttempts: 10,
-      reconnection: true,
-      transports: ["websocket"],
-      auth: {
-        token: accessToken,
-      },
-    });
-
-    socketRef.current = socket;
-
-    socket.on("connect", () => {
-      setSocketState((prev) => ({
-        ...prev,
-        isConnected: true,
+  const cleanupSocket = React.useCallback((socket: Socket) => {
+    try {
+      socket.offAny(); // 모든 리스너 제거
+      socket.disconnect(); // 연결 종료
+      setSocketState({
+        isConnected: false,
         isReconnecting: false,
         reconnectAttempt: 0,
         error: null,
-      }));
-      optionsRef.current.onConnect?.();
-    });
-
-    socket.on("disconnect", (reason) => {
-      setSocketState((prev) => ({
-        ...prev,
-        isConnected: false,
-        error: null,
-      }));
-      optionsRef.current.onDisconnect?.(reason);
-    });
-
-    socket.on("reconnect_attempt", (attempt) => {
-      setSocketState((prev) => ({
-        ...prev,
-        isReconnecting: true,
-        reconnectAttempt: attempt,
-        error: null,
-      }));
-      optionsRef.current.onReconnectAttempt?.(attempt);
-    });
-
-    socket.on("error", (error: Error) => {
-      setSocketState((prev) => ({
-        ...prev,
-        error,
-      }));
-      optionsRef.current.onError?.(error);
-    });
-
-    return socket;
+      });
+    } catch (error) {
+      console.error("Socket cleanup failed:", error);
+    }
   }, []);
+
+  const initializeSocket = React.useCallback(
+    (accessToken: string) => {
+      if (socketRef.current) {
+        cleanupSocket(socketRef.current);
+        socketRef.current = undefined;
+      }
+
+      const socket = io(SOCKET_URL + optionsRef.current.url, {
+        withCredentials: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 5,
+        autoConnect: false,
+        transports: ["websocket"],
+        auth: {
+          token: accessToken,
+        },
+      });
+
+      socket.on("connect", () => {
+        setSocketState((prev) => ({
+          ...prev,
+          isConnected: true,
+          isReconnecting: false,
+          reconnectAttempt: 0,
+          error: null,
+        }));
+        optionsRef.current.onConnect?.();
+      });
+
+      socket.on("disconnect", (reason) => {
+        setSocketState((prev) => ({
+          ...prev,
+          isConnected: false,
+          error: null,
+        }));
+        optionsRef.current.onDisconnect?.(reason);
+      });
+
+      socket.on("reconnect_attempt", (attempt) => {
+        setSocketState((prev) => ({
+          ...prev,
+          isReconnecting: true,
+          reconnectAttempt: attempt,
+          error: null,
+        }));
+        optionsRef.current.onReconnectAttempt?.(attempt);
+      });
+
+      socket.on("connect_error", (error) => {
+        setSocketState((prev) => ({
+          ...prev,
+          error: error instanceof Error ? error : new Error("Connection error"),
+        }));
+        optionsRef.current.onError?.(error);
+      });
+
+      socket.connect();
+      socketRef.current = socket;
+      return socket;
+    },
+    [cleanupSocket],
+  );
 
   React.useEffect(() => {
     let isSubscribed = true;
@@ -105,14 +124,21 @@ export function useSocketIO(options: SocketOptions) {
         const { accessToken } = json.data;
 
         if (!accessToken) {
-          throw new Error("Access token 이 없어 소켓을 연결할 수 없습니다!");
+          throw new Error("Access token이 없어 소켓을 연결할 수 없습니다!");
         }
 
         if (isSubscribed) {
           initializeSocket(accessToken);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Socket connection failed:", error);
+        setSocketState((prev) => ({
+          ...prev,
+          error:
+            error instanceof Error
+              ? error
+              : new Error("Unknown error occurred"),
+        }));
       }
     };
 
@@ -121,11 +147,11 @@ export function useSocketIO(options: SocketOptions) {
     return () => {
       isSubscribed = false;
       if (socketRef.current) {
-        socketRef.current.disconnect();
+        cleanupSocket(socketRef.current);
         socketRef.current = undefined;
       }
     };
-  }, [initializeSocket]);
+  }, [initializeSocket, cleanupSocket]);
 
   const on = React.useCallback(
     (event: string, callback: (data: unknown) => void) => {
@@ -141,17 +167,13 @@ export function useSocketIO(options: SocketOptions) {
     socketRef.current?.off(eventName);
   }, []);
 
-  const once = React.useCallback(
-    (event: string, callback: (data: unknown) => void) => {
-      socketRef.current?.once(event, callback);
-    },
-    [],
-  );
-
   const emit = React.useCallback((event: string, data: unknown) => {
-    if (socketRef.current) {
+    if (socketRef.current?.connected) {
       socketRef.current.emit(event, data);
+      return true;
     }
+
+    return false;
   }, []);
 
   const reconnect = React.useCallback(() => {
@@ -162,17 +184,16 @@ export function useSocketIO(options: SocketOptions) {
 
   const disconnect = React.useCallback(() => {
     if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = undefined; // 소켓 인스턴스 제거
+      cleanupSocket(socketRef.current);
+      socketRef.current = undefined;
     }
-  }, []);
+  }, [cleanupSocket]);
 
   return {
     ...socketState,
     emit,
     on,
     off,
-    once,
     reconnect,
     disconnect,
     socket: socketRef.current,
