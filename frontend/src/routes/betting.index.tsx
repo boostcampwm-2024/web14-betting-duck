@@ -42,11 +42,9 @@ function RouteComponent() {
 
       const { channel } = result.data;
       if (channel.isAdmin) {
-        return navigate({
-          to: `/betting/${roomId}/vote/admin`,
-        });
+        return navigate({ to: `/betting/${roomId}/vote/admin` });
       }
-
+      
       if (channel.status === "active") {
         return navigate({
           to: `/betting/${roomId}/vote/voting`,

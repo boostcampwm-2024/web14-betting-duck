@@ -1,17 +1,18 @@
 import { BettingPageAdmin } from "@/features/betting-page-admin";
-import { getBettingRoomInfo } from "@/features/betting-page/api/getBettingRoomInfo";
-import { STORAGE_KEY } from "@/features/betting-page/model/var";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { loadBetRoomData } from "@/shared/lib/loader/useBetRoomLoader";
+import { queryClient } from "@/shared/lib/auth/authQuery";
 import {
   responseBetRoomInfo,
   responseUserInfoSchema,
 } from "@betting-duck/shared";
 import { z } from "zod";
-import { queryClient } from "@/shared/lib/auth/authQuery";
+import { getBettingRoomInfo } from "@/features/betting-page/api/getBettingRoomInfo";
+import { STORAGE_KEY } from "@/features/betting-page/model/var";
 
 type BetRoomResponse = z.infer<typeof responseBetRoomInfo>;
 type UserInfo = z.infer<typeof responseUserInfoSchema>;
+
 interface RouteLoaderData {
   roomId: string;
   bettingRoomInfo: BetRoomResponse;

@@ -115,6 +115,8 @@ export class BetGateway implements OnGatewayConnection, OnGatewayDisconnect {
       roomId,
       owner: owner,
       role: userRole,
+      betAmount: 0,
+      selectedOption: "none",
     });
 
     const users = await this.redisManager.getRoomUserNicknames(roomId);
