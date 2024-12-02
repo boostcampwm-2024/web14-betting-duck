@@ -2,8 +2,8 @@ import React from "react";
 import { useChat } from "../../hook/useChat";
 import { MessageList } from "./ui/MessageList";
 import { messageResponseSchema } from "@betting-duck/shared";
-import { useUserContext } from "@/shared/hooks/useUserContext";
 import Message from "./ui/Message";
+import { useLoaderData, useParams } from "@tanstack/react-router";
 
 interface Message {
   message: string;
@@ -39,7 +39,12 @@ function ChatMessages() {
   const { socket } = useChat();
   const [messages, setMessages] = React.useState<Message[]>([]);
   const isJoinedRef = React.useRef(false);
-  const { userInfo } = useUserContext();
+  const { userInfo } = useLoaderData({
+    from: "/betting_/$roomId/vote",
+  });
+  const { roomId } = useParams({
+    from: "/betting_/$roomId/vote",
+  });
 
   React.useEffect(() => {
     socket.on("message", (data) => {
@@ -50,6 +55,7 @@ function ChatMessages() {
         console.error(message.error.errors);
         return;
       }
+      console.log("message", message.data);
       const newMessage = {
         message: message.data.message,
         sender: message.data.sender,
@@ -71,14 +77,14 @@ function ChatMessages() {
           nickname: userInfo.nickname,
         },
         channel: {
-          roomId: userInfo.roomId ?? "123",
+          roomId: roomId,
         },
         message: `${userInfo.nickname}님이 입장하셨습니다.`,
       });
 
       isJoinedRef.current = true;
     }
-  }, [socket, userInfo]);
+  }, [socket, userInfo, roomId]);
 
   const renderMessage = React.useCallback(Message, []);
 

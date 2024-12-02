@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { BettingPage } from "@/features/betting-page";
 import { loadBetRoomData } from "@/shared/lib/loader/useBetRoomLoader";
 import { queryClient } from "@/shared/lib/auth/authQuery";
@@ -21,6 +21,18 @@ interface RouteLoaderData {
 
 export const Route = createFileRoute("/betting_/$roomId/vote/voting")({
   component: BettingPage,
+  beforeLoad: async ({ params }) => {
+    const { roomId } = params;
+
+    const bettingRoomInfo = await getBettingRoomInfo(roomId);
+
+    if (bettingRoomInfo?.channel.isAdmin) {
+      throw redirect({
+        to: "/betting/$roomId/vote/admin",
+        params: { roomId },
+      });
+    }
+  },
   loader: async ({ params, abortController }): Promise<RouteLoaderData> => {
     const { roomId } = params;
 

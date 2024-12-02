@@ -1,6 +1,6 @@
 import { UserInfo } from "@/app/provider/UserProvider";
 import { useChat } from "@/features/chat/hook/useChat";
-import { useUserContext } from "@/shared/hooks/useUserContext";
+import { useLoaderData, useParams } from "@tanstack/react-router";
 import React from "react";
 
 function generateRandomNickname(userInfo: UserInfo) {
@@ -53,7 +53,12 @@ function InputBar() {
   const [isComposing, setComposing] = React.useState(false);
   const [text, setText] = React.useState("");
   const { socket } = useChat();
-  const { userInfo } = useUserContext();
+  const { roomId } = useParams({
+    from: "/betting_/$roomId/vote",
+  });
+  const { userInfo } = useLoaderData({
+    from: "/betting_/$roomId/vote",
+  });
 
   function handleInput(e: React.FormEvent<HTMLPreElement>) {
     if (!isComposing) {
@@ -67,13 +72,12 @@ function InputBar() {
       e.preventDefault();
 
       if (!isComposing && text.trim().length > 0 && socket.isConnected) {
-        console.log(userInfo.roomId);
         socket.emit("sendMessage", {
           sender: {
             nickname: generateRandomNickname(userInfo),
           },
           channel: {
-            roomId: userInfo.roomId,
+            roomId: roomId,
           },
           message: text.trim(),
         });

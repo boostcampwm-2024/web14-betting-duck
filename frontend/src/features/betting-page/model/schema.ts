@@ -15,4 +15,13 @@ const bettingRoomSchema = z.object({
   }),
 });
 
-export { bettingRoomSchema };
+const userBettingStatusSchema = z.object({
+  betAmount: z.coerce.number().int().min(0),
+  selectedOption: z.union([
+    z.literal("option1"),
+    z.literal("option2"),
+    z.literal("none"),
+  ]),
+});
+
+export { bettingRoomSchema, userBettingStatusSchema };

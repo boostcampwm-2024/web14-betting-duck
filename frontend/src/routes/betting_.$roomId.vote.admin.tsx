@@ -1,5 +1,5 @@
 import { BettingPageAdmin } from "@/features/betting-page-admin";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { loadBetRoomData } from "@/shared/lib/loader/useBetRoomLoader";
 import { queryClient } from "@/shared/lib/auth/authQuery";
 import {
@@ -21,6 +21,19 @@ interface RouteLoaderData {
 
 export const Route = createFileRoute("/betting_/$roomId/vote/admin")({
   component: BettingPageAdmin,
+  beforeLoad: async ({ params }) => {
+    const { roomId } = params;
+    const roomInfo = await getBettingRoomInfo(roomId);
+    if (!roomInfo) {
+      throw new Error("방 정보를 불러오는데 실패했습니다.");
+    }
+
+    if (!roomInfo.channel.isAdmin) {
+      throw redirect({
+        to: `/betting/${roomId}/vote/voting`,
+      });
+    }
+  },
   loader: async ({ params, abortController }): Promise<RouteLoaderData> => {
     const { roomId } = params;
 

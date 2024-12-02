@@ -82,17 +82,23 @@ export class RedisManager {
     owner,
     roomId,
     role,
+    betAmount,
+    selectedOption,
   }: {
     userId: string;
     nickname: string;
     owner: number;
     roomId: string;
     role: string;
+    betAmount: number;
+    selectedOption: string;
   }) {
     await this.client.hset(`room:${roomId}:user:${userId}`, {
       nickname,
       owner,
       role,
+      betAmount,
+      selectedOption,
     });
   }
 

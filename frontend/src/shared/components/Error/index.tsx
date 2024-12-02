@@ -27,7 +27,7 @@ function ErrorComponent({
         </div>
         <div className="text-layout-main pt-16">
           <p className="text-lg font-normal">
-            {feature}을 이용하기 위해서는 로그인이 필요합니다!
+            {feature}를 이용하기 위해서는 로그인이 필요합니다!
           </p>
           <p>
             회원가입이 귀찮으시다면{" "}

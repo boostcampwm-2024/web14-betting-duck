@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useBettingContext } from "../../hook/useBettingContext";
 import { Route } from "@/routes/betting_.$roomId.vote";
 import { placeBetting } from "../../utils/placeBetting";
+import { useLoaderData } from "@tanstack/react-router";
 
 const numberSchema = z.coerce.number().int().positive();
 
@@ -27,10 +28,18 @@ function getVisibleText(
   return `opacity-${isText == true || isLongText == true || isOverDuckCoin == true ? 1 : 0} ${isText == true || isLongText == true || isOverDuckCoin == true ? "visible" : "invisible"}`;
 }
 
-function BettingInput({ uses }: { uses: "winning" | "losing" }) {
+function BettingInput({
+  uses,
+  refreshBettingAmount,
+}: {
+  uses: "winning" | "losing";
+  refreshBettingAmount: (roomId: string) => Promise<void>;
+}) {
   const { duckCoin } = Route.useLoaderData();
-  const { bettingRoomInfo, updateBettingPool, bettingPool } =
-    useBettingContext();
+  const { bettingRoomInfo } = useLoaderData({
+    from: "/betting_/$roomId/vote/voting",
+  });
+  const { bettingPool } = useBettingContext();
   const [value, setValue] = React.useState("");
   const [isText, setIsText] = React.useState(false);
   const [isLongText, setIsLongText] = React.useState(false);
@@ -93,15 +102,15 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
         <button
           disabled={isText || bettingPool.isPlaceBet}
           onClick={() => {
+            const selectedOption = uses === "winning" ? "option1" : "option2";
+            const bettingAmount = parseInt(value);
+
             placeBetting({
-              selectedOption: uses === "winning" ? "option1" : "option2",
-              bettingAmount: parseInt(value),
+              selectedOption,
+              bettingAmount: bettingAmount,
               roomId: bettingRoomInfo.channel.id,
-              isPlaceBet: bettingPool.isPlaceBet ?? true,
-            });
-            updateBettingPool({
-              isPlaceBet: true,
-              placeBetAmount: parseInt(value),
+              isPlaceBet: bettingPool.isPlaceBet || false,
+              refreshBettingAmount,
             });
           }}
           type="button"
