@@ -27,7 +27,6 @@ function MyPage() {
         </div>
         <div className="min-h-[17cqh] w-full px-5">
           <Pond ducks={ducks} />
-          {/* <Image src={pondImage} alt="Pond" /> */}
         </div>
         <div className="flex gap-8">
           <button

@@ -28,7 +28,7 @@ function FallingDuck() {
       ref={ref as React.RefObject<THREE.Group>}
       castShadow
       receiveShadow
-      src="/src/assets/betting-duck.glb"
+      src="/src/assets/models/betting-duck.glb"
     />
   );
 }

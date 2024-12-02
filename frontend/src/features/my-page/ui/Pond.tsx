@@ -70,7 +70,9 @@ function Pond({ ducks }: { ducks: React.ElementType[] }) {
           <Ground color="#80aae9" />
         </Physics>
       </Suspense>
-      <Environment files={"/src/assets/industrial_sunset_puresky_4k.hdr"} />
+      <Environment
+        files={"/src/assets/models/industrial_sunset_puresky_4k.hdr"}
+      />
       <OrbitControls
         minPolarAngle={0}
         maxPolarAngle={Math.PI / 1.9}
