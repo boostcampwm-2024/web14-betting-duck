@@ -60,14 +60,12 @@ export class UserService {
     if (user && (await bcrypt.compare(password, user.password))) {
       const nickname = user.nickname;
 
-      if (!(await this.redisManager.findUser(String(user.id)))) {
-        await this.redisManager.setUser({
-          userId: String(user.id),
-          nickname: nickname,
-          role: role,
-          duck: user.duck,
-        });
-      }
+      await this.redisManager.setUser({
+        userId: String(user.id),
+        nickname: nickname,
+        role: role,
+        duck: user.duck,
+      });
 
       const payload = {
         id: user.id,
@@ -183,6 +181,26 @@ export class UserService {
     return { exists: false };
   }
 
+  async purchaseDuck(req: Request) {
+    const userInfo = req["user"];
+    const { duck } = await this.redisManager.getUser(userInfo.id);
+
+    const newDuck = parseInt(duck) - 30;
+    await this.redisManager.setUser({
+      userId: String(userInfo.id),
+      nickname: userInfo.nickname,
+      role: userInfo.role,
+      duck: newDuck,
+    });
+
+    if (userInfo.role === "user") {
+      // TODO : 오리 개수 업데이트
+      await this.dbManager.setUser(userInfo.id, { duck: newDuck });
+    }
+
+    return { duck: newDuck };
+  }
+
   // 구현 중
   async upgradeGuest(
     req: Request,
@@ -207,12 +225,6 @@ export class UserService {
     // TODO : 로그인까지 한번에 해결하는 것이 좋을까?
   }
 
-  async redisTest() {
-    await this.redisManager._xadd("test", "*", "field1", "value1");
-    // await this.redisManager.addStreamEntry();
-    return { status: "OK" };
-  }
-
   private async hashPassword(password: string): Promise<string> {
     const salt = await bcrypt.genSalt();
     return bcrypt.hash(password, salt);
@@ -224,7 +236,7 @@ export class UserService {
     return "guest-" + clientIp;
   }
 
-  // 테스트용 메서드
+  // duck coin 업데이트 테스트용 메서드
   async updateDuck(req: Request, duck: number) {
     const userId = req["user"].id;
     const role = req["user"].role;
@@ -240,6 +252,13 @@ export class UserService {
     await this.redisManager.setUser(newUserInfo);
 
     return newUserInfo;
+  }
+
+  // RedisManager 테스트용 메서드
+  async redisTest() {
+    await this.redisManager._xadd("test", "*", "field1", "value1");
+    // await this.redisManager.addStreamEntry();
+    return { status: "OK" };
   }
 
   // DBManager 테스트용 메서드

@@ -12,6 +12,7 @@ import {
 import { Request, Response } from "express";
 import { ApiBody, ApiOperation } from "@nestjs/swagger";
 import { JwtGuestAuthGuard } from "src/utils/guards/http-guest-authenticated.guard";
+import { JwtUserAuthGuard } from "src/utils/guards/http-user-authenticated.guard";
 import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
@@ -151,6 +152,20 @@ export class UserController {
       status: status,
       data: {
         message: result.exists ? "OK" : "NON_AUTHORITATIVE_INFORMATION",
+        ...result,
+      },
+    });
+  }
+
+  @ApiOperation({ summary: "오리 구매" })
+  @UseGuards(JwtUserAuthGuard)
+  @Get("/purchaseduck")
+  async purchaseDuck(@Req() req: Request, @Res() res: Response) {
+    const result = await this.userService.purchaseDuck(req);
+    return res.status(HttpStatus.OK).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
         ...result,
       },
     });

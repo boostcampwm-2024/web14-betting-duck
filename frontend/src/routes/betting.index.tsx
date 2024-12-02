@@ -44,7 +44,7 @@ function RouteComponent() {
       if (channel.isAdmin) {
         return navigate({ to: `/betting/${roomId}/vote/admin` });
       }
-      
+
       if (channel.status === "active") {
         return navigate({
           to: `/betting/${roomId}/vote/voting`,
