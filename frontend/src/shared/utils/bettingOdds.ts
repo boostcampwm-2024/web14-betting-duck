@@ -66,11 +66,11 @@ function getBettingSummary(pool: BettingPool) {
     totalAmount,
     option1Percentage: (totalAmount === 0
       ? 0
-      : (pool.option1.totalAmount / totalAmount) * 100
+      : Math.round((pool.option1.totalAmount / totalAmount) * 100)
     ).toFixed(1),
     option2Percentage: (totalAmount === 0
       ? 0
-      : (pool.option2.totalAmount / totalAmount) * 100
+      : Math.round((pool.option2.totalAmount / totalAmount) * 100)
     ).toFixed(1),
     option1: {
       participants: pool.option1.participants,
