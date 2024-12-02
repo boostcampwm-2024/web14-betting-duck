@@ -1,31 +1,56 @@
 import { cn } from "@/shared/misc";
-import { BettingHeader } from "./BettingHeader";
-import { BettingStatsDisplay } from "./BettingStatsDisplay";
-import { PercentageDisplay } from "./PercentageDisplay";
 import { useBettingContext } from "../hook/useBettingContext";
-import { BettingFooter } from "./BettingFooter";
-import { useBettingConnection } from "../hook/useBettingRoomConnection";
-import { useBettingRoomInfo } from "../hook/useBettingRoomInfo";
+import { placeBetting } from "../utils/placeBetting";
+import { useSocketIO } from "@/shared/hooks/useSocketIo";
+import { useLoaderData } from "@tanstack/react-router";
+import { TotalBettingDisplay } from "./TotalBettingDisplay";
+import { BettingHeader } from "./BettingHeader";
 import { BettingInput } from "./BettingInput";
+import { BettingFooter } from "./BettingFooter";
+import { responseUserInfoSchema } from "@betting-duck/shared";
+import { endBetRoom } from "@/features/decide-betting-result/api/endBetRoom";
+import React from "react";
+import { userBettingStatusSchema } from "../model/schema";
+import { z } from "zod";
 
-function BettingContainer() {
+function BettingContainer({
+  socket,
+}: {
+  socket: ReturnType<typeof useSocketIO>;
+}) {
   const contextValue = useBettingContext();
-  const {
-    socket,
-    bettingRoomInfo,
-    bettingPool,
-    updateBettingPool,
-    bettingSummary,
-  } = contextValue;
-  const { channel } = bettingRoomInfo;
-
-  useBettingConnection(socket, bettingRoomInfo);
-  useBettingRoomInfo({
-    socket,
-    bettingRoomInfo,
-    bettingPool,
-    updateBettingPool,
+  const { bettingPool } = contextValue;
+  const { bettingRoomInfo } = useLoaderData({
+    from: "/betting_/$roomId/vote/voting",
   });
+  const { channel } = bettingRoomInfo;
+  const [userBettingStatus, setUserBettingStatus] = React.useState<
+    z.infer<typeof userBettingStatusSchema>
+  >({
+    betAmount: 0,
+    selectedOption: "none",
+  });
+
+  const refreshBettingAmount = React.useCallback(async (roomId: string) => {
+    try {
+      const response = await fetch(`/api/bets/${roomId}`);
+      if (!response.ok) {
+        throw new Error("베팅 데이터를 불러오는데 실패했습니다.");
+      }
+
+      const { data } = await response.json();
+      const parsedData = userBettingStatusSchema.safeParse(data);
+      if (!parsedData.success) {
+        console.error(parsedData.error);
+        throw new Error("베팅 데이터를 불러오는데 실패했습니다.");
+      }
+
+      console.log("베팅 데이터:", data);
+      setUserBettingStatus(parsedData.data);
+    } catch (error) {
+      console.error("베팅 데이터 새로고침 실패:", error);
+    }
+  }, []);
 
   return (
     <div
@@ -35,54 +60,75 @@ function BettingContainer() {
       )}
     >
       <button
-        onClick={() =>
-          socket.emit("joinBet", {
-            sender: {
-              betAmount: 300,
-              selectOption: "option1", // enum option1, option2
-            },
-            channel: {
-              roomId: bettingRoomInfo.channel.id,
-            },
-          })
-        }
+        onClick={() => {
+          placeBetting({
+            selectedOption: "option1",
+            bettingAmount: 1,
+            roomId: channel.id,
+            isPlaceBet: bettingPool.isPlaceBet || false,
+            refreshBettingAmount,
+          });
+        }}
       >
-        ㅇㅇ
+        돈배팅
       </button>
-      <div className="flex h-full flex-col">
-        <BettingHeader content={channel.title} contextValue={contextValue} />
-        <div className="flex w-full">
-          <div className="flex justify-between">
-            <BettingStatsDisplay
-              stats={bettingSummary.option1}
-              content={channel.options.option1.name}
-              uses="winning"
-            >
-              <PercentageDisplay
-                index={0}
-                percentage={parseInt(bettingSummary.option1Percentage)}
-              />
-            </BettingStatsDisplay>
-          </div>
-          <div className="flex flex-col gap-6">
-            <BettingStatsDisplay
-              stats={bettingSummary.option2}
-              content={channel.options.option2.name}
-              uses="losing"
-            >
-              <PercentageDisplay
-                index={1}
-                percentage={parseInt(bettingSummary.option2Percentage)}
-              />
-            </BettingStatsDisplay>
-          </div>
-          {/* <BettingForm /> */}
+      <button
+        onClick={async () => {
+          const response = await fetch("/api/users/userInfo");
+          if (!response.ok) {
+            throw new Error("사용자 정보를 불러오는데 실패했습니다.");
+          }
+
+          const { data } = await response.json();
+          console.log(data);
+          const result = responseUserInfoSchema.safeParse(data);
+          if (!result.success) {
+            console.error(result.error);
+            throw new Error("사용자 정보를 불러오는데 실패했습니다.");
+          }
+
+          return data;
+        }}
+      >
+        읽기
+      </button>
+      <button
+        onClick={async () => {
+          try {
+            const roomId = channel.id;
+            const message = await endBetRoom(roomId, "option1");
+            console.log(message);
+          } catch (error) {
+            if (error instanceof Error) {
+              console.error("API 요청 실패:", error.message);
+            } else {
+              console.error("알 수 없는 오류 발생");
+            }
+          }
+        }}
+      >
+        끝내기
+      </button>
+      <div className="flex h-full flex-col justify-around">
+        <BettingHeader
+          socket={socket}
+          content={channel.title}
+          contextValue={contextValue}
+        />
+        <TotalBettingDisplay socket={socket} channel={channel} />
+        <div className="flex justify-around">
+          <BettingInput
+            key={"winning-betting-input"}
+            uses={"winning"}
+            refreshBettingAmount={refreshBettingAmount}
+          />
+          <BettingInput
+            key={"losing-betting-input"}
+            uses={"losing"}
+            refreshBettingAmount={refreshBettingAmount}
+          />
         </div>
-        <div className="flex">
-          <BettingInput uses={"winning"} />
-          <BettingInput uses={"losing"} />
-        </div>
-        <BettingFooter />
+        <BettingFooter userBettingStatus={userBettingStatus} />
       </div>
     </div>
   );

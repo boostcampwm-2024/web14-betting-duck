@@ -46,7 +46,8 @@ function MemberFooter() {
   }
 
   function participateVote() {
-    navigate({ to: "../vote" });
+    userContext.setUserInfo({ roomId });
+    navigate({ to: "/betting/$roomId/vote/voting", params: { roomId } });
   }
 
   return (

@@ -15,7 +15,7 @@ import { Bet } from "src/bet/bet.entity";
     TypeOrmModule.forFeature([User]),
     JwtModule.register({
       secret: process.env.JWT_SECRET || "secret",
-      signOptions: { expiresIn: "1h" },
+      signOptions: { expiresIn: "24h" }, //임시 개발 환경을 위한 설정
     }),
     TypeOrmModule.forFeature([User, Bet]),
     RedisManagerModule,
@@ -23,5 +23,6 @@ import { Bet } from "src/bet/bet.entity";
   ],
   controllers: [UserController],
   providers: [UserService, UserRepository],
+  exports: [UserRepository],
 })
 export class UserModule {}

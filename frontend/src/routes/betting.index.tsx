@@ -20,22 +20,18 @@ export const Route = createFileRoute("/betting/")({
       <WaitingError />
     </ErrorComponent>
   ),
-  onLeave: () => {
-    const rootLayout = document.getElementById("root-layout");
-    if (rootLayout) rootLayout.classList.remove("betting-page");
-  },
 });
 
 function RouteComponent() {
-  const rootLayout = document.getElementById("root-layout");
-  if (rootLayout) rootLayout.classList.add("betting-page");
-
   const navigate = useNavigate();
   const { userInfo } = useUserContext();
   const { roomId } = userInfo;
-  if (!roomId) navigate({ to: "/require-roomId" });
 
   React.useEffect(() => {
+    if (!roomId) {
+      navigate({ to: "/require-roomId" });
+      return;
+    }
     (async () => {
       const response = await fetch(`/api/betrooms/${roomId}`);
       if (!response.ok) throw new Error("방 정보를 가져오는데 실패했습니다.");
@@ -45,19 +41,26 @@ function RouteComponent() {
         throw new Error("방 정보를 파싱하는데 실패했습니다.");
 
       const { channel } = result.data;
+      if (channel.isAdmin) {
+        return navigate({ to: `/betting/${roomId}/vote/admin` });
+      }
+
       if (channel.status === "active") {
         return navigate({
-          to: `/betting/${roomId}/vote`,
+          to: `/betting/${roomId}/vote/voting`,
+        });
+      }
+      if (channel.status === "waiting") {
+        return navigate({
+          to: `/betting/${roomId}/waiting`,
         });
       }
 
-      return navigate({
-        to: `/betting/${roomId}/waiting`,
-      });
+      navigate({ to: "/require-roomId" });
     })();
   }, [roomId, navigate]);
 
-  return <WaitingError />;
+  return <div className="bg-layout-main h-full w-full" />;
 }
 
 function ErrorComponent({

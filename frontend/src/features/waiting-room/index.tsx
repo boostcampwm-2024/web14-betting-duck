@@ -11,7 +11,7 @@ import { useEffectOnce } from "@/shared/hooks/useEffectOnce";
 
 function WaitingRoom() {
   const { userInfo, setUserInfo } = useUserContext();
-  const { roomId } = useLoaderData({
+  const { roomId, bettingRoomInfo } = useLoaderData({
     from: "/betting_/$roomId/waiting",
   });
   const firstRendering = React.useRef(true);
@@ -26,14 +26,18 @@ function WaitingRoom() {
 
   return (
     <WaitingRoomProvider>
-      <div className="bg-layout-main flex h-full w-full flex-col justify-between pb-16 pt-8">
+      <div className="bg-layout-main flex h-full w-full flex-col justify-around">
         <WaitingRoomHeader />
         <section className="flex flex-col gap-6 px-4">
           <ParticipantsList />
           <ShareLinkCard />
         </section>
         <div className="flex flex-row gap-4 px-4 text-lg font-extrabold">
-          {userInfo.role === "admin" ? <AdminFooter /> : <MemberFooter />}
+          {userInfo.role === "admin" ? (
+            <AdminFooter bettingRoomInfo={bettingRoomInfo} />
+          ) : (
+            <MemberFooter />
+          )}
         </div>
       </div>
     </WaitingRoomProvider>

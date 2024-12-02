@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { RedisService } from "@liaoliaots/nestjs-redis";
 import { Redis } from "ioredis";
 import { randomUUID } from "crypto";
@@ -82,17 +82,23 @@ export class RedisManager {
     owner,
     roomId,
     role,
+    betAmount,
+    selectedOption,
   }: {
     userId: string;
     nickname: string;
     owner: number;
     roomId: string;
     role: string;
+    betAmount: number;
+    selectedOption: string;
   }) {
     await this.client.hset(`room:${roomId}:user:${userId}`, {
       nickname,
       owner,
       role,
+      betAmount,
+      selectedOption,
     });
   }
 
@@ -137,7 +143,7 @@ export class RedisManager {
     return await this.client.get(`room:${roomId}:status`);
   }
 
-  async updateBetting(roomId: string, option: string, betAmount: number) {
+  async increaseBettingInfo(roomId: string, option: string, betAmount: number) {
     await Promise.all([
       this.client.hincrby(`room:${roomId}:${option}`, "currentBets", betAmount),
       this.client.hincrby(`room:${roomId}:${option}`, "participants", 1),
@@ -162,7 +168,7 @@ export class RedisManager {
 
     if (results.some((result) => result instanceof Error)) {
       console.error("레디스 트랜잭션 실패", results);
-      throw new Error("레디스 트랜잭션 실패");
+      throw new InternalServerErrorException("레디스 트랜잭션 실패");
     }
   }
 
@@ -183,7 +189,7 @@ export class RedisManager {
 
     if (results.some((result) => result instanceof Error)) {
       console.error("레디스 트랜잭션 실패", results);
-      throw new Error("레디스 트랜잭션 실패");
+      throw new InternalServerErrorException("레디스 트랜잭션 실패");
     }
   }
 

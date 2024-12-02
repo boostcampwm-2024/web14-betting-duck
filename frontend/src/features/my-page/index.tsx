@@ -1,10 +1,18 @@
-import { Image } from "@/shared/components/Image";
-import pondImage from "@/assets/images/pond.png";
 import { DuckCoinIcon } from "@/shared/icons";
 import { Route } from "@/routes/my-page";
+import { useNavigate } from "@tanstack/react-router";
+import { Pond } from "./ui/Pond";
+import { FallingDuck } from "./ui/FallingDuck";
+import React from "react";
 
 function MyPage() {
-  const { duck } = Route.useLoaderData();
+  const navigate = useNavigate();
+  const { userInfo } = Route.useLoaderData();
+  const [ducks, setDucks] = React.useState([FallingDuck]);
+
+  function addDuck() {
+    setDucks([...ducks, FallingDuck]);
+  }
 
   return (
     <div className="w-ful bg-layout-main flex flex-col items-center justify-between gap-2">
@@ -15,17 +23,27 @@ function MyPage() {
         </div>
         <div className="flex w-full items-center justify-center gap-4">
           <DuckCoinIcon width={32} height={32} />
-          <span className="text-2xl font-bold">{duck ?? 0}</span>
+          <span className="text-2xl font-bold">{userInfo.duck ?? 0}</span>
         </div>
-        <div className="w-full px-5">
-          <Image src={pondImage} alt="Pond" />
+        <div className="min-h-[17cqh] w-full px-5">
+          <Pond ducks={ducks} />
         </div>
         <div className="flex gap-8">
-          <button className="bg-secondary text-default border-default-hover flex items-center gap-4 rounded-xl border-2 px-6 py-3 text-xl font-bold">
+          <button
+            onClick={() => addDuck()}
+            className="bg-secondary text-default border-default-hover flex items-center gap-4 rounded-xl border-2 px-6 py-3 text-xl font-bold"
+          >
             <DuckCoinIcon width={32} height={33} />
             <span>-30</span>
           </button>
-          <button className="bg-default text-layout-main rounded-xl px-6 py-3 text-xl">
+          <button
+            className="bg-default text-layout-main rounded-xl px-6 py-3 text-xl"
+            onClick={() =>
+              navigate({
+                to: "/create-vote",
+              })
+            }
+          >
             방 만들러 가기
           </button>
         </div>

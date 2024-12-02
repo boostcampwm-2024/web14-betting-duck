@@ -77,3 +77,66 @@ describe("calculateWinningOdds", () => {
     expect(result).toBe(1.5);
   });
 });
+
+describe("calculateSettledDuckCoins", () => {
+  const calculateSettledDuckCoins = (
+    betAmount: number,
+    selectedOption: string,
+    winningOption: string,
+    winningOdds: number,
+  ) => {
+    const duck = 300;
+    const isWinner = selectedOption === winningOption;
+    const duckChange = isWinner ? betAmount * winningOdds : 0;
+    const updatedDuck = duck ? duck + duckChange : duckChange;
+    return Math.round(updatedDuck);
+  };
+
+  it("정수 잘나오는지?", () => {
+    const betAmount = 50;
+    const selectedOption = "option1";
+    const winningOption = "option1";
+    const winningOdds = 1.2;
+
+    const updatedDuck = calculateSettledDuckCoins(
+      betAmount,
+      selectedOption,
+      winningOption,
+      winningOdds,
+    );
+
+    expect(updatedDuck).toBe(300 + 50 * 1.2);
+  });
+
+  it("반올림 테스트(내림)", () => {
+    const betAmount = 10;
+    const selectedOption = "option1";
+    const winningOption = "option1";
+    const winningOdds = 1.11;
+
+    const updatedDuck = calculateSettledDuckCoins(
+      betAmount,
+      selectedOption,
+      winningOption,
+      winningOdds,
+    );
+
+    expect(updatedDuck).toBe(300 + 10 * 1.1);
+  });
+
+  it("반올림 테스트(올림)", () => {
+    const betAmount = 10;
+    const selectedOption = "option1";
+    const winningOption = "option1";
+    const winningOdds = 1.99;
+
+    const updatedDuck = calculateSettledDuckCoins(
+      betAmount,
+      selectedOption,
+      winningOption,
+      winningOdds,
+    );
+
+    expect(updatedDuck).toBe(300 + 10 * 2);
+  });
+});

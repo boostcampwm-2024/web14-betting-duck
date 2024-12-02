@@ -13,10 +13,11 @@ export default defineConfig(({ mode }) => {
     css: {
       preprocessorOptions: {
         css: {
-          additionalData: `@import "@/src/index.css";`, // Tailwind를 상단에 로드
+          additionalData: `@import "@/src/index.css";`,
         },
       },
     },
+    assetsInclude: ["**/*.glb", "**/*.hdr"],
     plugins: [react(), TanStackRouterVite(), tsconfigPaths()],
     server: {
       port: 3000,
@@ -68,6 +69,10 @@ export default defineConfig(({ mode }) => {
 
             if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(extType)) {
               return `assets/images/[name]-[hash][extname]`;
+            }
+
+            if (/glb|hdr/i.test(extType)) {
+              return `assets/models/[name]-[hash][extname]`;
             }
 
             if (/woff2?|ttf|eot|otf/i.test(extType)) {

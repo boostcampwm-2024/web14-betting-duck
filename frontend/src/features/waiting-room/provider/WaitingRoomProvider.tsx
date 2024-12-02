@@ -1,6 +1,6 @@
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { responseBetRoomInfo } from "@betting-duck/shared";
-import { useLoaderData, useLocation, useRouter } from "@tanstack/react-router";
+import { useLoaderData } from "@tanstack/react-router";
 import React from "react";
 import { z } from "zod";
 
@@ -18,8 +18,6 @@ interface WaitingRoomContextType {
 const WaitingRoomContext = React.createContext<WaitingRoomContextType>(null!);
 
 function WaitingRoomProvider({ children }: { children: React.ReactNode }) {
-  const location = useLocation();
-  const router = useRouter();
   const { roomId, bettingRoomInfo } = useLoaderData({
     from: "/betting_/$roomId/waiting",
   });
@@ -34,7 +32,9 @@ function WaitingRoomProvider({ children }: { children: React.ReactNode }) {
     },
     onDisconnect: (reason) => {
       console.error("투표 대기 방에서 소켓이 끊어졌습니다.");
-      console.error(reason);
+      if (reason === "io server disconnect") {
+        socket.reconnect();
+      }
     },
     onError: (error) => {
       console.error("투표 대기 방에서 소켓 에러가 발생했습니다.");
@@ -60,37 +60,6 @@ function WaitingRoomProvider({ children }: { children: React.ReactNode }) {
       setIsBettingStarted,
     ],
   );
-
-  React.useEffect(() => {
-    function handleVisibilityChange() {
-      if (document.visibilityState === "hidden" && socket.isConnected) {
-        socket.disconnect();
-      }
-    }
-
-    const unsubscribeRouteChange = router.subscribe(
-      "onBeforeNavigate",
-      (navigation) => {
-        const currentPath = location.pathname;
-        const nextPath = navigation.toLocation.pathname;
-
-        if (
-          currentPath === navigation.fromLocation.pathname &&
-          nextPath !== currentPath &&
-          socket.isConnected
-        ) {
-          socket.disconnect();
-        }
-      },
-    );
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      unsubscribeRouteChange();
-    };
-  }, [socket, router, location.pathname]);
 
   return (
     <WaitingRoomContext.Provider value={value}>

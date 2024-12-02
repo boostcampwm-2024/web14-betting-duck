@@ -1,8 +1,8 @@
-import { useUserContext } from "@/shared/hooks/useUserContext";
 import { LogoIcon } from "@/shared/icons";
 import { Image } from "@/shared/components/Image";
 import waitingUserImage from "@assets/images/waiting-user.png";
 import { Link } from "@tanstack/react-router";
+import { useUserInfo } from "@/shared/hooks/useUserInfo";
 
 function UserInfo({ nickname }: { nickname: string }) {
   return (
@@ -21,8 +21,8 @@ function UserInfo({ nickname }: { nickname: string }) {
 }
 
 function RootHeader() {
-  const { userInfo } = useUserContext();
-  const { nickname } = userInfo;
+  const userInfo = useUserInfo();
+  const { nickname } = userInfo.data ?? { nickname: "" };
 
   return (
     <div className="header flex-start flex items-center gap-2 pl-[60px]">

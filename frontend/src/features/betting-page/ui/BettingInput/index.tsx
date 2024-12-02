@@ -3,29 +3,11 @@ import { cn } from "@/shared/misc";
 import React from "react";
 import { z } from "zod";
 import { useBettingContext } from "../../hook/useBettingContext";
-import { responseBetRoomInfo } from "@betting-duck/shared";
-import { useSocketIO } from "@/shared/hooks/useSocketIo";
-import { useUserContext } from "@/shared/hooks/useUserContext";
 import { Route } from "@/routes/betting_.$roomId.vote";
+import { placeBetting } from "../../utils/placeBetting";
+import { useLoaderData } from "@tanstack/react-router";
 
 const numberSchema = z.coerce.number().int().positive();
-
-function placeBet(
-  socket: ReturnType<typeof useSocketIO>,
-  bettingRoomInfo: z.infer<typeof responseBetRoomInfo>,
-  value: string,
-  uses: "winning" | "losing",
-) {
-  socket.emit("joinBet", {
-    sender: {
-      betAmount: parseInt(value),
-      selectOption: uses === "winning" ? "option1" : "option2",
-    },
-    channel: {
-      roomId: bettingRoomInfo.channel.id,
-    },
-  });
-}
 
 function errorText(
   isText: boolean,
@@ -46,10 +28,18 @@ function getVisibleText(
   return `opacity-${isText == true || isLongText == true || isOverDuckCoin == true ? 1 : 0} ${isText == true || isLongText == true || isOverDuckCoin == true ? "visible" : "invisible"}`;
 }
 
-function BettingInput({ uses }: { uses: "winning" | "losing" }) {
+function BettingInput({
+  uses,
+  refreshBettingAmount,
+}: {
+  uses: "winning" | "losing";
+  refreshBettingAmount: (roomId: string) => Promise<void>;
+}) {
   const { duckCoin } = Route.useLoaderData();
-  const { socket, bettingRoomInfo } = useBettingContext();
-  const { setUserInfo, userInfo } = useUserContext();
+  const { bettingRoomInfo } = useLoaderData({
+    from: "/betting_/$roomId/vote/voting",
+  });
+  const { bettingPool } = useBettingContext();
   const [value, setValue] = React.useState("");
   const [isText, setIsText] = React.useState(false);
   const [isLongText, setIsLongText] = React.useState(false);
@@ -76,7 +66,7 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
       return updateState("", false);
     }
 
-    if (parseInt(value) > parseInt(duckCoin)) return setIsOverDuckCoin(true);
+    if (parseInt(value) > duckCoin) return setIsOverDuckCoin(true);
     else setIsOverDuckCoin(false);
     if (value.length === 10) return setIsLongText(true);
     else setIsLongText(false);
@@ -89,7 +79,7 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
       <div
         className={cn(
           bgColor,
-          "relative flex min-h-[45px] w-[90cqw] rounded-lg",
+          "relative flex min-h-[45px] w-[40cqw] rounded-lg",
         )}
       >
         <div className="mx-4 flex min-w-[24px] items-center justify-center">
@@ -102,7 +92,6 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
           )}
           type="text"
           pattern={"[0-9]*"}
-          placeholder="베팅 금액을 입력하세요"
           value={value}
           onChange={handleOnChange}
           maxLength={10}
@@ -111,10 +100,18 @@ function BettingInput({ uses }: { uses: "winning" | "losing" }) {
           inputMode="numeric"
         />
         <button
-          disabled={isText || userInfo.isPlaceBet}
+          disabled={isText || bettingPool.isPlaceBet}
           onClick={() => {
-            placeBet(socket, bettingRoomInfo, value, uses);
-            setUserInfo({ isPlaceBet: true, placeBetAmount: parseInt(value) });
+            const selectedOption = uses === "winning" ? "option1" : "option2";
+            const bettingAmount = parseInt(value);
+
+            placeBetting({
+              selectedOption,
+              bettingAmount: bettingAmount,
+              roomId: bettingRoomInfo.channel.id,
+              isPlaceBet: bettingPool.isPlaceBet || false,
+              refreshBettingAmount,
+            });
           }}
           type="button"
           className={cn(

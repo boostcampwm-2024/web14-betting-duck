@@ -13,7 +13,7 @@ function ShareLinkCard() {
     const textArea = document.createElement("textarea");
     textArea.value = url;
     textArea.style.position = "fixed";
-    textArea.style.left = "-999999px";
+    textArea.style.left = "-999991px";
     textArea.style.top = "-999999px";
     document.body.appendChild(textArea);
     textArea.focus();

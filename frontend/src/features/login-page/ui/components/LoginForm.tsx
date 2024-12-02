@@ -11,7 +11,7 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [isValid, setIsValid] = useState(false);
   const navigate = useNavigate();
-  const { refreshUserInfo } = useUserContext();
+  const { setUserInfo } = useUserContext();
 
   const { error, handleLogin } = useAuthStore();
 
@@ -21,14 +21,13 @@ function LoginForm() {
     const result = await handleLogin({ email, password });
     if (result.success) {
       const { data } = result.data;
-      refreshUserInfo().then(() =>
-        navigate({
-          to: "/my-page",
-          search: {
-            nickname: decodeURIComponent(data.nickname),
-          },
-        }),
-      );
+      setUserInfo({ role: "user", nickname: data.nickname });
+      navigate({
+        to: "/my-page",
+        search: {
+          nickname: decodeURIComponent(data.nickname),
+        },
+      });
     } else {
       console.error("로그인 실패:", result.error);
     }
