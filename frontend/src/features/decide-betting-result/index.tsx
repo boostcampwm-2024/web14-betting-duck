@@ -2,7 +2,7 @@ import { DuckCoinIcon } from "@/shared/icons";
 import { useBettingContext } from "../betting-page/hook/useBettingContext";
 import { calculateWinnings, calculateOdds } from "@/shared/utils/bettingOdds";
 import { endBetRoom } from "./api/endBetRoom";
-import { getBettingRoomInfo } from "../betting-page/api/getBettingRoomInfo";
+// import { getBettingRoomInfo } from "../betting-page/api/getBettingRoomInfo";
 import { useNavigate } from "@tanstack/react-router";
 
 interface BettingPool {
@@ -113,14 +113,6 @@ function DecideBettingResult() {
         "bg-layout-main flex h-full w-full flex-col justify-center gap-10 rounded-lg p-6"
       }
     >
-      <button
-        onClick={async () => {
-          const a = await getBettingRoomInfo(channel.id);
-          console.log(a);
-        }}
-      >
-        정보 출력 버튼
-      </button>
       <h1 className="w-full text-center text-2xl font-bold">
         승리한 팀을 선택 해주세요!
       </h1>

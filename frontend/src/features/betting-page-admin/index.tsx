@@ -163,37 +163,37 @@ function BettingPageAdmin() {
     });
   };
 
-  const handleBetClick = async (
-    roomId: string,
-    option: "option1" | "option2",
-  ) => {
-    try {
-      const response = await fetch("/api/bets", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          sender: {
-            betAmount: 100,
-            selectOption: option, // option1 또는 option2
-          },
-          channel: {
-            roomId: roomId,
-          },
-        }),
-      });
+  // const handleBetClick = async (
+  //   roomId: string,
+  //   option: "option1" | "option2",
+  // ) => {
+  //   try {
+  //     const response = await fetch("/api/bets", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         sender: {
+  //           betAmount: 100,
+  //           selectOption: option, // option1 또는 option2
+  //         },
+  //         channel: {
+  //           roomId: roomId,
+  //         },
+  //       }),
+  //     });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
 
-      const responseData = await response.json();
-      console.log("Bet successfully posted:", responseData);
-    } catch (error) {
-      console.error("Failed to post bet:", error);
-    }
-  };
+  //     const responseData = await response.json();
+  //     console.log("Bet successfully posted:", responseData);
+  //   } catch (error) {
+  //     console.error("Failed to post bet:", error);
+  //   }
+  // };
 
   const getTotalParticipants = () => {
     return bettingInfo.option1.participants + bettingInfo.option2.participants;
@@ -320,8 +320,8 @@ function BettingPageAdmin() {
           </div>
         </div>
       </div>
-      <button onClick={() => handleBetClick(roomId, "option1")}>투표1</button>
-      <button onClick={() => handleBetClick(roomId, "option2")}>투표2</button>
+      {/* <button onClick={() => handleBetClick(roomId, "option1")}>투표1</button>
+      <button onClick={() => handleBetClick(roomId, "option2")}>투표2</button> */}
       <BettingSharedLink />
     </div>
   );

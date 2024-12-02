@@ -7,8 +7,8 @@ import { BettingFooter } from "./BettingFooter";
 import { useBettingConnection } from "../hook/useBettingRoomConnection";
 import { useBettingRoomInfo } from "../hook/useBettingRoomInfo";
 import { BettingInput } from "./BettingInput";
-import { placeBetting } from "../utils/placeBetting";
-import { responseUserInfoSchema } from "@betting-duck/shared";
+// import { placeBetting } from "../utils/placeBetting";
+// import { responseUserInfoSchema } from "@betting-duck/shared";
 import { getBettingSummary } from "@/shared/utils/bettingOdds";
 import React from "react";
 
@@ -44,42 +44,6 @@ function BettingContainer() {
         "bg-layout-main h-full min-w-[70cqw] p-6",
       )}
     >
-      <button
-        onClick={() => {
-          placeBetting({
-            selectedOption: "option1",
-            bettingAmount: 1,
-            roomId: channel.id,
-            isPlaceBet: bettingPool.isPlaceBet || false,
-          });
-          updateBettingPool({
-            isPlaceBet: true,
-            placeBetAmount: 1,
-          });
-        }}
-      >
-        ㅇㅇ
-      </button>
-      <button
-        onClick={async () => {
-          const response = await fetch("/api/users/userInfo");
-          if (!response.ok) {
-            throw new Error("사용자 정보를 불러오는데 실패했습니다.");
-          }
-
-          const { data } = await response.json();
-          console.log(data);
-          const result = responseUserInfoSchema.safeParse(data);
-          if (!result.success) {
-            console.error(result.error);
-            throw new Error("사용자 정보를 불러오는데 실패했습니다.");
-          }
-
-          return data;
-        }}
-      >
-        읽기
-      </button>
       <div className="flex h-full flex-col justify-around">
         <BettingHeader content={channel.title} contextValue={contextValue} />
         <div className="flex w-full justify-around">
