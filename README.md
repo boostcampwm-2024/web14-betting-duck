@@ -102,6 +102,48 @@ WEB14-BOOSTPROJECT/
 ## 프로젝트 아키텍쳐 다이어그램
 ![image](https://github.com/user-attachments/assets/dba37a35-46a7-437a-b281-18b5530a7bd4)
 
+## FE 기술적 도전
+
+<br>
+
+## BE 기술적 도전
+
+### Redis를 이용한 메시지 큐 구현
+<img width="560" alt="스크린샷 2024-12-02 오후 6 34 20" src="https://github.com/user-attachments/assets/9f443ae1-5a61-4c17-95a8-b4c398718c28">
+
+[Wiki | 베팅덕에 적용한 다양한 캐시 전략](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/betting-duck-cache-strategy)
+
+Redis의 List와 Pub/Sub을 활용하여 **메시지 큐를 구현**하였습니다.
+
+List를 사용해 메시지의 **순차적 처리를 보장**하고, Pub/Sub을 통해 **특정 시점에서 메시지를 소비**할 수 있도록 합니다.
+
+또한, ACK Timeout을 통해 **처리되지 않은 메시지를 감지하고 재처리**하는 로직을 구성하였습니다.
+
+이 메시지 큐는 베팅 종료 후, 사용자들의 오리 코인 업데이트 작업을 처리하는 데 사용되었습니다.
+
+<br>
+
+### 캐시를 통한 성능 최적화
+[Wiki | 베팅덕에 적용한 다양한 캐시 전략](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/betting-duck-cache-strategy)
+
+**시스템 성능 최적화와 데이터 일관성 유지의 균형을 위해 다양한 캐시 전략을 설계하고 구현했습니다.**
+
+프로젝트에서는 **Read Through**, **Write Through**, **Write Back** 등 여러 캐시 전략을 상황에 맞게 적용했습니다.
+
+유저 정보 조회에는 **Read Through**를 사용해 빠른 응답 속도를 확보하고, 베팅 데이터 저장에는 **Write Through**를 적용해 데이터 정합성을 유지했으며, 실시간 베팅 정보 관리에는 **Write Back**을 활용해 쓰기 부하를 줄이면서 실시간성을 보장했습니다.
+
+<br>
+  
+
+### Redis를 활용한 동시성 문제 해결
+[Wiki | Redis HINCRBY로 동시성 문제 해결](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/Redis-concurrency-test)
+
+실시간 베팅 처리에서 Redis와 HINCRBY 명령어를 활용해 동시성 문제를 해결했습니다. Redis의 단일 스레드 기반 특성과 HINCRBY의 원자성을 활용해 데이터 업데이트 과정에서 발생할 수 있는 불일치를 방지했습니다. 이를 검증하기 위해 100만 번의 동시 요청을 처리하는 테스트를 진행하며 안정성을 확인했습니다.
+
+
+
+
+
 ## 팀 소개
 
 ### 팀원 소개
