@@ -7,6 +7,7 @@ import { UserContext } from "@/app/provider/UserProvider";
 import { GuestFooter } from "./ui/GuestFooter";
 import { BettingResult } from "./ui/UserBettingResult";
 import { AdminBettingResult } from "./ui/AdminBettingResult";
+import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 
 interface BetResultResponse {
   status: number;
@@ -22,6 +23,7 @@ interface BetResultResponse {
 }
 
 function PredictDetail() {
+  useLayoutShift();
   const { bettingRoomInfo } = useBettingContext();
   const { channel } = bettingRoomInfo;
   const [betResults, setBetResults] = useState<BetResultResponse>({
