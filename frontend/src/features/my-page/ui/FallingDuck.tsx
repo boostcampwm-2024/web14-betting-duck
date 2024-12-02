@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { useBox } from "@react-three/cannon";
 import { Gltf } from "@react-three/drei";
+import duckModel from "@/assets/models/betting-duck.glb";
 
 function FallingDuck() {
   // 약간의 랜덤 오프셋 추가 (x축과 z축에 대해)
@@ -28,7 +29,7 @@ function FallingDuck() {
       ref={ref as React.RefObject<THREE.Group>}
       castShadow
       receiveShadow
-      src="/src/assets/models/betting-duck.glb"
+      src={duckModel}
     />
   );
 }

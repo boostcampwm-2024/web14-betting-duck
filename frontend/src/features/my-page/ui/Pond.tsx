@@ -7,6 +7,7 @@ import {
 } from "@react-three/drei";
 import { Physics, usePlane } from "@react-three/cannon";
 import { Suspense } from "react";
+import envMap from "@assets/models/industrial_sunset_puresky_4k.hdr";
 
 function Ground({ color = "#f0f4fa" }: { color?: string }) {
   const [ref] = usePlane<THREE.Mesh>(() => ({
@@ -70,9 +71,7 @@ function Pond({ ducks }: { ducks: React.ElementType[] }) {
           <Ground color="#80aae9" />
         </Physics>
       </Suspense>
-      <Environment
-        files={"/src/assets/models/industrial_sunset_puresky_4k.hdr"}
-      />
+      <Environment files={envMap} />
       <OrbitControls
         minPolarAngle={0}
         maxPolarAngle={Math.PI / 1.9}
