@@ -111,7 +111,7 @@ WEB14-BOOSTPROJECT/
 ### Redis를 이용한 메시지 큐 구현
 <img width="560" alt="스크린샷 2024-12-02 오후 6 34 20" src="https://github.com/user-attachments/assets/9f443ae1-5a61-4c17-95a8-b4c398718c28">
 
-[Wiki | 베팅덕에 적용한 다양한 캐시 전략](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/betting-duck-cache-strategy)
+[Wiki | Redis Streams 구현](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/Redis-Streams-%EA%B5%AC%ED%98%84)
 
 Redis의 List와 Pub/Sub을 활용하여 **메시지 큐를 구현**하였습니다.
 
