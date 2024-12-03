@@ -14,6 +14,7 @@ import { BetRoom } from "./bet-room.entity";
 import { BetResult } from "src/bet-result/bet-result.entity";
 import { BetGateway } from "src/bet/bet.gateway";
 import { BetRepository } from "src/bet/bet.repository";
+import { DBManager } from "src/utils/db.manager";
 
 @Injectable()
 export class BetRoomService {
@@ -24,6 +25,7 @@ export class BetRoomService {
     private betRepository: BetRepository,
     private redisManager: RedisManager,
     private betGateway: BetGateway,
+    private dbManager: DBManager,
   ) {}
 
   async createBetRoom(userId: number, createBetRoomDto: CreateBetRoomDto) {
@@ -433,7 +435,11 @@ export class BetRoomService {
     if (!bet) {
       throw new NotFoundException("해당 베팅을 찾을 수 없습니다.");
     }
-    await this.betRepository.update(bet.id, {
+    // await this.betRepository.update(bet.id, {
+    //   status: "settled",
+    //   settledAmount: updatedDuck,
+    // });
+    await this.dbManager.setBet(bet.id, {
       status: "settled",
       settledAmount: updatedDuck,
     });
@@ -495,6 +501,7 @@ export class BetRoomService {
   }
 
   private async saveUserDuckCoins(userId: number, updateDuck: number) {
-    await this.userRepository.update(userId, { duck: updateDuck });
+    // await this.userRepository.update(userId, { duck: updateDuck });
+    await this.dbManager.setUser(userId, { duck: updateDuck });
   }
 }

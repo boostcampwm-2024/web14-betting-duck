@@ -10,12 +10,15 @@ import { RedisManagerModule } from "src/utils/redis-manager.module";
 import { BetResultRepository } from "src/bet-result/bet-result.repository";
 import { BetResult } from "src/bet-result/bet-result.entity";
 import { BetModule } from "src/bet/bet.module";
+import { DBManagerModule } from "src/utils/db.manager.module";
+import { Bet } from "src/bet/bet.entity";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([BetRoom, User, BetResult]),
+    TypeOrmModule.forFeature([BetRoom, User, BetResult, Bet]),
     RedisManagerModule,
     BetModule,
+    DBManagerModule,
   ],
   controllers: [BetRoomController],
   providers: [
