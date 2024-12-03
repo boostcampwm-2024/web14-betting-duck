@@ -43,6 +43,7 @@ export class UserService {
       nickname,
       password: hashedPassword,
       duck: 300,
+      realDuck: 0,
     };
     await this.userRepository.createUser(user);
   }
@@ -60,14 +61,13 @@ export class UserService {
     if (user && (await bcrypt.compare(password, user.password))) {
       const nickname = user.nickname;
 
-      if (!(await this.redisManager.findUser(String(user.id)))) {
-        await this.redisManager.setUser({
-          userId: String(user.id),
-          nickname: nickname,
-          role: role,
-          duck: user.duck,
-        });
-      }
+      await this.redisManager.setUser({
+        userId: String(user.id),
+        nickname: nickname,
+        role: role,
+        duck: user.duck,
+        realDuck: user.realDuck,
+      });
 
       const payload = {
         id: user.id,
@@ -109,6 +109,7 @@ export class UserService {
         nickname: nickname,
         role: role,
         duck: 300,
+        realDuck: 0,
       });
     }
 
@@ -122,7 +123,6 @@ export class UserService {
   }
 
   async signOut(req: Request, res: Response) {
-    // TODO : 로그아웃 시에도 IP 검증 필요?
     // const userInfo = req["user"];
 
     // if (userInfo.role === "guest") {
@@ -147,6 +147,7 @@ export class UserService {
         nickname: userInfo.nickname,
         role: req["user"].role,
         duck: userInfo.duck,
+        realDuck: userInfo.realDuck,
       });
       return userInfo;
     }
@@ -183,6 +184,34 @@ export class UserService {
     return { exists: false };
   }
 
+  async purchaseDuck(req: Request) {
+    const userInfo = req["user"];
+    const { nickname, duck, realDuck } = await this.redisManager.getUser(
+      userInfo.id,
+    );
+
+    if (!(nickname && duck && realDuck))
+      throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
+
+    const newDuck = parseInt(duck) - 30;
+    await this.redisManager.setUser({
+      userId: String(userInfo.id),
+      nickname: nickname,
+      role: userInfo.role,
+      duck: newDuck,
+      realDuck: parseInt(realDuck) + 1,
+    });
+
+    if (userInfo.role === "user") {
+      await this.dbManager.setUser(userInfo.id, {
+        duck: newDuck,
+        realDuck: parseInt(realDuck) + 1,
+      });
+    }
+
+    return { duck: newDuck };
+  }
+
   // 구현 중
   async upgradeGuest(
     req: Request,
@@ -200,17 +229,12 @@ export class UserService {
       nickname,
       password: hashedPassword,
       duck: parseInt(duck),
+      realDuck: 0,
     };
 
     await this.userRepository.createUser(user);
 
     // TODO : 로그인까지 한번에 해결하는 것이 좋을까?
-  }
-
-  async redisTest() {
-    await this.redisManager._xadd("test", "*", "field1", "value1");
-    // await this.redisManager.addStreamEntry();
-    return { status: "OK" };
   }
 
   private async hashPassword(password: string): Promise<string> {
@@ -224,7 +248,7 @@ export class UserService {
     return "guest-" + clientIp;
   }
 
-  // 테스트용 메서드
+  // duck coin 업데이트 테스트용 메서드
   async updateDuck(req: Request, duck: number) {
     const userId = req["user"].id;
     const role = req["user"].role;
@@ -236,10 +260,18 @@ export class UserService {
       nickname: user.nickname,
       role: user.role,
       duck: duck,
+      realDuck: parseInt(user.realDuck),
     };
     await this.redisManager.setUser(newUserInfo);
 
     return newUserInfo;
+  }
+
+  // RedisManager 테스트용 메서드
+  async redisTest() {
+    await this.redisManager._xadd("test", "*", "field1", "value1");
+    // await this.redisManager.addStreamEntry();
+    return { status: "OK" };
   }
 
   // DBManager 테스트용 메서드

@@ -17,12 +17,13 @@ export class RedisManager {
   }
 
   async getUser(userId: string) {
-    const [nickname, role, duck] = await Promise.all([
+    const [nickname, role, duck, realDuck] = await Promise.all([
       this.client.hget(`user:${userId}`, "nickname"),
       this.client.hget(`user:${userId}`, "role"),
       this.client.hget(`user:${userId}`, "duck"),
+      this.client.hget(`user:${userId}`, "realDuck"),
     ]);
-    return { nickname, role, duck };
+    return { nickname, role, duck, realDuck };
   }
 
   async setUser({
@@ -30,16 +31,19 @@ export class RedisManager {
     nickname,
     role,
     duck,
+    realDuck,
   }: {
     userId: string;
     nickname: string;
     role: string;
     duck: number;
+    realDuck: number;
   }) {
     await this.client.hset(`user:${userId}`, {
       nickname,
       role,
       duck,
+      realDuck,
     });
   }
 
@@ -100,6 +104,10 @@ export class RedisManager {
       betAmount,
       selectedOption,
     });
+    await this.client.sadd(
+      `room:${roomId}:userlist`,
+      `room:${roomId}:user:${userId}`,
+    );
   }
 
   async setBettingUserOnBet({
