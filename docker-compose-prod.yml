@@ -40,6 +40,31 @@ services:
       POSTGRES_DB_NAME_DB_SYNCHRONIZE: ${POSTGRES_DB_NAME_DB_SYNCHRONIZE}
       REDIS_HOSTNAME: ${REDIS_HOSTNAME}
       REDIS_PORT: ${REDIS_PORT}
+
+  betting_duck_app_1:
+    image: node:22.11.0-alpine
+    container_name: betting_duck_app
+    working_dir: /app/backend
+    volumes:
+      - ./:/app
+      - ./fullchain.pem:/app/web14-betting-duck/backend/src/fullchain.pem
+      - ./privkey.pem:/app/web14-betting-duck/backend/src/privkey.pem
+    ports:
+      - "${SERVER_PORT}:3000"
+    # 배포용 커맨드
+    command: >
+      sh -c " npm install -g pnpm && \
+      cd ../backend && pnpm install && \
+      pnpm run start "
+    environment:
+      POSTGRES_HOSTNAME: ${POSTGRES_HOSTNAME}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+      POSTGRES_USERNAME: ${POSTGRES_USERNAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB_NAME_DB_SYNCHRONIZE: ${POSTGRES_DB_NAME_DB_SYNCHRONIZE}
+      REDIS_HOSTNAME: ${REDIS_HOSTNAME}
+      REDIS_PORT: ${REDIS_PORT}
     
   frontend_builder:
     image: node:22.11.0-alpine
