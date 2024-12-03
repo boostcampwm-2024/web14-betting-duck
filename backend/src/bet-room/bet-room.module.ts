@@ -12,6 +12,7 @@ import { BetResult } from "src/bet-result/bet-result.entity";
 import { BetModule } from "src/bet/bet.module";
 import { DBManagerModule } from "src/utils/db.manager.module";
 import { Bet } from "src/bet/bet.entity";
+import { BetRoomRefundService } from "./bet-room.refund.service";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { Bet } from "src/bet/bet.entity";
     BetRoomRepository,
     UserRepository,
     BetResultRepository,
+    BetRoomRefundService,
   ],
 })
 export class BetRoomModule {}
