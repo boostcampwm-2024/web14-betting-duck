@@ -306,7 +306,7 @@ function BettingPageAdmin() {
                 />
                 <label
                   htmlFor="option1"
-                  className="text-bettingBlue peer-checked:bg-bettingBlue-behind flex w-full cursor-pointer flex-col items-center justify-center border-r hover:bg-[#c7d5f96d]"
+                  className="text-bettingBlue peer-checked:bg-bettingBlue-behind flex w-full cursor-pointer flex-col items-center justify-center border-r py-2 pl-2 hover:bg-[#c7d5f96d]"
                 >
                   <p className="text-md mb-1 font-bold">승리 옵션1</p>
                   <DuckCoinIcon width={70} />
@@ -328,7 +328,7 @@ function BettingPageAdmin() {
                 />
                 <label
                   htmlFor="option2"
-                  className="text-bettingPink peer-checked:bg-bettingPink-behind flex w-full cursor-pointer flex-col items-center justify-center border-r hover:bg-[#eab2d66c]"
+                  className="text-bettingPink peer-checked:bg-bettingPink-behind flex w-full cursor-pointer flex-col items-center justify-center border-r py-2 pl-2 hover:bg-[#eab2d66c]"
                 >
                   <p className="text-md mb-1 font-bold">승리 옵션2</p>
                   <DuckCoinIcon width={70} />
