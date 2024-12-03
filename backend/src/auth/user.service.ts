@@ -123,7 +123,6 @@ export class UserService {
   }
 
   async signOut(req: Request, res: Response) {
-    // TODO : 로그아웃 시에도 IP 검증 필요?
     // const userInfo = req["user"];
 
     // if (userInfo.role === "guest") {
@@ -187,21 +186,27 @@ export class UserService {
 
   async purchaseDuck(req: Request) {
     const userInfo = req["user"];
-    const { duck } = await this.redisManager.getUser(userInfo.id);
-    const { realDuck } = await this.redisManager.getUser(userInfo.id);
+    const { nickname, duck, realDuck } = await this.redisManager.getUser(
+      userInfo.id,
+    );
+
+    if (!(nickname && duck && realDuck))
+      throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
 
     const newDuck = parseInt(duck) - 30;
     await this.redisManager.setUser({
       userId: String(userInfo.id),
-      nickname: userInfo.nickname,
+      nickname: nickname,
       role: userInfo.role,
       duck: newDuck,
       realDuck: parseInt(realDuck) + 1,
     });
 
     if (userInfo.role === "user") {
-      // TODO : 오리 개수 업데이트
-      await this.dbManager.setUser(userInfo.id, { duck: newDuck });
+      await this.dbManager.setUser(userInfo.id, {
+        duck: newDuck,
+        realDuck: parseInt(realDuck) + 1,
+      });
     }
 
     return { duck: newDuck };
