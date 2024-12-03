@@ -79,38 +79,30 @@
 
 ![화면 기록 2024-12-02 오후 4 45 32](https://github.com/user-attachments/assets/f36e5424-e702-47fd-a416-b84a271f2ef5)
 
-## 기술적 도전
-### Three.js를 활용한 3D 오리 구매 기능 구현
-> 해당 서비스: 마이 페이지
-- 문제: 베팅으로 얻은 코인을 사용자가 3D 오리를 구매할 수 있는 기능을 구현하며, 3D 모델링 파일(.glb) 및 환경 맵핑 파일(.hdr)을 서버에 배포하는 과정에서 문제가 발생했습니다.
-- 원인: Vite가 기본적으로 대용량의 3D 에셋 파일을 처리하는 방식이 제한적이었으며, 번들링 과정에서 파일 경로와 파일 타입의 불일치 문제가 있었습니다.
-- 해결 과정: Vite의 설정을 수정하여 3D 파일의 경로를 적절히 처리할 수 있도록 `vite.config.ts`에 Static Assets 설정을 추가하고, 3D 모델과 환경 맵핑 파일을 서버에서 안정적으로 제공할 수 있도록 정적 파일 배포 경로를 명시했습니다.
-- 배운 점: **Vite의 파일 처리 메커니즘과 Three.js 환경 설정을 이해하며, 대용량 파일 처리와 번들러 설정의 중요성을 학습**했습니다.
+## 핵심 기술적 도전
+> [!IMPORTANT]
+> 프로젝트를 진행하며 사용자의 편의성과 시스템의 안정성을 위해 **다양한 기술적 도전과 문제 해결을 경험**했습니다. 아래는 그 중 핵심적인 내용들입니다. <br>**더 자세한 구현 과정과 문제 해결 방법은 [Wiki 페이지](https://github.com/boostcampwm-2024/web14-betting-duck/wiki)에서 확인하실 수 있습니다.** Wiki를 통해 구체적인 설정, 코드 스니펫, 심화 내용을 확인해 보세요!
+### Three.js를 활용한 3D 오리 구매 기능
+저희 프로젝트는 베팅으로 얻은 코인으로 Three.js를 활용하여 사용자가 오리를 구매할 수 있는 기능을 구현하였습니다. 개발 과정에서 우리가 직면했던 주요 문제는 3D 모델링 파일(.glb)과 환경 맵핑 파일(.hdr)을 서버에 배포하는 과정이었습니다.
 
-### 베팅 생성 페이지의 상태 관리와 검증
-> 해당 서비스: 베팅 생성 페이지
-- 해당 페이지에서 다양한 입력 폼이 존재하기 때문에 **상태 관리와 렌더링 최적화를 통해 입력 과정에서의 성능 저하 최소화**
-- 유효성 검증을 통해 모든 필드가 적절히 입력된 경우에만 요청 전송하도록 설정
-- 백엔드와의 통신에서 **필수 데이터 검증 및 오류 처리**로 신뢰성 확보
+이 문제의 구체적인 원인은 Vite가 기본적으로 이러한 3D 에셋 파일들을 처리하는 방식에 있었습니다. 우리는 Vite의 설정을 수정하여 이 문제를 해결할 수 있었습니다. 문제 해결 과정과 상세한 설정 방법은 아래 링크에서 확인하실 수 있습니다.
+> 자세히 보기: [Wiki | Vite 빌드 시 일어나는 작업들](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/vite-build-works)
 
-### Socket.io를 활용한 투표 구현
-> 해당 서비스: 베팅 페이지
-#### [FE] 잘못된 소켓 연결 관리로 인한 서버 다운 문제 발생
-- 문제: 소켓 연결을 `useEffect`로 관리했으나, 클린업 함수에서 연결이 제대로 종료되지 않아 불필요한 소켓 연결이 누적되었고, 이는 메모리 누수와 서버 리소스 낭비로 이어져 서버 다운 문제를 야기했습니다.
-- 원인: 컴포넌트가 언마운트 되거나 의존성 배열이 변경될 때 기존 연결이 종료되지 않아 이벤트 리스너가 중복 등록되는 문제가 있었습니다.
-- 해결 과정: 비동기 작업 중 `useEffect`의 클린업이 올바르게 동작하도록 수정, 소켓 연결을 의존성 배열과 상태 관리에 기반하여 초기화 및 해제하도록 수정, 이벤트 해제 로직을 명시적으로 구현
-- 배운 점: **React의 `useEffect` 클린업과 비동기 작업 원리를 학습하며, 소켓 연결 관리의 중요성을 학습**했습니다.'
-#### [BE] Redis 메모리 설정 최적화
-- 문제: 소켓 연결 문제로 인해 Redis가 비정상적인 이벤트 데이터를 처리하며 OOM(Out of Memory) 오류가 발생했습니다.
-- 원인: Redis의 기본 설정으로 인해 메모리 사용량이 제한 없이 증가했고, maxmemory와 maxmemory-policy 설정이 부재하여 메모리 부족 시 데이터 정리가 이루어지지 않았습니다.
-- 해결 과정: Redis 설정 파일에 **maxmemory와 maxmemory-policy**를 추가하여 메모리 사용 한도를 명시적으로 설정, ziplist를 활용해 연속된 메모리 구조로 데이터 저장 효율을 향상, Redis 모니터링 도구를 도입하여 메모리 사용량을 정기적으로 분석하고, 필요 시 메모리 해제 작업을 추가.
-- 배운 점: **Redis의 메모리 관리 기법과 성능 최적화 방법을 이해했으며, OOM 문제에 대한 사전 대비의 중요성**을 배웠습니다.
+### 베팅 생성 페이지의 성능 최적화와 검증
+해당 페이지에서 값을 입력할 때마다 관련 없는 컴포넌트들이 같이 리렌더링이 되는 문제를 겪었습니다. 이 문제를 해결하기 위하여 **상태 관리와 렌더링 최적화를 통해 입력 과정에서의 성능 저하 최소화**를 위해서 노력하였고 또한 유효성 검증을 통해 모든 필드가 적절히 입력된 경우에만 요청 전송하도록 설정하여 백엔드와의 통신에서 **필수 데이터 검증 및 오류 처리**로 신뢰성을 확보 하고자 하였습니다.
+> 자세히 보기: [Wiki | 불필요한 리렌더링 방지](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/%EB%B6%88%ED%95%84%EC%9A%94%ED%95%9C-%EB%A6%AC%EB%A0%8C%EB%8D%94%EB%A7%81-%EB%B0%A9%EC%A7%80-React.memo%EB%A5%BC-%EC%9D%B4%EC%9A%A9%ED%95%9C-%EB%A9%94%EB%AA%A8%EC%9D%B4%EC%A0%9C%EC%9D%B4%EC%85%98)
 
+
+### Socket.io를 활용한 투표 구현 중 잘못된 소켓 연결 관리로 인한 서버 다운 문제 발생
+CSR(Client-Side Rendering) 방식의 프로젝트에서 소켓 연결을 useEffect로 관리했지만, 클린업 함수에서 소켓 연결이 제대로 종료되지 않아 불필요한 연결이 계속 유지되는 문제가 발생했습니다. 이로 인해 컴포넌트 언마운트나 의존성 배열 변경 시 기존 소켓 연결이 누적되어 메모리 누수와 서버 리소스 낭비로 이어졌습니다.
+
+문제를 해결하기 위해 **useEffect의 클린업 함수 작동 원리, 비동기 작업 처리 시 클린업 구현 방법, 상태 초기화를 확실히 보장하는 방법을 학습하고 적용하여 소켓 연결 관리 문제를 해결**했습니다.
+> 자세히 보기: [Wiki | 소켓 관리 실패로 인한 서버 다운 문제 해결](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/%EC%86%8C%EC%BC%93-%EA%B4%80%EB%A6%AC-%EC%8B%A4%ED%8C%A8%EB%A1%9C-%EC%9D%B8%ED%95%9C-%EC%84%9C%EB%B2%84-%EB%8B%A4%EC%9A%B4-%EB%AC%B8%EC%A0%9C-%EA%B0%9C%EC%84%A0%ED%95%98%EA%B8%B0)
 
 ### Redis를 이용한 메시지 큐 구현
 <img width="560" alt="스크린샷 2024-12-02 오후 6 34 20" src="https://github.com/user-attachments/assets/9f443ae1-5a61-4c17-95a8-b4c398718c28">
 
-[Wiki | Redis Streams 구현](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/Redis-Streams-%EA%B5%AC%ED%98%84)
+> 자세히 보기: [Wiki | Redis Streams 구현](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/Redis-Streams-%EA%B5%AC%ED%98%84)
 
 Redis의 List와 Pub/Sub을 활용하여 **메시지 큐를 구현**하였습니다.
 
@@ -120,22 +112,18 @@ List를 사용해 메시지의 **순차적 처리를 보장**하고, Pub/Sub을 
 
 이 메시지 큐는 베팅 종료 후, 사용자들의 오리 코인 업데이트 작업을 처리하는 데 사용되었습니다.
 
-<br>
-
 ### 캐시를 통한 성능 최적화
-[Wiki | 베팅덕에 적용한 다양한 캐시 전략](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/betting-duck-cache-strategy)
+> 자세히 보기: [Wiki | 베팅덕에 적용한 다양한 캐시 전략](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/betting-duck-cache-strategy)
 
 **시스템 성능 최적화와 데이터 일관성 유지의 균형을 위해 다양한 캐시 전략을 설계하고 구현했습니다.**
 
 프로젝트에서는 **Read Through**, **Write Through**, **Write Back** 등 여러 캐시 전략을 상황에 맞게 적용했습니다.
 
 유저 정보 조회에는 **Read Through**를 사용해 빠른 응답 속도를 확보하고, 베팅 데이터 저장에는 **Write Through**를 적용해 데이터 정합성을 유지했으며, 실시간 베팅 정보 관리에는 **Write Back**을 활용해 쓰기 부하를 줄이면서 실시간성을 보장했습니다.
-
-<br>
   
 
 ### Redis를 활용한 동시성 문제 해결
-[Wiki | Redis HINCRBY로 동시성 문제 해결](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/Redis-concurrency-test)
+> 자세히 보기: [Wiki | Redis HINCRBY로 동시성 문제 해결](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/Redis-concurrency-test)
 
 실시간 베팅 처리에서 Redis와 HINCRBY 명령어를 활용해 동시성 문제를 해결했습니다. Redis의 단일 스레드 기반 특성과 HINCRBY의 원자성을 활용해 데이터 업데이트 과정에서 발생할 수 있는 불일치를 방지했습니다. 이를 검증하기 위해 100만 번의 동시 요청을 처리하는 테스트를 진행하며 안정성을 확인했습니다.
 
