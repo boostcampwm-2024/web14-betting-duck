@@ -43,6 +43,7 @@ export class UserService {
       nickname,
       password: hashedPassword,
       duck: 300,
+      realDuck: 0,
     };
     await this.userRepository.createUser(user);
   }
@@ -65,6 +66,7 @@ export class UserService {
         nickname: nickname,
         role: role,
         duck: user.duck,
+        realDuck: user.realDuck,
       });
 
       const payload = {
@@ -107,6 +109,7 @@ export class UserService {
         nickname: nickname,
         role: role,
         duck: 300,
+        realDuck: 0,
       });
     }
 
@@ -120,7 +123,6 @@ export class UserService {
   }
 
   async signOut(req: Request, res: Response) {
-    // TODO : 로그아웃 시에도 IP 검증 필요?
     // const userInfo = req["user"];
 
     // if (userInfo.role === "guest") {
@@ -145,6 +147,7 @@ export class UserService {
         nickname: userInfo.nickname,
         role: req["user"].role,
         duck: userInfo.duck,
+        realDuck: userInfo.realDuck,
       });
       return userInfo;
     }
@@ -183,19 +186,27 @@ export class UserService {
 
   async purchaseDuck(req: Request) {
     const userInfo = req["user"];
-    const { duck } = await this.redisManager.getUser(userInfo.id);
+    const { nickname, duck, realDuck } = await this.redisManager.getUser(
+      userInfo.id,
+    );
+
+    if (!(nickname && duck && realDuck))
+      throw new NotFoundException("해당 유저를 찾을 수 없습니다.");
 
     const newDuck = parseInt(duck) - 30;
     await this.redisManager.setUser({
       userId: String(userInfo.id),
-      nickname: userInfo.nickname,
+      nickname: nickname,
       role: userInfo.role,
       duck: newDuck,
+      realDuck: parseInt(realDuck) + 1,
     });
 
     if (userInfo.role === "user") {
-      // TODO : 오리 개수 업데이트
-      await this.dbManager.setUser(userInfo.id, { duck: newDuck });
+      await this.dbManager.setUser(userInfo.id, {
+        duck: newDuck,
+        realDuck: parseInt(realDuck) + 1,
+      });
     }
 
     return { duck: newDuck };
@@ -218,6 +229,7 @@ export class UserService {
       nickname,
       password: hashedPassword,
       duck: parseInt(duck),
+      realDuck: 0,
     };
 
     await this.userRepository.createUser(user);
@@ -248,6 +260,7 @@ export class UserService {
       nickname: user.nickname,
       role: user.role,
       duck: duck,
+      realDuck: parseInt(user.realDuck),
     };
     await this.redisManager.setUser(newUserInfo);
 

@@ -26,6 +26,9 @@ export class User extends BaseEntity {
   @Column()
   duck: number;
 
+  @Column()
+  realDuck: number;
+
   @CreateDateColumn({ type: "timestamp", nullable: true })
   created_at: Date;
 
