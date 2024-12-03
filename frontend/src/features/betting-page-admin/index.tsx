@@ -5,9 +5,10 @@ import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
 import { BettingSharedLink } from "@/shared/components/BettingSharedLink/BettingSharedLink";
 import { PercentageDisplay } from "@/shared/components/PercentageDisplay/PercentageDisplay";
-import { refund } from "./model/api";
+import { endBetRoom, refund } from "./model/api";
 import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 import { bettingRoomSchema } from "../betting-page/model/schema";
+import { DuckCoinIcon } from "@/shared/icons";
 
 function BettingPageAdmin() {
   useLayoutShift();
@@ -25,6 +26,9 @@ function BettingPageAdmin() {
   const navigate = useNavigate();
   const joinRoomRef = useRef(false);
   const fetchBetRoomInfoRef = useRef(false);
+  const [winnerOption, setWinnerOption] = useState<
+    "option1" | "option2" | null
+  >(null);
 
   // Room Information
   const roomId = channel.id;
@@ -157,43 +161,37 @@ function BettingPageAdmin() {
       });
   };
 
-  const handleFinishClick = () => {
-    navigate({
-      to: `/betting/${roomId}/vote/decide`,
-    });
+  const handleBetClick = async (
+    roomId: string,
+    option: "option1" | "option2",
+  ) => {
+    try {
+      const response = await fetch("/api/bets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sender: {
+            betAmount: 100,
+            selectOption: option, // option1 또는 option2
+          },
+          channel: {
+            roomId: roomId,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const responseData = await response.json();
+      console.log("Bet successfully posted:", responseData);
+    } catch (error) {
+      console.error("Failed to post bet:", error);
+    }
   };
-
-  // const handleBetClick = async (
-  //   roomId: string,
-  //   option: "option1" | "option2",
-  // ) => {
-  //   try {
-  //     const response = await fetch("/api/bets", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         sender: {
-  //           betAmount: 100,
-  //           selectOption: option, // option1 또는 option2
-  //         },
-  //         channel: {
-  //           roomId: roomId,
-  //         },
-  //       }),
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error(`HTTP error! status: ${response.status}`);
-  //     }
-
-  //     const responseData = await response.json();
-  //     console.log("Bet successfully posted:", responseData);
-  //   } catch (error) {
-  //     console.error("Failed to post bet:", error);
-  //   }
-  // };
 
   const getTotalParticipants = () => {
     return bettingInfo.option1.participants + bettingInfo.option2.participants;
@@ -236,6 +234,29 @@ function BettingPageAdmin() {
     };
   };
 
+  const handleSelectWinner = (option: "option1" | "option2") => {
+    setWinnerOption(option);
+  };
+
+  const handleFinishClick = async () => {
+    if (!winnerOption) {
+      return;
+    }
+
+    try {
+      const roomId = channel.id;
+      const result = await endBetRoom(roomId, winnerOption);
+      console.log(result);
+      navigate({ to: `/betting/${roomId}/vote/resultDetail` });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("API 요청 실패:", error.message);
+      } else {
+        console.error("알 수 없는 오류 발생");
+      }
+    }
+  };
+
   return (
     <div className="bg-layout-main flex h-full w-full flex-col justify-between">
       <div className="flex flex-col gap-5">
@@ -249,17 +270,9 @@ function BettingPageAdmin() {
               {channel.title}
             </h1>
             <p>
-              {status === "active" ? (
-                "투표가 진행 중입니다. 투표를 취소할 수 있습니다."
-              ) : (
-                <>
-                  투표를 취소하게 되면{" "}
-                  <span className="text-bettingPink font-extrabold">
-                    모든 베팅 금액이 환불되고 베팅이 종료되며, 돌이킬 수
-                    없습니다.
-                  </span>
-                </>
-              )}
+              {status === "active"
+                ? "투표가 진행 중입니다. 투표를 취소할 수 있습니다."
+                : "투표가 종료되었습니다. 승부를 결정하세요!"}
             </p>
             <h1 className="text-default-disabled text-md mb-1 font-bold">
               베팅 정보
@@ -278,28 +291,79 @@ function BettingPageAdmin() {
             </p>
           </div>
 
-          <div className="flex justify-between gap-6">
-            <BettingStatsDisplay
-              stats={getStats("option1")}
-              uses={"winning"}
-              content={option1.name}
-            >
-              <PercentageDisplay
-                percentage={getPercentage("option1")}
-                index={0}
-              />
-            </BettingStatsDisplay>
-            <BettingStatsDisplay
-              stats={getStats("option2")}
-              uses={"losing"}
-              content={option2.name}
-            >
-              <PercentageDisplay
-                percentage={getPercentage("option2")}
-                index={1}
-              />
-            </BettingStatsDisplay>
-          </div>
+          {status === "timeover" ? (
+            <div className="flex w-full overflow-hidden rounded-xl border">
+              <div className="relative flex w-1/2">
+                <input
+                  type="radio"
+                  name="bettingOption"
+                  value={option1.name}
+                  id="option1"
+                  className="peer hidden"
+                  onChange={() => {
+                    handleSelectWinner("option1");
+                  }}
+                />
+                <label
+                  htmlFor="option1"
+                  className="text-bettingBlue peer-checked:bg-bettingBlue-behind flex w-full cursor-pointer flex-col items-center justify-center border-r hover:bg-[#c7d5f96d]"
+                >
+                  <p className="text-md mb-1 font-bold">승리 옵션1</p>
+                  <DuckCoinIcon width={70} />
+                  <div className="mt-2 flex flex-col items-center">
+                    <p className="text-xl font-extrabold">
+                      {option1.name}의 승리
+                    </p>
+                  </div>
+                </label>
+              </div>
+              <div className="relative flex w-1/2">
+                <input
+                  type="radio"
+                  name="bettingOption"
+                  value={option2.name}
+                  id="option2"
+                  className="peer hidden"
+                  onChange={() => handleSelectWinner("option2")}
+                />
+                <label
+                  htmlFor="option2"
+                  className="text-bettingPink peer-checked:bg-bettingPink-behind flex w-full cursor-pointer flex-col items-center justify-center border-r hover:bg-[#eab2d66c]"
+                >
+                  <p className="text-md mb-1 font-bold">승리 옵션2</p>
+                  <DuckCoinIcon width={70} />
+                  <div className="mt-2 flex flex-col items-center">
+                    <p className="text-xl font-extrabold">
+                      {option2.name}의 승리
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-between gap-6">
+              <BettingStatsDisplay
+                stats={getStats("option1")}
+                uses={"winning"}
+                content={option1.name}
+              >
+                <PercentageDisplay
+                  percentage={getPercentage("option1")}
+                  index={0}
+                />
+              </BettingStatsDisplay>
+              <BettingStatsDisplay
+                stats={getStats("option2")}
+                uses={"losing"}
+                content={option2.name}
+              >
+                <PercentageDisplay
+                  percentage={getPercentage("option2")}
+                  index={1}
+                />
+              </BettingStatsDisplay>
+            </div>
+          )}
 
           <div className="flex w-full justify-end font-extrabold">
             <div className="flex w-full justify-end gap-6">
@@ -307,21 +371,21 @@ function BettingPageAdmin() {
                 className="bg-secondary text-default hover:bg-secondary-hover hover:text-layout-main w-1/2 rounded-lg px-4 py-2 shadow-md"
                 onClick={handleCancelClick}
               >
-                승부 예측 취소
+                베팅 취소
               </button>
               <button
                 className="bg-primary text-layout-main hover:bg-primary-hover disabled:bg-primary-disabled w-1/2 rounded-lg px-4 py-2 shadow-md"
-                disabled={status !== "timeover"}
+                disabled={status !== "timeover" || !winnerOption}
                 onClick={handleFinishClick}
               >
-                승부 예측 종료
+                베팅 종료
               </button>
             </div>
           </div>
         </div>
       </div>
-      {/* <button onClick={() => handleBetClick(roomId, "option1")}>투표1</button>
-      <button onClick={() => handleBetClick(roomId, "option2")}>투표2</button> */}
+      <button onClick={() => handleBetClick(roomId, "option1")}>투표1</button>
+      <button onClick={() => handleBetClick(roomId, "option2")}>투표2</button>
       <BettingSharedLink />
     </div>
   );
