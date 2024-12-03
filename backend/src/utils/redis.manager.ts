@@ -100,6 +100,10 @@ export class RedisManager {
       betAmount,
       selectedOption,
     });
+    await this.client.sadd(
+      `room:${roomId}:userlist`,
+      `room:${roomId}:user:${userId}`,
+    );
   }
 
   async setBettingUserOnBet({
