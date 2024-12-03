@@ -43,6 +43,7 @@ export class UserService {
       nickname,
       password: hashedPassword,
       duck: 300,
+      realDuck: 0,
     };
     await this.userRepository.createUser(user);
   }
@@ -65,6 +66,7 @@ export class UserService {
         nickname: nickname,
         role: role,
         duck: user.duck,
+        realDuck: user.realDuck,
       });
 
       const payload = {
@@ -107,6 +109,7 @@ export class UserService {
         nickname: nickname,
         role: role,
         duck: 300,
+        realDuck: 0,
       });
     }
 
@@ -145,6 +148,7 @@ export class UserService {
         nickname: userInfo.nickname,
         role: req["user"].role,
         duck: userInfo.duck,
+        realDuck: userInfo.realDuck,
       });
       return userInfo;
     }
@@ -184,6 +188,7 @@ export class UserService {
   async purchaseDuck(req: Request) {
     const userInfo = req["user"];
     const { duck } = await this.redisManager.getUser(userInfo.id);
+    const { realDuck } = await this.redisManager.getUser(userInfo.id);
 
     const newDuck = parseInt(duck) - 30;
     await this.redisManager.setUser({
@@ -191,6 +196,7 @@ export class UserService {
       nickname: userInfo.nickname,
       role: userInfo.role,
       duck: newDuck,
+      realDuck: parseInt(realDuck) + 1,
     });
 
     if (userInfo.role === "user") {
@@ -218,6 +224,7 @@ export class UserService {
       nickname,
       password: hashedPassword,
       duck: parseInt(duck),
+      realDuck: 0,
     };
 
     await this.userRepository.createUser(user);
@@ -248,6 +255,7 @@ export class UserService {
       nickname: user.nickname,
       role: user.role,
       duck: duck,
+      realDuck: parseInt(user.realDuck),
     };
     await this.redisManager.setUser(newUserInfo);
 
