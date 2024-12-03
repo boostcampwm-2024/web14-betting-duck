@@ -22,6 +22,8 @@ services:
     working_dir: /app/backend
     volumes:
       - ./:/app
+      - ./fullchain.pem:/app/web14-betting-duck/backend/src/fullchain.pem
+      - ./privkey.pem:/app/web14-betting-duck/backend/src/privkey.pem
     ports:
       - "${SERVER_PORT}:3000"
     # 배포용 커맨드
