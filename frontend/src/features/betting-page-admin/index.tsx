@@ -1,6 +1,6 @@
 import { BettingStatsDisplay } from "@/shared/components/BettingStatsDisplay/BettingStatsDisplay";
-import { useLoaderData, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useLoaderData, useNavigate, useRouter } from "@tanstack/react-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
 import { BettingSharedLink } from "@/shared/components/BettingSharedLink/BettingSharedLink";
@@ -12,6 +12,7 @@ import { DuckCoinIcon } from "@/shared/icons";
 
 function BettingPageAdmin() {
   useLayoutShift();
+  const router = useRouter();
   const { bettingRoomInfo } = useLoaderData({
     from: "/betting_/$roomId/vote/admin",
   });
@@ -52,6 +53,19 @@ function BettingPageAdmin() {
       console.error("관리자 페이지에 소켓 에러가 발생했습니다.", error);
     },
   });
+
+  React.useEffect(() => {
+    async function refreshData() {
+      await router.invalidate();
+      // 현재 라우트로 다시 이동하여 데이터를 새로 로드
+      await router.navigate({
+        to: window.location.pathname,
+        replace: true,
+      });
+    }
+
+    refreshData();
+  }, [router]);
 
   const handleSocketConnection = useCallback(() => {
     // 방 참여가 아직 안 된 경우
@@ -260,7 +274,7 @@ function BettingPageAdmin() {
   return (
     <div className="bg-layout-main flex h-full w-full flex-col justify-between">
       <div className="flex flex-col gap-5">
-        <BettingTimer socket={socket} />
+        <BettingTimer socket={socket} bettingRoomInfo={bettingRoomInfo} />
         <div className="flex flex-col gap-6 p-5">
           <div className="bg-secondary mb-4 rounded-lg p-3 text-center shadow-inner">
             <h1 className="text-default-disabled text-md mb-1 font-bold">

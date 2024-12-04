@@ -8,13 +8,20 @@ import {
   TabButton,
 } from "./components";
 import { Alert, Snackbar } from "@mui/material";
+import { useLocation } from "@tanstack/react-router";
+import { z } from "zod";
+
+const ReturnTokenSchema = z.object({
+  returnToken: z.string(),
+});
 
 function LoginPage() {
+  const location = useLocation();
+  const returnToken = ReturnTokenSchema.safeParse(location.search);
   const [activeTab, setActiveTab] = useState<"login" | "register" | "guest">(
-    "login",
+    returnToken.success ? "guest" : "login",
   );
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-
   const handleTabChange = (tab: "login" | "register" | "guest") => {
     setActiveTab(tab);
   };

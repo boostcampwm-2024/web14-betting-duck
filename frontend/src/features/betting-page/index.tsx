@@ -1,18 +1,27 @@
-import { BettingContainer } from "./ui/BettingContainer";
-import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
-import { BettingSharedLink } from "@/shared/components/BettingSharedLink/BettingSharedLink";
+// import { BettingContainer } from "./ui/BettingContainer";
+// import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
+// import { BettingSharedLink } from "@/shared/components/BettingSharedLink/BettingSharedLink";
 import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import React from "react";
-import { useLoaderData, useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams, useRouter } from "@tanstack/react-router";
 import { usePreventLeave } from "@/shared/hooks/usePreventLeave";
+import { DEFAULT_BETTING_ROOM_INFO } from "./model/var";
+// import { bettingRoomSchema } from "./model/schema";
+import { responseBetRoomInfo } from "@betting-duck/shared";
+import { z } from "zod";
 
 function BettingPage() {
   useLayoutShift();
-  const { bettingRoomInfo } = useLoaderData({
-    from: "/betting_/$roomId/vote",
+  const { roomId } = useParams({
+    from: "/betting_/$roomId/vote/voting",
   });
+  const [bettingRoomInfo, setBettingRoomInfo] = React.useState<
+    z.infer<typeof responseBetRoomInfo>
+  >(DEFAULT_BETTING_ROOM_INFO);
+
   const { channel } = bettingRoomInfo;
+  const router = useRouter();
 
   const joinRoomRef = React.useRef(false);
   const fetchBetRoomInfoRef = React.useRef(false);
@@ -65,7 +74,8 @@ function BettingPage() {
     (data: unknown) => {
       console.log("배팅이 종료되었습니다", data);
       navigate({
-        to: `/betting/${bettingRoomInfo.channel.id}/vote/resultDetail`,
+        to: "/betting/$roomId/vote/resultDetail",
+        params: { roomId: bettingRoomInfo.channel.id },
       });
     },
     [navigate, bettingRoomInfo.channel.id],
@@ -82,6 +92,34 @@ function BettingPage() {
   );
 
   React.useEffect(() => {
+    (async () => {
+      const betRoomResponse = await fetch(`/api/betrooms/${roomId}`);
+      if (!betRoomResponse.ok) {
+        throw new Error("배팅 방 정보를 불러오는데 실패했습니다.");
+      }
+      const bettingRoomInfo = await betRoomResponse.json();
+      const parsedBettingRoomInfo = responseBetRoomInfo.safeParse(
+        bettingRoomInfo.data,
+      );
+      if (parsedBettingRoomInfo.success) {
+        setBettingRoomInfo(parsedBettingRoomInfo.data);
+      }
+    })();
+  }, [roomId]);
+
+  React.useEffect(() => {
+    async function refreshData() {
+      await router.invalidate();
+      await router.navigate({
+        to: window.location.pathname,
+        replace: true,
+      });
+    }
+
+    refreshData();
+  }, [router]);
+
+  React.useEffect(() => {
     socket.on("finished", handleFinished);
     socket.on("cancelWaitingRoom", handleCancelWaitingRoom);
 
@@ -93,9 +131,9 @@ function BettingPage() {
 
   return (
     <div className="flex w-[100cqw] flex-col">
-      <BettingTimer socket={socket} />
+      {/* <BettingTimer socket={socket} />
       <BettingContainer socket={socket} />
-      <BettingSharedLink />
+      <BettingSharedLink /> */}
     </div>
   );
 }

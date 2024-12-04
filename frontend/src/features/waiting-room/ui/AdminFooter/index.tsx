@@ -3,6 +3,7 @@ import { CancleVottingButton } from "./CancleButton";
 import { StartVotingButton } from "./StartVotingButton";
 import { responseBetRoomInfo } from "@betting-duck/shared";
 import { z } from "zod";
+import { ParticipateButton } from "./ParticipateButton";
 
 function AdminFooter({
   bettingRoomInfo,
@@ -12,6 +13,7 @@ function AdminFooter({
   return (
     <React.Fragment>
       <CancleVottingButton />
+      <ParticipateButton bettingRoomInfo={bettingRoomInfo} />
       <StartVotingButton bettingRoomInfo={bettingRoomInfo} />
     </React.Fragment>
   );

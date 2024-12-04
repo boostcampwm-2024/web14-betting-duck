@@ -35,9 +35,11 @@ function MyPage() {
           <DuckCoinIcon width={32} height={32} />
           <span className="text-2xl font-bold">{duck ?? 0}</span>
         </div>
-        <div className="min-h-[17cqh] w-full max-w-[460px] px-5">
-          <Pond ducks={ducks} />
-        </div>
+        <React.Suspense fallback={null}>
+          <div className="min-h-[17cqh] w-full max-w-[460px] px-5">
+            <Pond ducks={ducks} />
+          </div>
+        </React.Suspense>
         <div className="flex gap-8">
           <button
             onClick={() => addDuck()}

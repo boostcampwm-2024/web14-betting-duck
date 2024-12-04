@@ -1,16 +1,16 @@
 import { DuckCoinIcon } from "@/shared/icons";
-import { Route } from "@/routes/betting_.$roomId.vote.voting";
 import React from "react";
 import { z } from "zod";
 import { userBettingStatusSchema } from "../model/schema";
+import { useBettingContext } from "../hook/useBettingContext";
 
 function BettingFooter({
   userBettingStatus,
 }: {
   userBettingStatus: z.infer<typeof userBettingStatusSchema>;
 }) {
-  const { userInfo } = Route.useLoaderData();
-  const { duck } = userInfo;
+  const { bettingPool } = useBettingContext();
+  const duck = bettingPool.placeBetAmount;
 
   const currentAmount = React.useMemo(
     () => userBettingStatus.betAmount ?? 0,

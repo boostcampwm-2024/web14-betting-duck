@@ -3,7 +3,7 @@ import { useChat } from "../../hook/useChat";
 import { MessageList } from "./ui/MessageList";
 import { messageResponseSchema } from "@betting-duck/shared";
 import Message from "./ui/Message";
-import { useLoaderData, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 
 interface Message {
   message: string;
@@ -35,13 +35,10 @@ const randomRadius = () => {
   return radiuses[Math.floor(Math.random() * radiuses.length)];
 };
 
-function ChatMessages() {
+function ChatMessages({ nickname }: { nickname: string }) {
   const { socket } = useChat();
   const [messages, setMessages] = React.useState<Message[]>([]);
   const isJoinedRef = React.useRef(false);
-  const { userInfo } = useLoaderData({
-    from: "/betting_/$roomId/vote",
-  });
   const { roomId } = useParams({
     from: "/betting_/$roomId/vote",
   });
@@ -71,20 +68,20 @@ function ChatMessages() {
   }, [socket]);
 
   React.useEffect(() => {
-    if (!isJoinedRef.current && socket.isConnected && userInfo.nickname) {
+    if (!isJoinedRef.current && socket.isConnected && nickname) {
       socket.emit("sendMessage", {
         sender: {
-          nickname: userInfo.nickname,
+          nickname: nickname,
         },
         channel: {
           roomId: roomId,
         },
-        message: `${userInfo.nickname}님이 입장하셨습니다.`,
+        message: `${nickname}님이 입장하셨습니다.`,
       });
 
       isJoinedRef.current = true;
     }
-  }, [socket, userInfo, roomId]);
+  }, [socket, nickname, roomId]);
 
   const renderMessage = React.useCallback(Message, []);
 

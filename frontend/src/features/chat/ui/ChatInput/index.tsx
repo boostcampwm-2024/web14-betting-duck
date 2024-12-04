@@ -3,7 +3,7 @@ import { EmoticomButton } from "./ui/EmoticonButton";
 import { InputBar } from "./ui/InputBar";
 import { VoteButton } from "./ui/VoteButton";
 
-function ChatInput() {
+function ChatInput({ nickname }: { nickname: string }) {
   return (
     <React.Fragment>
       <div className="bg-secondary relative flex h-full max-h-[60px] w-full flex-row items-center justify-between gap-4 py-3 pl-2 pr-4">
@@ -12,7 +12,7 @@ function ChatInput() {
           className="absolute -top-[16px] left-0 h-[1px] w-full"
         />
         <EmoticomButton />
-        <InputBar />
+        <InputBar nickname={nickname} />
         <VoteButton />
       </div>
     </React.Fragment>

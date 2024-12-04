@@ -7,7 +7,7 @@ function UserFooter() {
 
   const handleMyPageClick = () => {
     setUserInfo({ roomId: "", role: "user" });
-    navigate({ to: "/my-page" });
+    window.location.href = "/my-page";
   };
 
   const handleCreateClick = () => {

@@ -1,6 +1,6 @@
+import { useUserContext } from "@/shared/hooks/useUserContext";
 import { LogoutIcon } from "@/shared/icons/Logout";
-import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useRouteContext } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 
 function logout() {
   // 모든 가능한 조합으로 쿠키 삭제 시도
@@ -31,10 +31,7 @@ function logout() {
 
 function LogoutButton() {
   const navigate = useNavigate();
-  const context = useRouteContext({
-    from: "__root__",
-  });
-  const queryClient = useQueryClient(context.queryClient);
+  const { setUserInfo } = useUserContext();
 
   return (
     <nav className="flex select-none flex-col items-center gap-6">
@@ -46,16 +43,7 @@ function LogoutButton() {
             throw new Error("로그아웃에 실패했습니다.");
           }
           logout();
-          await queryClient.setQueryData(["auth"], {
-            isAuthenticated: false,
-            userInfo: {
-              message: "로그인이 필요합니다.",
-              role: "guest",
-              nickname: "",
-              duck: 0,
-            },
-          });
-
+          setUserInfo({ isAuthenticated: false, nickname: "", role: "guest" });
           return navigate({
             to: "/login",
           });

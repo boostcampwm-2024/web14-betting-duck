@@ -5,23 +5,12 @@ import { AdminFooter } from "./ui/AdminFooter";
 import { MemberFooter } from "./ui/MemberFooter";
 import { useUserContext } from "@/shared/hooks/useUserContext";
 import { WaitingRoomProvider } from "./provider/WaitingRoomProvider";
-import React from "react";
 import { useLoaderData } from "@tanstack/react-router";
-import { useEffectOnce } from "@/shared/hooks/useEffectOnce";
 
 function WaitingRoom() {
-  const { userInfo, setUserInfo } = useUserContext();
-  const { roomId, bettingRoomInfo } = useLoaderData({
+  const { userInfo } = useUserContext();
+  const { bettingRoomInfo } = useLoaderData({
     from: "/betting_/$roomId/waiting",
-  });
-  const firstRendering = React.useRef(true);
-
-  useEffectOnce(() => {
-    if (firstRendering.current) {
-      setUserInfo({ roomId });
-      firstRendering.current = false;
-      return;
-    }
   });
 
   return (
@@ -36,7 +25,7 @@ function WaitingRoom() {
           {userInfo.role === "admin" ? (
             <AdminFooter bettingRoomInfo={bettingRoomInfo} />
           ) : (
-            <MemberFooter />
+            <MemberFooter bettingRoomInfo={bettingRoomInfo} />
           )}
         </div>
       </div>

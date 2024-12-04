@@ -6,11 +6,25 @@ import { cn } from "@/shared/misc";
 import { useLoaderData } from "@tanstack/react-router";
 import React from "react";
 import { LoadingAnimation } from "@/shared/components/Loading";
+import { getUserInfo } from "../betting-page/api/getUserInfo";
+import { responseUserInfoSchema } from "@betting-duck/shared";
 
 function Chat() {
   const { bettingRoomInfo } = useLoaderData({
     from: "/betting_/$roomId/vote",
   });
+  const [nickname, setNickname] = React.useState("");
+
+  React.useEffect(() => {
+    (async () => {
+      const userInfo = await getUserInfo();
+      const parsedUserInfo = responseUserInfoSchema.safeParse(userInfo);
+      console.log(userInfo);
+      if (parsedUserInfo.success) {
+        setNickname(parsedUserInfo.data.nickname);
+      }
+    })();
+  }, []);
 
   return (
     <ChatProvider>
@@ -25,8 +39,8 @@ function Chat() {
           {bettingRoomInfo.channel.status === "active" ||
           bettingRoomInfo.channel.status === "timeover" ? (
             <React.Fragment>
-              <ChatMessages />
-              <ChatInput />
+              <ChatMessages nickname={nickname} />
+              <ChatInput nickname={nickname} />
             </React.Fragment>
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center">
