@@ -1,5 +1,3 @@
-import { useNavigate } from "@tanstack/react-router";
-
 function ErrorComponent({
   error,
   to,
@@ -11,7 +9,6 @@ function ErrorComponent({
   children: React.ReactNode;
   feature?: string;
 }) {
-  const navigate = useNavigate();
   return (
     <div className="bg-layout-main relative flex h-full w-full flex-col justify-end pt-4">
       <div
@@ -40,9 +37,7 @@ function ErrorComponent({
         <button
           className="text-decoration-none text-layout-main inline-block w-full cursor-pointer rounded-[15px] border border-[rgba(255,255,255,0.1)] bg-[oklch(49.07%_0.2412_292.58/30%)] px-8 py-4 text-[14px] uppercase tracking-[2px] backdrop-blur-[30px]"
           onClick={() => {
-            navigate({
-              to,
-            });
+            window.location.href = to;
           }}
         >
           로그인 하러 가기

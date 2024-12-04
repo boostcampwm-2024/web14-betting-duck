@@ -9,7 +9,7 @@ import { authQueries } from "@/shared/lib/auth/authQuery";
 
 function GuestLoginForm() {
   const [nickname, setNickname] = useState("");
-  const { error, handleGuestLogin } = useAuthStore();
+  const { error } = useAuthStore();
   const [isSignedUp, setIsSignedUp] = useState(false);
 
   const { setUserInfo } = useUserContext();
@@ -50,16 +50,24 @@ function GuestLoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await handleGuestLogin({ nickname: `익명의 ${nickname}` });
-
-    if (result.success) {
-      setUserInfo({ role: "guest", nickname: result.data.nickname });
+    // const result = await handleGuestLogin({ nickname: `익명의 ${nickname}` });
+    try {
+      const response = await fetch("/api/users/guestsignin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ nickname: `익명의 ${nickname}` }),
+      });
+      if (!response.ok) throw new Error("게스트 로그인에 실패했습니다.");
+      const { data } = await response.json();
+      setUserInfo({ role: data.role, nickname: data.nickname });
       await queryClient.setQueryData(["auth"], {
         isAuthenticated: true,
         userInfo: {
-          message: result.data.message,
-          role: "guest",
-          nickname: result.data.nickname,
+          message: data.message,
+          role: data.role,
+          nickname: data.nickname,
           duck: 0,
         },
       });
@@ -73,6 +81,8 @@ function GuestLoginForm() {
           nickname: decodeURIComponent(nickname),
         },
       });
+    } catch (error) {
+      console.error("게스트 로그인에 실패했습니다.", error);
     }
   };
   return (

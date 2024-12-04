@@ -11,7 +11,7 @@ export const Route = createFileRoute("/")({
   loader: () => {
     if (!user) {
       throw redirect({
-        to: "/my-page",
+        to: "/login",
       });
     }
   },
