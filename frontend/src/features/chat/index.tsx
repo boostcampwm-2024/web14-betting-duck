@@ -6,25 +6,31 @@ import { cn } from "@/shared/misc";
 import { useLoaderData } from "@tanstack/react-router";
 import React from "react";
 import { LoadingAnimation } from "@/shared/components/Loading";
-import { getUserInfo } from "../betting-page/api/getUserInfo";
-import { responseUserInfoSchema } from "@betting-duck/shared";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
+import { getBettingRoomInfo } from "../betting-page/api/getBettingRoomInfo";
+import { BettingRoomInfoSchema } from "@/shared/types";
+import { authQueries } from "@/shared/lib/auth/authQuery";
 
 function Chat() {
-  const { bettingRoomInfo } = useLoaderData({
+  const { roomId } = useLoaderData({
     from: "/betting_/$roomId/vote",
   });
-  const [nickname, setNickname] = React.useState("");
+  const { data } = useSuspenseQuery({
+    queryKey: bettingRoomQueryKey(roomId),
+    queryFn: () => getBettingRoomInfo(roomId),
+  });
+  const parsedData = BettingRoomInfoSchema.safeParse(data);
+  if (!parsedData.success) {
+    throw new Error("방 정보를 불러오는데 실패했습니다.");
+  }
+  const { channel } = parsedData.data;
 
-  React.useEffect(() => {
-    (async () => {
-      const userInfo = await getUserInfo();
-      const parsedUserInfo = responseUserInfoSchema.safeParse(userInfo);
-      console.log(userInfo);
-      if (parsedUserInfo.success) {
-        setNickname(parsedUserInfo.data.nickname);
-      }
-    })();
-  }, []);
+  const { data: authData } = useSuspenseQuery({
+    queryKey: authQueries.queryKey,
+    queryFn: authQueries.queryFn,
+  });
+  const nickname = authData?.userInfo?.nickname;
 
   return (
     <ChatProvider>
@@ -34,10 +40,9 @@ function Chat() {
           "bg-layout-main relative flex flex-col justify-end pt-4",
         )}
       >
-        <ChatHeader />
+        <ChatHeader bettingRoomInfo={parsedData.data} />
         <React.Fragment>
-          {bettingRoomInfo.channel.status === "active" ||
-          bettingRoomInfo.channel.status === "timeover" ? (
+          {channel.status === "active" || channel.status === "timeover" ? (
             <React.Fragment>
               <ChatMessages nickname={nickname} />
               <ChatInput nickname={nickname} />
