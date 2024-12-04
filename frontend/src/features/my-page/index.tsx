@@ -9,7 +9,6 @@ function MyPage() {
   const { userInfo } = useLoaderData({
     from: "/my-page",
   });
-  console.log("my-page", userInfo);
   const [ducks, setDucks] = React.useState([FallingDuck]);
 
   function addDuck() {

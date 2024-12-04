@@ -29,9 +29,11 @@ export const Route = createFileRoute("/my-page")({
     return { userInfo: userInfo.data };
   },
   component: MyPage,
-  errorComponent: ({ error }) => (
-    <ErrorComponent error={error} feature="마이 페이지" to="/login">
-      <ErrorMyPage />
-    </ErrorComponent>
-  ),
+  errorComponent: ({ error }) => {
+    return (
+      <ErrorComponent error={error} feature="마이 페이지" to="/login">
+        <ErrorMyPage />
+      </ErrorComponent>
+    );
+  },
 });
