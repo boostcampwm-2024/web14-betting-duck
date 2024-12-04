@@ -7,7 +7,10 @@ import {
 } from "@/shared/icons";
 import { NavItem } from "./item";
 import styles from "./style.module.css";
-import { useLocation } from "@tanstack/react-router";
+import { useLocation, useRouteContext } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { AuthStatusTypeSchema } from "@/shared/lib/auth/guard";
+import { LogoutButton } from "@/features/login-page/ui/components/Logout";
 
 type NavItemType = {
   icon: () => JSX.Element;
@@ -22,7 +25,7 @@ const navItems = {
     { icon: CreateVoteIcon, label: "create vote", href: "/create-vote" },
     { icon: WaitingRoomIcon, label: "betting", href: "/betting" },
   ],
-  bottom: [{ icon: LoginIcon, label: "login", href: "/login" }],
+  login: [{ icon: LoginIcon, label: "login", href: "/login" }],
 };
 
 function changeNavigatorPosition(href: string) {
@@ -55,6 +58,16 @@ function NavItems({ items }: { items: NavItemType[] }) {
 
 function RootSideBar() {
   const location = useLocation();
+  const context = useRouteContext({
+    from: "__root__",
+  });
+  const data = useQueryClient(context.queryClient).getQueryData(["auth"]);
+  let isAuthenticated = false;
+  const parsedResult = AuthStatusTypeSchema.safeParse(data);
+  if (parsedResult.success) {
+    isAuthenticated = parsedResult.data.isAuthenticated;
+  }
+
   React.useEffect(() => {
     changeNavigatorPosition(location.href);
   }, [location]);
@@ -66,7 +79,7 @@ function RootSideBar() {
     >
       <div className={styles.navigator} />
       <NavItems items={navItems.top} />
-      <NavItems items={navItems.bottom} />
+      {isAuthenticated ? <LogoutButton /> : <NavItems items={navItems.login} />}
     </aside>
   );
 }

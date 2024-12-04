@@ -1,7 +1,5 @@
 import { BettingPageAdmin } from "@/features/betting-page-admin";
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { loadBetRoomData } from "@/shared/lib/loader/useBetRoomLoader";
-import { queryClient } from "@/shared/lib/auth/authQuery";
 import {
   responseBetRoomInfo,
   responseUserInfoSchema,
@@ -9,6 +7,7 @@ import {
 import { z } from "zod";
 import { getBettingRoomInfo } from "@/features/betting-page/api/getBettingRoomInfo";
 import { STORAGE_KEY } from "@/features/betting-page/model/var";
+import { GlobalErrorComponent } from "@/shared/components/Error/GlobalError";
 
 type BetRoomResponse = z.infer<typeof responseBetRoomInfo>;
 type UserInfo = z.infer<typeof responseUserInfoSchema>;
@@ -34,16 +33,25 @@ export const Route = createFileRoute("/betting_/$roomId/vote/admin")({
       });
     }
   },
-  loader: async ({ params, abortController }): Promise<RouteLoaderData> => {
+  loader: async ({ params }): Promise<RouteLoaderData> => {
     const { roomId } = params;
 
-    const { bettingRoomInfo, userInfo } = await loadBetRoomData({
-      roomId,
-      signal: abortController.signal,
-      queryClient,
-    });
+    const betRoomResponse = await fetch(`/api/betrooms/${roomId}`);
+    if (!betRoomResponse.ok) {
+      throw new Error("배팅 방 정보를 불러오는데 실패했습니다.");
+    }
+    const bettingRoomInfo = await betRoomResponse.json();
 
-    return { roomId, bettingRoomInfo, userInfo };
+    const userInfoResponse = await fetch("/api/users/userInfo");
+    if (!userInfoResponse.ok) {
+      throw new Error("사용자 정보를 불러오는데 실패했습니다.");
+    }
+    const userInfo = await userInfoResponse.json();
+    return {
+      roomId,
+      bettingRoomInfo: bettingRoomInfo.data,
+      userInfo: userInfo.data,
+    };
   },
   onLeave: async ({ params }) => {
     const { roomId } = params;
@@ -53,5 +61,8 @@ export const Route = createFileRoute("/betting_/$roomId/vote/admin")({
       console.log(bettingRoomInfo);
       return sessionStorage.removeItem(STORAGE_KEY);
     }
+  },
+  errorComponent: ({ error }) => {
+    return <GlobalErrorComponent error={error} to="/" />;
   },
 });

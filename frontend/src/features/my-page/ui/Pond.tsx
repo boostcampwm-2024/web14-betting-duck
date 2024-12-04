@@ -12,7 +12,7 @@ import envMap from "@assets/models/industrial_sunset_puresky_4k.hdr";
 function Ground({ color = "#f0f4fa" }: { color?: string }) {
   const [ref] = usePlane<THREE.Mesh>(() => ({
     rotation: [-Math.PI / 2, 0, 0],
-    position: [0, -2.5, 0],
+    position: [0, -3.5, 0],
     type: "Static",
     material: {
       friction: 0.5,

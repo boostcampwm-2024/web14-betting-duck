@@ -8,7 +8,8 @@ function BettingSharedLink() {
   const [copied, setCopied] = React.useState(false);
   const location = useLocation();
   let url = `${window.location.origin}${location.href}`;
-  if (url.includes("vote")) url = url.replace("/vote/voting", "/waiting");
+  if (url.includes("vote"))
+    url = url = url.replace(/\/vote\/(voting|admin)/, "/waiting");
 
   function copyfallback() {
     const textArea = document.createElement("textarea");

@@ -21,8 +21,8 @@ const router = createRouter({
     queryClient,
   } as RouterContext,
   defaultPreload: "intent",
-  defaultErrorComponent: ({ error, reset }) => (
-    <GlobalErrorComponent error={error} reset={reset} />
+  defaultErrorComponent: ({ error }) => (
+    <GlobalErrorComponent error={error} to={"/"} />
   ),
 });
 

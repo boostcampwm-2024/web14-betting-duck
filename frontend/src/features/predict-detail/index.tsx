@@ -5,6 +5,8 @@ import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 import { useUserContext } from "@/shared/hooks/useUserContext";
 import { useLoaderData } from "@tanstack/react-router";
 import { BettingStatistics } from "./ui/Bettingstatistics";
+import { AdminBettingResult } from "./ui/AdminBettingResult";
+import { BettingResult } from "./ui/UserBettingResult";
 
 function PredictDetail() {
   useLayoutShift();
@@ -12,12 +14,11 @@ function PredictDetail() {
     from: "/betting_/$roomId/vote",
   });
   const { channel } = bettingRoomInfo;
-  const betResults = useLoaderData({
+  const { betResults, personalBetResult } = useLoaderData({
     from: "/betting_/$roomId/vote/resultDetail",
   });
   const { userInfo } = useUserContext();
-  console.log(userInfo);
-  const myoption = "option1";
+  const myoption = personalBetResult.selectedOption;
   const myresult =
     myoption === "option1" && betResults.winning_option === "option1"
       ? "win"
@@ -54,6 +55,34 @@ function PredictDetail() {
       {/* PredictDetail statistics */}
       <BettingStatistics betResults={betResults} channel={channel} />
 
+      {/* PredictDetail Result */}
+      {userInfo.role === "admin" ? (
+        <AdminBettingResult
+          winningOption={betResults.winning_option}
+          winner={
+            betResults.winning_option === "option1"
+              ? bettingRoomInfo.channel.options.option1.name
+              : bettingRoomInfo.channel.options.option2.name
+          }
+          winnerCount={
+            betResults.winning_option === "option1"
+              ? betResults.option_1_total_participants
+              : betResults.option_2_total_participants
+          }
+        />
+      ) : (
+        <BettingResult
+          renderWinningIcon={renderWinningIcon}
+          winningOption={betResults.winning_option}
+          options={bettingRoomInfo.channel.options}
+          earnedAmount={
+            betResults.winning_option === "option1"
+              ? betResults.option_1_total_participants
+              : betResults.option_2_total_participants
+          }
+        />
+      )}
+
       {/* PredictDetail Own */}
       <div className="w-full px-8">
         <div className="bg-secondary flex flex-col gap-4 rounded-lg px-8 py-4 shadow-inner">
@@ -64,7 +93,7 @@ function PredictDetail() {
             <div className="flex items-center justify-center gap-2">
               {renderWinningIcon()} 베팅 금액
             </div>
-            <p>300 코인</p>
+            <p>{personalBetResult.betAmount} 코인</p>
           </div>
           <div className="flex w-full items-center justify-between font-extrabold">
             <p>선택 옵션</p>
@@ -82,7 +111,8 @@ function PredictDetail() {
               <span
                 className={`${myresult === "win" ? "text-bettingBlue" : "text-bettingPink"}`}
               >
-                {myresult === "win" ? "+" : "0"} 300코인
+                {myresult === "win" ? "+" : "-"} {personalBetResult.betAmount}{" "}
+                코인
               </span>
             </p>
           </div>

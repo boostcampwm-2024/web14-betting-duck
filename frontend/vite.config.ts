@@ -27,6 +27,11 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false,
           ws: true,
+          configure: (proxy) => {
+            proxy.on("proxyRes", (proxyRes) => {
+              proxyRes.headers["cache-control"] = "public, max-age=31536000";
+            });
+          },
         },
       },
       middlewareMode: env.NODE_ENV === "development" ? false : true,
@@ -83,7 +88,15 @@ export default defineConfig(({ mode }) => {
           },
           manualChunks(id) {
             if (id.includes("node_modules")) {
+              if (id.includes("@tanstack")) return "vendor-tanstack";
+              if (id.includes("react")) return "vendor-react";
+              if (id.includes("@socket")) return "vendor-socket";
               return "vendor";
+            }
+
+            if (id.includes("/features/")) {
+              const feature = id.split("/features/")[1].split("/")[0];
+              return `feature-${feature}`;
             }
           },
         },

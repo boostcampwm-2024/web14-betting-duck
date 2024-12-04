@@ -4,7 +4,6 @@ import {
   responseBetRoomInfo,
   responseUserInfoSchema,
 } from "@betting-duck/shared";
-import { validateAccess } from "@/shared/lib/validateAccess";
 import { betRoomQueries } from "@/shared/api/responseBettingRoomInfo";
 import { userInfoQueries } from "@/shared/hooks/useUserInfo";
 
@@ -47,26 +46,41 @@ function loaderTypeGuard(
 
 export async function loadBetRoomData({
   roomId,
-  signal,
   queryClient,
 }: LoadBetRoomParams): Promise<{
   roomId: string;
   bettingRoomInfo: BetRoomInfo;
   userInfo: UserInfo;
 }> {
-  await validateAccess(roomId, signal);
-
   const betRoomQuery = betRoomQueries(roomId);
-  const betRoomInfoData = await queryClient.fetchQuery({
-    queryKey: betRoomQuery.roomInfo.queryKey,
-    queryFn: betRoomQuery.roomInfo.queryFn,
-  });
 
-  const userInfoQuery = userInfoQueries;
-  const userInfoData = await queryClient.fetchQuery({
-    queryKey: userInfoQuery.queryKey,
-    queryFn: userInfoQuery.queryFn,
-  });
+  // 기존 쿼리 무효화
+  await Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: betRoomQuery.roomInfo.queryKey,
+      refetchType: "all",
+    }),
+    queryClient.invalidateQueries({
+      queryKey: userInfoQueries.queryKey,
+      refetchType: "all",
+    }),
+  ]);
+
+  // 새로운 데이터 fetch
+  const [betRoomInfoData, userInfoData] = await Promise.all([
+    queryClient.fetchQuery({
+      queryKey: betRoomQuery.roomInfo.queryKey,
+      queryFn: betRoomQuery.roomInfo.queryFn,
+      staleTime: 0, // 데이터를 즉시 stale 상태로 만듦
+      gcTime: 0, // 캐시를 즉시 제거
+    }),
+    queryClient.fetchQuery({
+      queryKey: userInfoQueries.queryKey,
+      queryFn: userInfoQueries.queryFn,
+      staleTime: 0,
+      gcTime: 0,
+    }),
+  ]);
 
   const { bettingRoomInfo, userInfo } = loaderTypeGuard(
     betRoomInfoData,

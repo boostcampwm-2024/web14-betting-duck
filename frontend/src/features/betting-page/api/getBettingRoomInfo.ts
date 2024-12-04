@@ -4,18 +4,17 @@ async function getBettingRoomInfo(roomId: string) {
   try {
     const response = await fetch(`/api/betrooms/${roomId}`);
     if (!response.ok) {
-      throw new Error("배팅 방 정보를 불러오는데 실패했습니다.");
+      return null; // 에러 대신 null 반환
     }
 
     const { data } = await response.json();
     const result = responseBetRoomInfo.safeParse(data);
     if (!result.success) {
-      console.error(result.error.errors);
-      throw new Error("배팅 방 정보를 파싱하는데 실패했습니다.");
+      return null; // 파싱 실패시에도 null 반환
     }
     return result.data;
-  } catch (error) {
-    console.error(error);
+  } catch {
+    return null; // 네트워크 에러 등의 경우에도 null 반환
   }
 }
 
