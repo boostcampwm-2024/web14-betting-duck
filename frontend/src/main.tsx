@@ -6,19 +6,15 @@ import { routeTree } from "./routeTree.gen";
 import { Auth } from "@/shared/lib/auth/auth";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { GlobalErrorComponent } from "./shared/components/Error/GlobalError";
-import { QueryClient } from "@tanstack/react-query";
-import { queryClient } from "@/shared/lib/auth/authQuery";
 
 type RouterContext = {
   auth: Auth;
-  queryClient: QueryClient;
 };
 
 const router = createRouter({
   routeTree,
   context: {
     auth: {} as Auth,
-    queryClient,
   } as RouterContext,
   defaultPreload: "intent",
   defaultErrorComponent: ({ error }) => (
