@@ -8,12 +8,14 @@ import { PercentageDisplay } from "@/shared/components/PercentageDisplay/Percent
 import { refund } from "./model/api";
 import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 import { bettingRoomSchema } from "../betting-page/model/schema";
+import { usePreventLeave } from "@/shared/hooks/usePreventLeave";
 
 function BettingPageAdmin() {
   useLayoutShift();
   const { bettingRoomInfo } = useLoaderData({
     from: "/betting_/$roomId/vote/admin",
   });
+  console.log("bettingRoomInfo", bettingRoomInfo);
   const { channel } = bettingRoomInfo;
   const [status, setStatus] = useState(
     bettingRoomInfo.channel.status || "active",
@@ -49,10 +51,14 @@ function BettingPageAdmin() {
     },
   });
 
+  usePreventLeave(
+    true,
+    "배팅 페이지에서 벗어나면 배팅이 취소됩니다. 정말로 나가시겠습니까?",
+  );
+
   const handleSocketConnection = useCallback(() => {
     // 방 참여가 아직 안 된 경우
     if (!joinRoomRef.current) {
-      console.log(22);
       joinRoomRef.current = true;
       socket.emit("joinRoom", {
         channel: {
@@ -66,7 +72,6 @@ function BettingPageAdmin() {
       bettingRoomInfo.channel.status === "active" &&
       !fetchBetRoomInfoRef.current
     ) {
-      console.log(33);
       fetchBetRoomInfoRef.current = true;
       socket.emit("fetchBetRoomInfo", {
         roomId: channel.id,
@@ -85,7 +90,6 @@ function BettingPageAdmin() {
 
   useEffect(() => {
     if (!socket) return;
-    console.log("timeover");
     socket.on("timeover", handleTimeOver);
 
     return () => {
