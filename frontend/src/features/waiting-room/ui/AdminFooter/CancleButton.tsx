@@ -1,10 +1,11 @@
-import { useNavigate } from "@tanstack/react-router";
-import { useWaitingContext } from "../../hooks/use-waiting-context";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useUserContext } from "@/shared/hooks/useUserContext";
 
 function CancleVottingButton() {
   const navigate = useNavigate();
-  const { roomId } = useWaitingContext();
+  const { roomId } = useParams({
+    from: "/betting_/$roomId/waiting",
+  });
   const { setUserInfo } = useUserContext();
 
   async function cancleBettingRoom() {

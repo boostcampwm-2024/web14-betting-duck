@@ -2,6 +2,7 @@ import waitingUserImage from "@assets/images/waiting-user.png";
 import React from "react";
 import { useWaitingContext } from "../hooks/use-waiting-context";
 import { z } from "zod";
+import { useParams } from "@tanstack/react-router";
 
 type ParticipantInfo = string;
 
@@ -29,7 +30,10 @@ function User({ nickname }: { nickname: string }) {
 }
 
 function ParticipantsList() {
-  const { socket, roomId } = useWaitingContext();
+  const { roomId } = useParams({
+    from: "/betting_/$roomId/waiting",
+  });
+  const { socket } = useWaitingContext();
   const [participantsList, setParticipantsList] = React.useState<
     Set<ParticipantInfo>
   >(new Set());

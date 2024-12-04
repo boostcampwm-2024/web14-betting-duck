@@ -1,16 +1,8 @@
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
-import { responseBetRoomInfo } from "@betting-duck/shared";
-import { useLoaderData } from "@tanstack/react-router";
 import React from "react";
-import { z } from "zod";
 
 interface WaitingRoomContextType {
   socket: ReturnType<typeof useSocketIO>;
-  roomId: string;
-  bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
-  setBettingRoomInfo: React.Dispatch<
-    React.SetStateAction<z.infer<typeof responseBetRoomInfo>>
-  >;
   isBettingStarted: boolean;
   setIsBettingStarted: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -18,11 +10,6 @@ interface WaitingRoomContextType {
 const WaitingRoomContext = React.createContext<WaitingRoomContextType>(null!);
 
 function WaitingRoomProvider({ children }: { children: React.ReactNode }) {
-  const { roomId, bettingRoomInfo } = useLoaderData({
-    from: "/betting_/$roomId/waiting",
-  });
-  const [currentBettingRoomInfo, setCurrentBettingRoomInfo] =
-    React.useState(bettingRoomInfo);
   const [isBettingStarted, setIsBettingStarted] = React.useState(false);
 
   const socket = useSocketIO({
@@ -45,20 +32,10 @@ function WaitingRoomProvider({ children }: { children: React.ReactNode }) {
   const value = React.useMemo(
     () => ({
       socket,
-      roomId,
-      bettingRoomInfo: currentBettingRoomInfo,
-      setBettingRoomInfo: setCurrentBettingRoomInfo,
       isBettingStarted,
       setIsBettingStarted,
     }),
-    [
-      socket,
-      roomId,
-      currentBettingRoomInfo,
-      setCurrentBettingRoomInfo,
-      isBettingStarted,
-      setIsBettingStarted,
-    ],
+    [socket, isBettingStarted, setIsBettingStarted],
   );
 
   return (

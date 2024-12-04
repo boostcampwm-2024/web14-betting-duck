@@ -29,7 +29,7 @@ function ParticipateButton({
       const { channel } = json.data;
 
       if (channel.status === "active") {
-        window.location.href = `/betting/${roomId}/vote/voting`;
+        window.location.href = `/betting/${roomId}/vote/admin`;
       } else {
         console.error("베팅이 아직 시작되지 않았습니다.");
       }

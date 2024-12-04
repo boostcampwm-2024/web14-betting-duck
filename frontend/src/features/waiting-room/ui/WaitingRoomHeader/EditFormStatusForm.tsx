@@ -8,14 +8,16 @@ import {
   TitleInput,
 } from "@/features/create-vote/ui/components";
 import { DialogContext } from "@/shared/components/Dialog";
-import { useWaitingContext } from "../../hooks/use-waiting-context";
+import { useQueryClient } from "@tanstack/react-query";
+import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
+import { BettingRoomInfo } from "@/shared/types";
 
 type WaitingRoomInfo = z.infer<typeof responseBetRoomInfo>;
 
 const EditFormStatusForm = React.memo(({ info }: { info: WaitingRoomInfo }) => {
   const { channel } = info;
   const { toggleOpen } = React.useContext(DialogContext);
-  const { setBettingRoomInfo } = useWaitingContext();
+  const queryClient = useQueryClient();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -50,8 +52,15 @@ const EditFormStatusForm = React.memo(({ info }: { info: WaitingRoomInfo }) => {
         console.error(result.error.errors);
         return;
       }
-      setBettingRoomInfo(result.data);
+      queryClient.setQueryData(
+        bettingRoomQueryKey(channel.id),
+        (prev: BettingRoomInfo) => {
+          return { ...prev, ...result.data };
+        },
+      );
+
       toggleOpen();
+      console.log(result.data);
     } catch (error) {
       console.error(error);
     }
