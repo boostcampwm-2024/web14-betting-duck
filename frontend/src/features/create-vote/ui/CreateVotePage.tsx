@@ -2,10 +2,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { usePredictionStore } from "../model/store";
 import { useValidation } from "../model/useValidation";
 import { CaseInputs, CoinInput, Timer, TitleInput } from "./components";
+import { useQueryClient } from "@tanstack/react-query";
 
 function CreateVotePage() {
   const { isFormValid } = useValidation();
-  const { submitPrediction } = usePredictionStore();
+  const queryClient = useQueryClient();
+  const { submitPrediction } = usePredictionStore(queryClient);
   const navigate = useNavigate();
 
   const handleCancelClick = () => {
