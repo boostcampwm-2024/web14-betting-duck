@@ -3,8 +3,10 @@ import { EmailIcon, LoginPasswordIcon } from "@/shared/icons";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../../model/store";
 import { Warning } from "./Warning";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouteContext } from "@tanstack/react-router";
 import { useUserContext } from "@/shared/hooks/useUserContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { authQueries } from "@/shared/lib/auth/authQuery";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -12,16 +14,31 @@ function LoginForm() {
   const [isValid, setIsValid] = useState(false);
   const navigate = useNavigate();
   const { setUserInfo } = useUserContext();
-
   const { error, handleLogin } = useAuthStore();
+  const context = useRouteContext({
+    from: "__root__",
+  });
+  const queryClient = useQueryClient(context.queryClient);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const result = await handleLogin({ email, password });
     if (result.success) {
       const { data } = result.data;
       setUserInfo({ role: "user", nickname: data.nickname });
+      await queryClient.setQueryData(["auth"], {
+        isAuthenticated: true,
+        userInfo: {
+          message: data.message,
+          role: "user",
+          nickname: data.nickname,
+          duck: 0,
+        },
+      });
+      await queryClient.invalidateQueries({
+        queryKey: authQueries.queryKey,
+        exact: true,
+      });
       navigate({
         to: "/my-page",
         search: {
