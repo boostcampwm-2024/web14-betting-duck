@@ -4,11 +4,16 @@ import { useAuthStore } from "../../model/store";
 import { Warning } from "./Warning";
 import { useNavigate } from "@tanstack/react-router";
 import { useUserContext } from "@/shared/hooks/useUserContext";
+import { useUpdateUserStatus } from "@/shared/hooks/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
+import { authQueries } from "@/shared/lib/auth/authQuery";
 
 function GuestLoginForm({ to, roomId }: { to?: string; roomId?: string }) {
   const [nickname, setNickname] = useState("");
   const { error } = useAuthStore();
   const [isSignedUp, setIsSignedUp] = useState(false);
+  const { updateAuthStatus } = useUpdateUserStatus();
+  const queryClient = useQueryClient();
 
   const { setUserInfo } = useUserContext();
   const navigate = useNavigate();
@@ -55,11 +60,21 @@ function GuestLoginForm({ to, roomId }: { to?: string; roomId?: string }) {
       });
       if (!response.ok) throw new Error("게스트 로그인에 실패했습니다.");
       const { data } = await response.json();
+      console.log(data);
       setUserInfo({
         role: "guest",
         nickname: data.nickname,
         isAuthenticated: true,
       });
+
+      updateAuthStatus(true, {
+        role: "guest",
+        nickname: data.nickname,
+        duck: 0,
+        message: "OK",
+      });
+      await queryClient.invalidateQueries({ queryKey: authQueries.queryKey });
+
       if (to && roomId) {
         window.location.href = `/betting/${roomId}/waiting`;
       }

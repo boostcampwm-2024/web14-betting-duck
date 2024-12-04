@@ -1,5 +1,8 @@
+import { useUpdateUserStatus } from "@/shared/hooks/useAuth";
 import { useUserContext } from "@/shared/hooks/useUserContext";
 import { LogoutIcon } from "@/shared/icons/Logout";
+import { authQueries } from "@/shared/lib/auth/authQuery";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
 function logout() {
@@ -32,6 +35,8 @@ function logout() {
 function LogoutButton() {
   const navigate = useNavigate();
   const { setUserInfo } = useUserContext();
+  const queryClient = useQueryClient();
+  const { updateAuthStatus } = useUpdateUserStatus();
 
   return (
     <nav className="flex select-none flex-col items-center gap-6">
@@ -44,6 +49,17 @@ function LogoutButton() {
           }
           logout();
           setUserInfo({ isAuthenticated: false, nickname: "", role: "guest" });
+
+          updateAuthStatus(false, {
+            role: "guest",
+            nickname: "",
+            duck: 0,
+            message: "OK",
+          });
+
+          await queryClient.invalidateQueries({
+            queryKey: authQueries.queryKey,
+          });
           return navigate({
             to: "/login",
           });
