@@ -21,7 +21,7 @@ function StartVotingButton({
         throw new Error("방 정보를 불러오는데 실패했습니다.");
       }
       if (bettingRoomInfo.channel.status === "active") {
-        console.log("배팅이 이미 시작되었습니다.");
+        console.log("베팅이 이미 시작되었습니다.");
         return navigate({
           to: "/betting/$roomId/vote/admin",
           params: { roomId },
@@ -31,7 +31,7 @@ function StartVotingButton({
       const response = await fetch(`/api/betrooms/start/${roomId}`, {
         method: "PATCH",
       });
-      if (!response.ok) throw new Error("배팅 시작에 실패했습니다.");
+      if (!response.ok) throw new Error("베팅 시작에 실패했습니다.");
       setIsBettingStarted(true);
       navigate({ to: "/betting/$roomId/vote/admin", params: { roomId } });
     } catch (error) {

@@ -27,7 +27,7 @@ function PredictButton() {
         }}
       >
         <button className="text-default bg-secondary shadow-far rounded-lg px-3 py-1 font-extrabold">
-          배팅 창 나가기
+          베팅 창 나가기
         </button>
       </DialogTrigger>
       <DialogContent>

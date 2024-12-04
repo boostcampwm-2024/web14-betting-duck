@@ -7,7 +7,7 @@ const StringSchema = z.string();
 export function useBettingRoomInfo(roomId: string) {
   const parsedRoomId = StringSchema.safeParse(roomId);
   if (!parsedRoomId.success) {
-    throw new Error("배팅 방 정보를 불러오는데 실패");
+    throw new Error("베팅 방 정보를 불러오는데 실패");
   }
   const { roomInfo } = betRoomQueries(parsedRoomId.data);
   return useQuery({

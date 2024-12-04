@@ -38,7 +38,7 @@ export const Route = createFileRoute("/betting_/$roomId/vote/admin")({
 
     const betRoomResponse = await fetch(`/api/betrooms/${roomId}`);
     if (!betRoomResponse.ok) {
-      throw new Error("배팅 방 정보를 불러오는데 실패했습니다.");
+      throw new Error("베팅 방 정보를 불러오는데 실패했습니다.");
     }
     const bettingRoomInfo = await betRoomResponse.json();
 
