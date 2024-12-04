@@ -89,9 +89,13 @@ export class BetService {
             selectedOption: savedBet.selectedOption,
             betRoom: { id: savedBet.betRoom.id },
             status: savedBet.status,
-            createdAt: savedBet.createdAt,
           };
         }
+        return {
+          betAmount: sender.betAmount,
+          selectedOption: sender.selectOption,
+          status: "pending",
+        };
       } else {
         throw new BadRequestException("해당 유저를 찾을 수 없습니다.");
       }

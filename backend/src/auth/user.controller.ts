@@ -12,7 +12,6 @@ import {
 import { Request, Response } from "express";
 import { ApiBody, ApiOperation } from "@nestjs/swagger";
 import { JwtGuestAuthGuard } from "src/utils/guards/http-guest-authenticated.guard";
-import { JwtUserAuthGuard } from "src/utils/guards/http-user-authenticated.guard";
 import { UserService } from "./user.service";
 import { SignUpUserRequestDto } from "./dto/sign-up-user.dto";
 import { SignInUserRequestDto } from "./dto/sign-in-user.dto";
@@ -158,7 +157,7 @@ export class UserController {
   }
 
   @ApiOperation({ summary: "오리 구매" })
-  @UseGuards(JwtUserAuthGuard)
+  @UseGuards(JwtGuestAuthGuard)
   @Get("/purchaseduck")
   async purchaseDuck(@Req() req: Request, @Res() res: Response) {
     const result = await this.userService.purchaseDuck(req);

@@ -14,6 +14,7 @@ import { BetRoom } from "./bet-room.entity";
 import { BetResult } from "src/bet-result/bet-result.entity";
 import { BetGateway } from "src/bet/bet.gateway";
 import { BetRepository } from "src/bet/bet.repository";
+import { DBManager } from "src/utils/db.manager";
 
 @Injectable()
 export class BetRoomService {
@@ -24,6 +25,7 @@ export class BetRoomService {
     private betRepository: BetRepository,
     private redisManager: RedisManager,
     private betGateway: BetGateway,
+    private dbManager: DBManager,
   ) {}
 
   async createBetRoom(userId: number, createBetRoomDto: CreateBetRoomDto) {
@@ -355,43 +357,35 @@ export class BetRoomService {
     winningOption: string,
     winningOdds: number,
   ) {
-    let cursor = "0";
-    do {
-      const [nextCursor, keys] = await this.redisManager.client.scan(
-        cursor,
-        "MATCH",
-        `room:${roomId}:user:*`,
-        "COUNT",
-        20,
+    const keys = await this.redisManager.client.smembers(
+      `room:${roomId}:userlist`,
+    );
+
+    const userUpdates = keys.map(async (key) => {
+      const { userId, owner, betAmount, selectedOption, role } =
+        await this.fetchUserBetData(key);
+
+      if (owner === "1" || !betAmount || !selectedOption) {
+        return;
+      }
+
+      const updatedDuck = await this.calculateSettledDuckCoins(
+        userId,
+        betAmount,
+        selectedOption,
+        winningOption,
+        winningOdds,
       );
-      cursor = nextCursor;
-
-      const userUpdates = keys.map(async (key) => {
-        const { userId, owner, betAmount, selectedOption, role } =
-          await this.fetchUserBetData(key);
-
-        if (owner === "1" || !betAmount || !selectedOption) {
-          return;
-        }
-
-        const updatedDuck = await this.calculateSettledDuckCoins(
-          userId,
-          betAmount,
-          selectedOption,
-          winningOption,
-          winningOdds,
-        );
-        await this.redisManager.client.hset(`user:${userId}`, {
-          duck: updatedDuck,
-        });
-        if (role === "user") {
-          await this.updateBetSettleStatus(Number(userId), roomId, updatedDuck);
-          await this.saveUserDuckCoins(Number(userId), updatedDuck);
-        }
+      await this.redisManager.client.hset(`user:${userId}`, {
+        duck: updatedDuck,
       });
+      if (role === "user") {
+        await this.updateBetSettleStatus(Number(userId), roomId, updatedDuck);
+        await this.saveUserDuckCoins(Number(userId), updatedDuck);
+      }
+    });
 
-      await Promise.all(userUpdates);
-    } while (cursor !== "0");
+    await Promise.all(userUpdates);
   }
 
   private async fetchUserBetData(key: string) {
@@ -433,7 +427,11 @@ export class BetRoomService {
     if (!bet) {
       throw new NotFoundException("해당 베팅을 찾을 수 없습니다.");
     }
-    await this.betRepository.update(bet.id, {
+    // await this.betRepository.update(bet.id, {
+    //   status: "settled",
+    //   settledAmount: updatedDuck,
+    // });
+    await this.dbManager.setBet(bet.id, {
       status: "settled",
       settledAmount: updatedDuck,
     });
@@ -495,6 +493,7 @@ export class BetRoomService {
   }
 
   private async saveUserDuckCoins(userId: number, updateDuck: number) {
-    await this.userRepository.update(userId, { duck: updateDuck });
+    // await this.userRepository.update(userId, { duck: updateDuck });
+    await this.dbManager.setUser(userId, { duck: updateDuck });
   }
 }
