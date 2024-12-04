@@ -7,19 +7,25 @@ import { cn } from "@/shared/misc";
 import { useLayout } from "@/shared/hooks/useLayout";
 import { LayoutProvider } from "@/app/provider/LayoutProvider";
 import { RouterContext } from "@/main";
+import { authQueries } from "@/shared/lib/auth/authQuery";
+import React from "react";
+import { LoadingAnimation } from "@/shared/components/Loading";
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: () => (
     <LayoutProvider>
       <UserProvider>
         <RootLayout>
-          <RootHeader />
+          <React.Suspense fallback={<LoadingAnimation />}>
+            <RootHeader />
+          </React.Suspense>
           <RootSideBar />
           <Outlet />
         </RootLayout>
       </UserProvider>
     </LayoutProvider>
   ),
+  loader: (opts) => opts.context.queryClient.ensureQueryData(authQueries),
   errorComponent: ({ error }) => <GlobalErrorComponent error={error} to="/" />,
 });
 

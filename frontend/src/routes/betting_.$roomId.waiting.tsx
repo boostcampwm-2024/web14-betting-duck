@@ -4,22 +4,14 @@ import { WaitingError } from "@/features/waiting-room/ui/WaitingError";
 import { AccessError } from "@/features/waiting-room/error/AccessError";
 import { Forbidden } from "@/features/waiting-room/error/Forbidden";
 import { ErrorComponent } from "@/shared/components/Error";
-import { responseBetRoomInfo } from "@betting-duck/shared";
-import { z } from "zod";
 import { getBettingRoomInfo } from "@/features/betting-page/api/getBettingRoomInfo";
 import { GuestLoginForm } from "@/features/login-page/ui/components";
-
-type BetRoomInfo = z.infer<typeof responseBetRoomInfo>;
+import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
 
 let returnToken = "";
 export const Route = createFileRoute("/betting_/$roomId/waiting")({
   component: WaitingRoom,
-  loader: async ({
-    params,
-  }): Promise<{
-    roomId: string;
-    bettingRoomInfo: BetRoomInfo;
-  }> => {
+  loader: async ({ params, context: { queryClient } }) => {
     const { roomId } = params;
     returnToken = roomId;
     try {
@@ -42,8 +34,10 @@ export const Route = createFileRoute("/betting_/$roomId/waiting")({
     if (!bettingRoomInfo) {
       throw new AccessError("방에 참여 할 수 없습니다", "FORBIDDEN");
     }
-
-    return { roomId, bettingRoomInfo };
+    await queryClient.ensureQueryData({
+      queryKey: bettingRoomQueryKey(roomId),
+      queryFn: () => getBettingRoomInfo(roomId),
+    });
   },
   shouldReload: () => true,
   errorComponent: ({ error }) => {
