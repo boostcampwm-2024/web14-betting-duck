@@ -1,17 +1,21 @@
 import React from "react";
 import { TimerIcon } from "@/shared/icons";
 import { ProgressBar } from "@/shared/components/ProgressBar";
-import { useLoaderData } from "@tanstack/react-router";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
+import { responseBetRoomInfo } from "@betting-duck/shared";
+import { z } from "zod";
 
-function BettingTimer({ socket }: { socket: ReturnType<typeof useSocketIO> }) {
+function BettingTimer({
+  socket,
+  bettingRoomInfo,
+}: {
+  socket: ReturnType<typeof useSocketIO>;
+  bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
+}) {
   const [remainingTime, setRemainingTime] = React.useState(0);
   const [timerActive, setTimerActive] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
-  const { bettingRoomInfo } = useLoaderData({
-    from: "/betting_/$roomId/vote",
-  });
   const { endAt, startAt } = bettingRoomInfo.channel.metadata;
 
   React.useEffect(() => {

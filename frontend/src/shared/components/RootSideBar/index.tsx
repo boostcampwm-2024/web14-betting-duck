@@ -7,10 +7,9 @@ import {
 } from "@/shared/icons";
 import { NavItem } from "./item";
 import styles from "./style.module.css";
-import { useLocation, useRouteContext } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { AuthStatusTypeSchema } from "@/shared/lib/auth/guard";
+import { useLocation } from "@tanstack/react-router";
 import { LogoutButton } from "@/features/login-page/ui/components/Logout";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 
 type NavItemType = {
   icon: () => JSX.Element;
@@ -58,15 +57,23 @@ function NavItems({ items }: { items: NavItemType[] }) {
 
 function RootSideBar() {
   const location = useLocation();
-  const context = useRouteContext({
-    from: "__root__",
-  });
-  const data = useQueryClient(context.queryClient).getQueryData(["auth"]);
-  let isAuthenticated = false;
-  const parsedResult = AuthStatusTypeSchema.safeParse(data);
-  if (parsedResult.success) {
-    isAuthenticated = parsedResult.data.isAuthenticated;
-  }
+  const { userInfo } = useUserContext();
+  const [isAuthenticated, setIsAuthenticated] = React.useState(
+    userInfo.isAuthenticated,
+  );
+
+  React.useEffect(() => {
+    (async () => {
+      const userTokenResponse = await fetch("/api/users/token");
+      if (userTokenResponse.ok) {
+        setIsAuthenticated(true);
+      }
+    })();
+  }, []);
+
+  React.useEffect(() => {
+    setIsAuthenticated(userInfo.isAuthenticated);
+  }, [userInfo]);
 
   React.useEffect(() => {
     changeNavigatorPosition(location.href);

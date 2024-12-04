@@ -2,9 +2,10 @@ import { LogoIcon } from "@/shared/icons";
 import { Image } from "@/shared/components/Image";
 import waitingUserImage from "@assets/images/waiting-user.png";
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { authQueries } from "@/shared/lib/auth/authQuery";
-import { AuthStatusTypeSchema } from "@/shared/lib/auth/guard";
+import React from "react";
+import { getUserInfo } from "@/features/betting-page/api/getUserInfo";
+import { responseUserInfoSchema } from "@betting-duck/shared";
+import { useUserContext } from "@/shared/hooks/useUserContext";
 
 function UserInfo({ nickname }: { nickname: string }) {
   return (
@@ -23,17 +24,24 @@ function UserInfo({ nickname }: { nickname: string }) {
 }
 
 function RootHeader() {
-  const { data: authData } = useQuery({
-    queryKey: authQueries.queryKey,
-    queryFn: authQueries.queryFn,
-    staleTime: authQueries.staleTime,
-    gcTime: authQueries.gcTime,
-  });
-  let nickname = "";
-  const parsedResult = AuthStatusTypeSchema.safeParse(authData);
-  if (parsedResult.success) {
-    nickname = parsedResult.data.userInfo.nickname;
-  }
+  const { userInfo } = useUserContext();
+  const [nickname, setNickname] = React.useState<string>(
+    userInfo.nickname ?? "",
+  );
+  React.useEffect(() => {
+    (async () => {
+      const userInfo = await getUserInfo();
+      const parsedUserInfo = responseUserInfoSchema.safeParse(userInfo);
+      console.log(userInfo);
+      if (parsedUserInfo.success) {
+        setNickname(parsedUserInfo.data.nickname);
+      }
+    })();
+  }, []);
+
+  React.useEffect(() => {
+    setNickname(userInfo.nickname ?? "");
+  }, [userInfo]);
 
   return (
     <div className="header flex-start flex items-center gap-2 pl-[60px]">
