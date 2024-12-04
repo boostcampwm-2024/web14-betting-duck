@@ -2,7 +2,9 @@ import { LogoIcon } from "@/shared/icons";
 import { Image } from "@/shared/components/Image";
 import waitingUserImage from "@assets/images/waiting-user.png";
 import { Link } from "@tanstack/react-router";
-import { useUserInfo } from "@/shared/hooks/useUserInfo";
+import { useQuery } from "@tanstack/react-query";
+import { authQueries } from "@/shared/lib/auth/authQuery";
+import { AuthStatusTypeSchema } from "@/shared/lib/auth/guard";
 
 function UserInfo({ nickname }: { nickname: string }) {
   return (
@@ -21,8 +23,17 @@ function UserInfo({ nickname }: { nickname: string }) {
 }
 
 function RootHeader() {
-  const userInfo = useUserInfo();
-  const { nickname } = userInfo.data ?? { nickname: "" };
+  const { data: authData } = useQuery({
+    queryKey: authQueries.queryKey,
+    queryFn: authQueries.queryFn,
+    staleTime: authQueries.staleTime,
+    gcTime: authQueries.gcTime,
+  });
+  let nickname = "";
+  const parsedResult = AuthStatusTypeSchema.safeParse(authData);
+  if (parsedResult.success) {
+    nickname = parsedResult.data.userInfo.nickname;
+  }
 
   return (
     <div className="header flex-start flex items-center gap-2 pl-[60px]">

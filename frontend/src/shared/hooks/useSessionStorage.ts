@@ -12,6 +12,15 @@ async function generateChecksum<T>(data: T): Promise<string> {
   return hashHex;
 }
 
+const safeDecode = (str: string): string => {
+  try {
+    return decodeURIComponent(atob(str));
+  } catch (e) {
+    console.error("Decoding error:", e);
+    return "";
+  }
+};
+
 function useSessionStorage() {
   // UTF-8 문자열을 Base64로 안전하게 인코딩하는 함수
   const safeEncode = (str: string): string => {
@@ -20,16 +29,6 @@ function useSessionStorage() {
       return btoa(encodeURIComponent(str));
     } catch (e) {
       console.error("Encoding error:", e);
-      return "";
-    }
-  };
-
-  // Base64로 인코딩된 문자열을 디코딩하는 함수
-  const safeDecode = (str: string): string => {
-    try {
-      return decodeURIComponent(atob(str));
-    } catch (e) {
-      console.error("Decoding error:", e);
       return "";
     }
   };
@@ -77,4 +76,30 @@ function useSessionStorage() {
   return { setSessionItem, getSessionItem };
 }
 
-export { useSessionStorage };
+const getSessionItem = async (key: string) => {
+  try {
+    const encodedData = sessionStorage.getItem(key);
+    if (!encodedData) return null;
+
+    const decoded = JSON.parse(safeDecode(encodedData));
+    const decodedChecksum = await generateChecksum(decoded.value);
+    if (decodedChecksum !== decoded.checksum) {
+      console.error("데이터 무결성 검증 실패");
+      sessionStorage.removeItem(key);
+      return null;
+    }
+
+    if (new Date().getTime() - decoded.timestamp > 1000 * 60 * 60) {
+      console.error("세션이 만료되었습니다.");
+      sessionStorage.removeItem(key);
+      return null;
+    }
+
+    return decoded.value;
+  } catch (error) {
+    console.error("Error getting session item:", error);
+    return null;
+  }
+};
+
+export { useSessionStorage, getSessionItem };

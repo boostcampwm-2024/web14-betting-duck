@@ -6,6 +6,7 @@ async function validateAccess(roomId: string, signal: AbortSignal) {
       fetch("/api/users/token", { signal }),
       fetch(`/api/betrooms/${roomId}`, { signal }),
     ]);
+
     if (!tokenResponse.ok) {
       throw AccessError.unauthorized("토큰이 존재하지 않습니다.", {
         requiredRole: "user",
