@@ -30,7 +30,7 @@ function RouteComponent() {
 
   React.useEffect(() => {
     if (!roomId) {
-      navigate({ to: "/require-roomId" });
+      navigate({ to: "/require-bettingRoomId" });
       return;
     }
 
@@ -38,7 +38,7 @@ function RouteComponent() {
       try {
         const response = await fetch(`/api/betrooms/${roomId}`);
         if (!response.ok) {
-          navigate({ to: "/require-roomId" });
+          navigate({ to: "/require-bettingRoomId" });
           return;
         }
 
@@ -46,7 +46,7 @@ function RouteComponent() {
         console.log(data);
         const result = responseBetRoomInfo.safeParse(data);
         if (!result.success) {
-          navigate({ to: "/require-roomId" });
+          navigate({ to: "/require-bettingRoomId" });
           return;
         }
 
@@ -72,10 +72,10 @@ function RouteComponent() {
           return;
         }
 
-        navigate({ to: "/require-roomId" });
+        navigate({ to: "/require-bettingRoomId" });
       } catch {
         // 네트워크 에러 등의 경우 기본 경로로 리다이렉트
-        navigate({ to: "/require-roomId" });
+        navigate({ to: "/require-bettingRoomId" });
       }
     };
 

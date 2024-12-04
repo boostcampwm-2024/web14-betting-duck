@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import React from "react";
 
-export const Route = createFileRoute("/require-roomId")({
+export const Route = createFileRoute("/require-bettingRoomId")({
   component: RouteComponent,
 });
 

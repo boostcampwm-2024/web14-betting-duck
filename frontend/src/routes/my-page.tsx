@@ -20,14 +20,6 @@ export const Route = createFileRoute("/my-page")({
       });
     }
   },
-  loader: async () => {
-    const userInfoResponse = await fetch("/api/users/userInfo");
-    if (!userInfoResponse.ok) {
-      throw new Error("사용자 정보를 불러오는데 실패했습니다");
-    }
-    const userInfo = await userInfoResponse.json();
-    return { userInfo: userInfo.data };
-  },
   component: MyPage,
   errorComponent: ({ error }) => {
     return (
