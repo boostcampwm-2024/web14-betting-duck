@@ -25,24 +25,36 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       </LayoutProvider>
     </QueryClientProvider>
   ),
-  errorComponent: ({ error, reset }) => (
-    <GlobalErrorComponent error={error} reset={reset} />
-  ),
+  errorComponent: ({ error }) => <GlobalErrorComponent error={error} to="/" />,
   loader: async ({ context }) => {
-    const result = await context.queryClient.ensureQueryData(authQueries);
-    const parsedResult = AuthStatusTypeSchema.safeParse(result);
-    if (!parsedResult.success) {
+    try {
+      const result = await context.queryClient.ensureQueryData(authQueries);
+      const parsedResult = AuthStatusTypeSchema.safeParse(result);
+      if (!parsedResult.success) {
+        return {
+          isAuthenticated: false,
+          userInfo: {
+            message: "로그인이 필요합니다.",
+            role: "guest",
+            nickname: "",
+            duck: 0,
+          },
+        };
+      }
+      context.queryClient.setQueryData(authQueries.queryKey, parsedResult.data);
+      return parsedResult.data;
+    } catch (error) {
+      console.error("Root loader error:", error);
       return {
         isAuthenticated: false,
         userInfo: {
-          message: "로그인이 필요합니다.",
+          message: "인증 상태를 확인할 수 없습니다.",
           role: "guest",
           nickname: "",
           duck: 0,
         },
       };
     }
-    return parsedResult.data;
   },
 });
 

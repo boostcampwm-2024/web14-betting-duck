@@ -3,8 +3,6 @@ import { ErrorComponent } from "@/shared/components/Error";
 import { MyPage } from "@/features/my-page";
 import { ErrorMyPage } from "@/features/my-page/error";
 import { ROUTES } from "@/shared/config/route";
-import { userInfoQueries } from "@/shared/hooks/useUserInfo";
-import { responseUserInfoSchema } from "@betting-duck/shared";
 
 export const Route = createFileRoute("/my-page")({
   beforeLoad: async () => {
@@ -22,18 +20,12 @@ export const Route = createFileRoute("/my-page")({
       });
     }
   },
-  loader: async ({ context: { queryClient } }) => {
-    const userInfoData = await queryClient.ensureQueryData(userInfoQueries);
-    const userInfo = responseUserInfoSchema.safeParse(userInfoData);
-    if (!userInfo.success) {
+  loader: async () => {
+    const userInfoResponse = await fetch("/api/users/userInfo");
+    if (!userInfoResponse.ok) {
       throw new Error("사용자 정보를 불러오는데 실패했습니다");
     }
-    if (userInfo.data.role === "guest") {
-      throw redirect({
-        to: "/require-login",
-        search: { from: encodeURIComponent(ROUTES.GUEST_LOGIN) },
-      });
-    }
+    const userInfo = await userInfoResponse.json();
     return { userInfo: userInfo.data };
   },
   component: MyPage,

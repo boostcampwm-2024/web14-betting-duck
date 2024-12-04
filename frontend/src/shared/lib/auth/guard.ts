@@ -40,11 +40,13 @@ export async function requireAuth({ to }: { to: string }) {
 export async function requireUesrRole({
   userInfo,
   to,
+  role,
 }: {
   userInfo: z.infer<typeof responseUserInfoSchema>;
   to: string;
+  role: "user" | "admin" | "guest";
 }) {
-  if (userInfo.role === "guest") {
+  if (role === "guest") {
     throw redirect({
       to: "/require-login",
       search: { from: encodeURIComponent(to) },
@@ -54,7 +56,7 @@ export async function requireUesrRole({
   return userInfo;
 }
 
-type UserInfoType = z.infer<typeof responseUserInfoSchema>;
+export type UserInfoType = z.infer<typeof responseUserInfoSchema>;
 
 type AuthStatusType = {
   isAuthenticated: boolean;

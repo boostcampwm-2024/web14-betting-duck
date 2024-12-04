@@ -2,8 +2,10 @@ import { LoginIDIcon } from "@/shared/icons";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../../model/store";
 import { Warning } from "./Warning";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouteContext } from "@tanstack/react-router";
 import { useUserContext } from "@/shared/hooks/useUserContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { authQueries } from "@/shared/lib/auth/authQuery";
 
 function GuestLoginForm() {
   const [nickname, setNickname] = useState("");
@@ -12,6 +14,10 @@ function GuestLoginForm() {
 
   const { setUserInfo } = useUserContext();
   const navigate = useNavigate();
+  const context = useRouteContext({
+    from: "__root__",
+  });
+  const queryClient = useQueryClient(context.queryClient);
 
   useEffect(() => {
     const checkSignupStatus = async () => {
@@ -48,6 +54,19 @@ function GuestLoginForm() {
 
     if (result.success) {
       setUserInfo({ role: "guest", nickname: result.data.nickname });
+      await queryClient.setQueryData(["auth"], {
+        isAuthenticated: true,
+        userInfo: {
+          message: result.data.message,
+          role: "guest",
+          nickname: result.data.nickname,
+          duck: 0,
+        },
+      });
+      await queryClient.invalidateQueries({
+        queryKey: authQueries.queryKey,
+        exact: true,
+      });
       navigate({
         to: "/my-page",
         search: {

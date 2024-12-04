@@ -1,13 +1,15 @@
 import { DuckCoinIcon } from "@/shared/icons";
-import { Route } from "@/routes/my-page";
-import { useNavigate } from "@tanstack/react-router";
+import { useLoaderData, useNavigate } from "@tanstack/react-router";
 import { Pond } from "./ui/Pond";
 import { FallingDuck } from "./ui/FallingDuck";
 import React from "react";
 
 function MyPage() {
   const navigate = useNavigate();
-  const { userInfo } = Route.useLoaderData();
+  const { userInfo } = useLoaderData({
+    from: "/my-page",
+  });
+  console.log("my-page", userInfo);
   const [ducks, setDucks] = React.useState([FallingDuck]);
 
   function addDuck() {
@@ -25,7 +27,7 @@ function MyPage() {
           <DuckCoinIcon width={32} height={32} />
           <span className="text-2xl font-bold">{userInfo.duck ?? 0}</span>
         </div>
-        <div className="min-h-[17cqh] w-full px-5">
+        <div className="min-h-[17cqh] w-full max-w-[460px] px-5">
           <Pond ducks={ducks} />
         </div>
         <div className="flex gap-8">

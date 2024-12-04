@@ -26,6 +26,7 @@ function useUserInfo() {
     queryFn: userInfoQueries.queryFn,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
+    retry: 2,
   });
 }
 
