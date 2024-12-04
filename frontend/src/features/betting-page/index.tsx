@@ -1,27 +1,31 @@
-// import { BettingContainer } from "./ui/BettingContainer";
-// import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
-// import { BettingSharedLink } from "@/shared/components/BettingSharedLink/BettingSharedLink";
+import { BettingContainer } from "./ui/BettingContainer";
+import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
+import { BettingSharedLink } from "@/shared/components/BettingSharedLink/BettingSharedLink";
 import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import React from "react";
-import { useNavigate, useParams, useRouter } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { usePreventLeave } from "@/shared/hooks/usePreventLeave";
-import { DEFAULT_BETTING_ROOM_INFO } from "./model/var";
-// import { bettingRoomSchema } from "./model/schema";
-import { responseBetRoomInfo } from "@betting-duck/shared";
-import { z } from "zod";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
+import { getBettingRoomInfo } from "./api/getBettingRoomInfo";
+import { BettingRoomInfoSchema } from "@/shared/types";
 
 function BettingPage() {
   useLayoutShift();
   const { roomId } = useParams({
     from: "/betting_/$roomId/vote/voting",
   });
-  const [bettingRoomInfo, setBettingRoomInfo] = React.useState<
-    z.infer<typeof responseBetRoomInfo>
-  >(DEFAULT_BETTING_ROOM_INFO);
 
-  const { channel } = bettingRoomInfo;
-  const router = useRouter();
+  const { data } = useSuspenseQuery({
+    queryKey: bettingRoomQueryKey(roomId),
+    queryFn: () => getBettingRoomInfo(roomId),
+  });
+  const parsedData = BettingRoomInfoSchema.safeParse(data);
+  if (!parsedData.success) {
+    throw new Error("방 정보를 불러오는데 실패했습니다.");
+  }
+  const { channel } = parsedData.data;
 
   const joinRoomRef = React.useRef(false);
   const fetchBetRoomInfoRef = React.useRef(false);
@@ -58,27 +62,24 @@ function BettingPage() {
       });
     }
 
-    if (
-      bettingRoomInfo.channel.status === "active" &&
-      !fetchBetRoomInfoRef.current
-    ) {
+    if (channel.status === "active" && !fetchBetRoomInfoRef.current) {
       console.log(33);
       fetchBetRoomInfoRef.current = true;
       socket.emit("fetchBetRoomInfo", {
         roomId: channel.id,
       });
     }
-  }, [channel.id, bettingRoomInfo.channel.status, socket]);
+  }, [channel.id, channel.status, socket]);
 
   const handleFinished = React.useCallback(
     (data: unknown) => {
       console.log("배팅이 종료되었습니다", data);
       navigate({
         to: "/betting/$roomId/vote/resultDetail",
-        params: { roomId: bettingRoomInfo.channel.id },
+        params: { roomId: channel.id },
       });
     },
-    [navigate, bettingRoomInfo.channel.id],
+    [navigate, channel.id],
   );
 
   const handleCancelWaitingRoom = React.useCallback(
@@ -92,34 +93,6 @@ function BettingPage() {
   );
 
   React.useEffect(() => {
-    (async () => {
-      const betRoomResponse = await fetch(`/api/betrooms/${roomId}`);
-      if (!betRoomResponse.ok) {
-        throw new Error("배팅 방 정보를 불러오는데 실패했습니다.");
-      }
-      const bettingRoomInfo = await betRoomResponse.json();
-      const parsedBettingRoomInfo = responseBetRoomInfo.safeParse(
-        bettingRoomInfo.data,
-      );
-      if (parsedBettingRoomInfo.success) {
-        setBettingRoomInfo(parsedBettingRoomInfo.data);
-      }
-    })();
-  }, [roomId]);
-
-  React.useEffect(() => {
-    async function refreshData() {
-      await router.invalidate();
-      await router.navigate({
-        to: window.location.pathname,
-        replace: true,
-      });
-    }
-
-    refreshData();
-  }, [router]);
-
-  React.useEffect(() => {
     socket.on("finished", handleFinished);
     socket.on("cancelWaitingRoom", handleCancelWaitingRoom);
 
@@ -131,9 +104,9 @@ function BettingPage() {
 
   return (
     <div className="flex w-[100cqw] flex-col">
-      {/* <BettingTimer socket={socket} />
-      <BettingContainer socket={socket} />
-      <BettingSharedLink /> */}
+      <BettingTimer socket={socket} bettingRoomInfo={parsedData.data} />
+      <BettingContainer socket={socket} bettingRoomInfo={parsedData.data} />
+      <BettingSharedLink />
     </div>
   );
 }

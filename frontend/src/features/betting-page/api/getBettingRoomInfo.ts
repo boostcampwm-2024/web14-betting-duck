@@ -12,7 +12,11 @@ async function getBettingRoomInfo(roomId: string) {
     if (!result.success) {
       return null; // 파싱 실패시에도 null 반환
     }
-    return result.data;
+    return {
+      ...result.data,
+      isPlaceBet: false,
+      placeBetAmount: 0,
+    };
   } catch {
     return null; // 네트워크 에러 등의 경우에도 null 반환
   }

@@ -1,11 +1,14 @@
+import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
+import { BettingRoomInfo, BettingRoomInfoSchema } from "@/shared/types";
 import { responseUserInfoSchema } from "@betting-duck/shared";
+import { QueryClient } from "@tanstack/react-query";
 
 interface PlaceBettingParams {
   selectedOption: "option1" | "option2";
   roomId: string;
   bettingAmount: number;
-  isPlaceBet: boolean;
-  refreshBettingAmount: (roomId: string) => Promise<void>;
+  bettingRoomInfo: BettingRoomInfo;
+  queryClient: QueryClient;
 }
 
 async function getUserInfo() {
@@ -28,19 +31,22 @@ async function placeBetting({
   selectedOption,
   roomId,
   bettingAmount,
-  isPlaceBet,
-  refreshBettingAmount,
+  bettingRoomInfo,
+  queryClient,
 }: PlaceBettingParams) {
   const { duck } = await getUserInfo();
+  const { isPlaceBet } = bettingRoomInfo;
 
   if (isPlaceBet) {
     console.error("이미 배팅을 했습니다.");
+    return;
   }
 
   if (duck - bettingAmount < 0) {
     throw new Error("소유한 덕코인보다 더 많은 금액을 배팅할 수 없습니다.");
   }
 
+  console.log(bettingAmount, selectedOption, roomId);
   const response = await fetch("/api/bets", {
     method: "POST",
     headers: {
@@ -59,7 +65,19 @@ async function placeBetting({
   if (!response.ok) {
     throw new Error("배팅에 실패했습니다.");
   }
-  await refreshBettingAmount(roomId);
+  console.log(response);
+
+  queryClient.setQueryData(bettingRoomQueryKey(roomId), (prevData: unknown) => {
+    const parsedData = BettingRoomInfoSchema.safeParse(prevData);
+    if (!parsedData.success) {
+      return prevData;
+    }
+    return {
+      ...parsedData.data,
+      isPlaceBet: true,
+      placeBetAmount: bettingAmount,
+    };
+  });
 }
 
 export { placeBetting };
