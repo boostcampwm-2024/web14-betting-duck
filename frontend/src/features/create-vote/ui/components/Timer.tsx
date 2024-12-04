@@ -56,7 +56,7 @@ const Timer = React.memo(({ initialValue = 1 }: { initialValue?: number }) => {
         <TimerIcon />
         <span className="text-md text-default">타이머 설정</span>
         <div className="border-border h-3 border-l"></div>
-        <span className="text-default ml-2 text-lg font-bold">{value}</span>
+        <span className="text-default ml-2 text-lg font-bold">{value}분</span>
       </div>
       <div className="bg-primary flex flex-col items-center justify-center rounded-r-lg p-1">
         <button

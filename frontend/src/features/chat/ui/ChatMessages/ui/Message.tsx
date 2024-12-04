@@ -37,11 +37,11 @@ const Message: React.FC<MessageProps> = (
   }
 
   return (
-    <div key={sender.nickname + index} className="flex justify-end">
+    <div key={sender.nickname + index} className="flex">
       <div
         className={`max-w-[80%] ${radius} flex flex-row items-start gap-4 bg-white p-3 shadow-sm`}
       >
-        <div className="max-w-[300px]">
+        <div className="">
           <span className={`${color} text-md mr-3 whitespace-nowrap font-bold`}>
             {sender.nickname}
           </span>

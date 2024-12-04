@@ -156,6 +156,20 @@ export class UserController {
     });
   }
 
+  @ApiOperation({ summary: "오리 구매" })
+  @UseGuards(JwtGuestAuthGuard)
+  @Get("/purchaseduck")
+  async purchaseDuck(@Req() req: Request, @Res() res: Response) {
+    const result = await this.userService.purchaseDuck(req);
+    return res.status(HttpStatus.OK).json({
+      status: HttpStatus.OK,
+      data: {
+        message: "OK",
+        ...result,
+      },
+    });
+  }
+
   @ApiOperation({ summary: "비회원을 회원으로 업그레이드" })
   @UseGuards(JwtGuestAuthGuard)
   @Post("/upgradeguest")

@@ -66,4 +66,21 @@ export class UserRepository {
       );
     }
   }
+
+  async refundDuck(userId: number, amount: number) {
+    try {
+      return await this.userRepository
+        .createQueryBuilder()
+        .update(User)
+        .set({
+          duck: () => `duck + ${amount}`,
+        })
+        .where("id = :userId", { userId })
+        .execute();
+    } catch {
+      throw new InternalServerErrorException(
+        "duck 포인트 증가 처리에 실패했습니다.",
+      );
+    }
+  }
 }
