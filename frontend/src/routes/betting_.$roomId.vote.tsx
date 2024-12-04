@@ -6,16 +6,11 @@ import {
 import { Chat } from "@/features/chat";
 import { BettingProvider } from "@/features/betting-page/provider/BettingProvider";
 import { cn } from "@/shared/misc";
-import {
-  responseBetRoomInfo,
-  responseUserInfoSchema,
-} from "@betting-duck/shared";
+import { responseBetRoomInfo } from "@betting-duck/shared";
 import { z } from "zod";
 import { AccessError } from "@/features/waiting-room/error/AccessError";
 import { Unauthorized } from "@/features/waiting-room/error/Unauthorized";
 import { Forbidden } from "@/features/waiting-room/error/Forbidden";
-import { loadBetRoomData } from "@/shared/lib/loader/useBetRoomLoader";
-import { queryClient } from "@/shared/lib/auth/authQuery";
 import { Suspense } from "react";
 import { LoadingAnimation } from "@/shared/components/Loading";
 
@@ -24,24 +19,25 @@ type BetRoomResponse = z.infer<typeof responseBetRoomInfo>;
 interface RouteLoaderData {
   roomId: string;
   bettingRoomInfo: BetRoomResponse;
-  duckCoin: number;
-  userInfo: z.infer<typeof responseUserInfoSchema>;
 }
 
-let returnToken = "";
+const returnToken = "";
 export const Route = createFileRoute("/betting_/$roomId/vote")({
-  loader: async ({ params, abortController }): Promise<RouteLoaderData> => {
+  loader: async ({ params }): Promise<RouteLoaderData> => {
     const { roomId } = params;
-    returnToken = roomId;
 
-    const { bettingRoomInfo, userInfo } = await loadBetRoomData({
+    const betRoomResponse = await fetch(`/api/betrooms/${roomId}`);
+    if (!betRoomResponse.ok) {
+      throw new Error("배팅 방 정보를 불러오는데 실패했습니다.");
+    }
+    const bettingRoomInfo = await betRoomResponse.json();
+
+    return {
       roomId,
-      signal: abortController.signal,
-      queryClient,
-    });
-
-    return { roomId, bettingRoomInfo, duckCoin: userInfo.duck, userInfo };
+      bettingRoomInfo: bettingRoomInfo.data,
+    };
   },
+  shouldReload: () => true,
   component: RouteComponent,
   errorComponent: ({ error }) => {
     if (error instanceof AccessError) {

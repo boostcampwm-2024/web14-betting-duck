@@ -33,6 +33,7 @@ export const Route = createFileRoute("/betting_/$roomId/vote/admin")({
       });
     }
   },
+  shouldReload: () => true,
   loader: async ({ params }): Promise<RouteLoaderData> => {
     const { roomId } = params;
 

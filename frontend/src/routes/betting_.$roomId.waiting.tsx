@@ -2,47 +2,68 @@ import { createFileRoute } from "@tanstack/react-router";
 import { WaitingRoom } from "@/features/waiting-room";
 import { WaitingError } from "@/features/waiting-room/ui/WaitingError";
 import { AccessError } from "@/features/waiting-room/error/AccessError";
-import { Unauthorized } from "@/features/waiting-room/error/Unauthorized";
 import { Forbidden } from "@/features/waiting-room/error/Forbidden";
 import { ErrorComponent } from "@/shared/components/Error";
-import {
-  responseBetRoomInfo,
-  responseUserInfoSchema,
-} from "@betting-duck/shared";
+import { responseBetRoomInfo } from "@betting-duck/shared";
 import { z } from "zod";
-import { loadBetRoomData } from "@/shared/lib/loader/useBetRoomLoader";
+import { getBettingRoomInfo } from "@/features/betting-page/api/getBettingRoomInfo";
+import { GuestLoginForm } from "@/features/login-page/ui/components";
 
 type BetRoomInfo = z.infer<typeof responseBetRoomInfo>;
-type UserInfo = z.infer<typeof responseUserInfoSchema>;
 
 let returnToken = "";
 export const Route = createFileRoute("/betting_/$roomId/waiting")({
   component: WaitingRoom,
   loader: async ({
     params,
-    abortController,
-    context: { queryClient },
   }): Promise<{
     roomId: string;
     bettingRoomInfo: BetRoomInfo;
-    userInfo: UserInfo;
   }> => {
     const { roomId } = params;
     returnToken = roomId;
+    try {
+      const response = await fetch("/api/users/token");
+      if (!response.ok) {
+        throw new AccessError(
+          "사용자 정보를 불러오는데 실패했습니다.",
+          "UNAUTHORIZED",
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      throw new AccessError(
+        "사용자 정보를 불러오는데 실패했습니다.",
+        "UNAUTHORIZED",
+      );
+    }
 
-    return loadBetRoomData({
-      roomId,
-      signal: abortController.signal,
-      queryClient,
-    });
+    const bettingRoomInfo = await getBettingRoomInfo(roomId);
+    if (!bettingRoomInfo) {
+      throw new AccessError("방에 참여 할 수 없습니다", "FORBIDDEN");
+    }
+
+    return { roomId, bettingRoomInfo };
   },
+  shouldReload: () => true,
   errorComponent: ({ error }) => {
     if (error instanceof AccessError) {
       if (error.code === "UNAUTHORIZED") {
         return (
-          <Unauthorized error={error} returnToken={returnToken}>
-            <WaitingError />
-          </Unauthorized>
+          <div className="bg-layout-main relative flex h-full w-full flex-col justify-end pt-4">
+            <div
+              className="text-default absolute left-0 top-0 z-50 flex h-full w-full flex-col items-center justify-center gap-16 px-8"
+              style={{
+                backgroundColor: "oklch(37.92% 0.039 257.29 / 70%)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <GuestLoginForm
+                to="/betting/$roomId/waiting"
+                roomId={returnToken}
+              />
+            </div>
+          </div>
         );
       }
       return (
