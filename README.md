@@ -202,8 +202,10 @@ WEB14-BOOSTPROJECT/
 ## 프로젝트 아키텍쳐 다이어그램
 ![image](https://github.com/user-attachments/assets/dba37a35-46a7-437a-b281-18b5530a7bd4)
 
-## 버그 리포트
-혹시나 사용 중 문제가 생기면 [여기](https://forms.gle/FcnRf3UaNGwpmzuXA)에 제보해주세요!
+## 버그 리포트  
+서비스 사용 중 문제가 발생했나요?  
+**아래 구글 폼을 통해 버그를 제보해 주세요!**  
+[버그 리포트 제출하기](https://forms.gle/FcnRf3UaNGwpmzuXA)
 
 ## 팀 소개
 
