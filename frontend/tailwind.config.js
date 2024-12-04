@@ -71,6 +71,7 @@ export default {
         bettingPink: {
           DEFAULT: "#DF3491",
           disabled: "#EAB2D6",
+          behind: "#eab2d6",
         },
         border: {
           DEFAULT: "#34425633",
