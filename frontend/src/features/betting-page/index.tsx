@@ -5,6 +5,7 @@ import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import React from "react";
 import { useLoaderData, useNavigate } from "@tanstack/react-router";
+import { usePreventLeave } from "@/shared/hooks/usePreventLeave";
 
 function BettingPage() {
   useLayoutShift();
@@ -31,6 +32,11 @@ function BettingPage() {
       console.error("배팅 페이지에 소켓 에러가 발생했습니다.", error);
     },
   });
+
+  usePreventLeave(
+    true,
+    "배팅 페이지에서 벗어나면 배팅이 취소됩니다. 정말로 나가시겠습니까?",
+  );
 
   const handleSocketConnection = React.useCallback(() => {
     if (!joinRoomRef.current) {

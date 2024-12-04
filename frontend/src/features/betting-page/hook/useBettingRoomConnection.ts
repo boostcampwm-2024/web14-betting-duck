@@ -3,6 +3,7 @@ import { z } from "zod";
 import { responseBetRoomInfo } from "@betting-duck/shared";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { useNavigate } from "@tanstack/react-router";
+import { getBetResults } from "@/features/predict-detail/model/api";
 
 function useBettingConnection(
   socket: ReturnType<typeof useSocketIO>,
@@ -55,15 +56,26 @@ function useBettingConnection(
     bettingRoomInfo.channel.status,
   ]);
 
-  // 이벤트 리스너 등록 (한 번만 실행)
-  React.useEffect(() => {
-    const handleFinished = (data: unknown) => {
+  const handleFinished = React.useCallback(
+    async (data: unknown) => {
       console.log("배팅이 종료되었습니다", data);
+      try {
+        await getBetResults(bettingRoomInfo.channel.id);
+      } catch (error) {
+        console.error("종료된 베팅 게임이 존재하지 않습니다.", error);
+        return navigate({
+          to: "/my-page",
+        });
+      }
       navigate({
         to: `/betting/${bettingRoomInfo.channel.id}/vote/resultDetail`,
       });
-    };
+    },
+    [bettingRoomInfo.channel.id, navigate],
+  );
 
+  // 이벤트 리스너 등록 (한 번만 실행)
+  React.useEffect(() => {
     const handleCancelWaitingRoom = (data: unknown) => {
       console.log("배팅이 취소되었습니다", data);
       navigate({
@@ -82,7 +94,7 @@ function useBettingConnection(
         socket.off("cancelWaitingRoom");
       }
     };
-  }, [socket, socket.isConnected, bettingRoomInfo.channel.id, navigate]);
+  }, [socket, socket.isConnected, handleFinished, navigate]);
 }
 
 export { useBettingConnection };
