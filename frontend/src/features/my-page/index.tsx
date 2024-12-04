@@ -1,19 +1,28 @@
 import { DuckCoinIcon } from "@/shared/icons";
-import { useLoaderData, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { Pond } from "./ui/Pond";
 import { FallingDuck } from "./ui/FallingDuck";
 import React from "react";
 
 function MyPage() {
   const navigate = useNavigate();
-  const { userInfo } = useLoaderData({
-    from: "/my-page",
-  });
+  const [duck, setDuck] = React.useState(0);
   const [ducks, setDucks] = React.useState([FallingDuck]);
 
   function addDuck() {
     setDucks([...ducks, FallingDuck]);
   }
+
+  React.useEffect(() => {
+    (async () => {
+      const userInfoResponse = await fetch("/api/users/userInfo");
+      if (!userInfoResponse.ok) {
+        throw new Error("사용자 정보를 불러오는데 실패했습니다");
+      }
+      const userInfo = await userInfoResponse.json();
+      setDuck(userInfo.data.duck);
+    })();
+  }, []);
 
   return (
     <div className="w-ful bg-layout-main flex flex-col items-center justify-between gap-2">
@@ -24,7 +33,7 @@ function MyPage() {
         </div>
         <div className="flex w-full items-center justify-center gap-4">
           <DuckCoinIcon width={32} height={32} />
-          <span className="text-2xl font-bold">{userInfo.duck ?? 0}</span>
+          <span className="text-2xl font-bold">{duck ?? 0}</span>
         </div>
         <div className="min-h-[17cqh] w-full max-w-[460px] px-5">
           <Pond ducks={ducks} />

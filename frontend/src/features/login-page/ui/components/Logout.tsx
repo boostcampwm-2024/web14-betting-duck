@@ -33,7 +33,7 @@ function LogoutButton() {
             },
           });
 
-          navigate({
+          return navigate({
             to: "/login",
           });
         }}
