@@ -146,34 +146,16 @@ List를 사용해 메시지의 **순차적 처리를 보장**하고, Pub/Sub을 
 
 ## 기술 스택
 
-### 공통
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
-![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=flat&logo=eslint&logoColor=white)
-![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=flat&logo=prettier&logoColor=white)
-![Husky](https://img.shields.io/badge/Husky-29BEB0?style=flat&logo=husky&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white)
-![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=flat&logo=socket.io&logoColor=white)
-![Zod](https://img.shields.io/badge/Zod-3E67B1?style=flat-square&logo=zod&logoColor=white)
+## 기술 스택
 
-### FE (Frontend)
-![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
-![TanStack Router](https://img.shields.io/badge/TanStack%20Router-FF4154?style=flat&logo=react-router&logoColor=white)
-![TanStack Query](https://img.shields.io/badge/TanStack_Query-FF4154?style=flat-square&logo=reactquery&logoColor=white)
-![Three.js](https://img.shields.io/badge/Three.js-000000?style=flat-square&logo=three.js&logoColor=white)
+| 분류          | 기술 스택                                                                                                                      | 참고                                                                                                               |
+|---------------|------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| 공통          | ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white) ![ESLint](https://img.shields.io/badge/ESLint-4B32C3?style=flat&logo=eslint&logoColor=white) ![Prettier](https://img.shields.io/badge/Prettier-F7B93E?style=flat&logo=prettier&logoColor=white) ![Husky](https://img.shields.io/badge/Husky-29BEB0?style=flat&logo=husky&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat&logo=github-actions&logoColor=white) ![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=flat&logo=socket.io&logoColor=white) ![Zod](https://img.shields.io/badge/Zod-3E67B1?style=flat-square&logo=zod&logoColor=white) | [Husky로 commit message에 이슈 번호 추가 자동화하기](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/commit-message%EC%97%90-%EC%9D%B4%EC%8A%88-%EB%B2%88%ED%98%B8-%EC%B6%94%EA%B0%80-%EC%9E%90%EB%8F%99%ED%99%94-%ED%95%98%EA%B8%B0) |
+| Frontend | ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white) ![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white) ![TanStack Router](https://img.shields.io/badge/TanStack%20Router-FF4154?style=flat&logo=react-router&logoColor=white) ![TanStack Query](https://img.shields.io/badge/TanStack_Query-FF4154?style=flat-square&logo=reactquery&logoColor=white) ![Three.js](https://img.shields.io/badge/Three.js-000000?style=flat-square&logo=three.js&logoColor=white) | [FE 기술스택 선정 이유](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/FE-%EA%B8%B0%EC%88%A0%EC%8A%A4%ED%83%9D-%EC%86%8C%EA%B0%9C) |
+| Backend  | ![Nest.js](https://img.shields.io/badge/Nest.js-E0234E?style=flat&logo=nestjs&logoColor=white) ![nginx](https://img.shields.io/badge/nginx-009639?style=flat&logo=nginx&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)                                      | [BE 기술스택 선정 이유](https://github.com/boostcampwm-2024/web14-betting-duck/wiki/BE-%EA%B8%B0%EC%88%A0%EC%8A%A4%ED%83%9D-%EC%86%8C%EA%B0%9C) |
+| Database      | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white) ![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)                                    |                                                                                                                   |
+| Infrastructure | ![nCloud](https://img.shields.io/badge/nCloud-03C75A?style=flat&logo=naver&logoColor=white)                                                                      |                                                                                                                   |
 
-### BE (Backend)
-![Nest.js](https://img.shields.io/badge/Nest.js-E0234E?style=flat&logo=nestjs&logoColor=white)
-![nginx](https://img.shields.io/badge/nginx-009639?style=flat&logo=nginx&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
-
-### Database
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)
-
-### Infrastructure
-![nCloud](https://img.shields.io/badge/nCloud-03C75A?style=flat&logo=naver&logoColor=white)
 
 
 ## 폴더 구조
