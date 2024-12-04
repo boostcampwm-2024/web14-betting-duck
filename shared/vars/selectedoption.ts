@@ -1,2 +1,2 @@
-export const selectedOption = ["1", "2"] as const;
+export const selectedOption = ["option1", "option2"] as const;
 export type SelectedOption = (typeof selectedOption)[number];
