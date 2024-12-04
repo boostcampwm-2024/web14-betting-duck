@@ -87,7 +87,7 @@ function PredictDetail() {
       <div className="w-full px-8">
         <div className="bg-secondary flex flex-col gap-4 rounded-lg px-8 py-4 shadow-inner">
           <div className="flex flex-row items-center gap-2 text-lg font-extrabold">
-            <h2>배팅 결과</h2>
+            <h2>베팅 결과</h2>
           </div>
           <div className="flex w-full items-center justify-between font-extrabold">
             <div className="flex items-center justify-center gap-2">

@@ -58,7 +58,7 @@ function useBettingConnection(
 
   const handleFinished = React.useCallback(
     async (data: unknown) => {
-      console.log("배팅이 종료되었습니다", data);
+      console.log("베팅이 종료되었습니다", data);
       try {
         await getBetResults(bettingRoomInfo.channel.id);
       } catch (error) {
@@ -77,7 +77,7 @@ function useBettingConnection(
   // 이벤트 리스너 등록 (한 번만 실행)
   React.useEffect(() => {
     const handleCancelWaitingRoom = (data: unknown) => {
-      console.log("배팅이 취소되었습니다", data);
+      console.log("베팅이 취소되었습니다", data);
       navigate({
         to: "/my-page",
       });

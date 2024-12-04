@@ -32,14 +32,14 @@ export async function getBetResults(
       },
     });
     if (!response.ok) {
-      throw new Error("배팅 결과를 가져오는데 실패했습니다.");
+      throw new Error("베팅 결과를 가져오는데 실패했습니다.");
     }
 
     const responseData: BetResultResponse = await response.json();
     const parsedData = bettinResultSchema.safeParse(responseData.data);
     if (!parsedData.success) {
       console.error("Invalid response data:", parsedData.error);
-      throw new Error("배팅 결과를 가져오는데 실패했습니다.");
+      throw new Error("베팅 결과를 가져오는데 실패했습니다.");
     }
     return parsedData.data;
   } catch (error) {

@@ -45,7 +45,7 @@ export async function endBetRoom(
     const responseData: EndBetRoomResponse = await response.json();
 
     if (response.ok) {
-      console.log("배팅 종료 성공:", responseData.data.message);
+      console.log("베팅 종료 성공:", responseData.data.message);
       return responseData.data.message;
     }
 

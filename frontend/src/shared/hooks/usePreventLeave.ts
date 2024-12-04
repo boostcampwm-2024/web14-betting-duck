@@ -2,7 +2,7 @@ import React from "react";
 
 const usePreventLeave = (enabled: boolean = true, roomId: string) => {
   const message =
-    "배팅 페이지에서 벗어나면 배팅이 취소됩니다. 정말로 나가시겠습니까?";
+    "베팅 페이지에서 벗어나면 베팅이 취소됩니다. 정말로 나가시겠습니까?";
 
   React.useEffect(() => {
     if (!enabled) return;

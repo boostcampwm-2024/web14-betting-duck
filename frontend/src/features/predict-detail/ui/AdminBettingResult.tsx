@@ -12,7 +12,7 @@ function AdminBettingResult({
     <div className="bg-secondary w-[90cqw] rounded-lg px-8 py-4 shadow-inner">
       <div>
         <h2 className="flex flex-row items-center gap-2 text-lg font-extrabold">
-          배팅 결과(관리자)
+          베팅 결과(관리자)
         </h2>
       </div>
       <div className="flex flex-col gap-2 pt-4">

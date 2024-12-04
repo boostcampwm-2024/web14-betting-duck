@@ -32,7 +32,7 @@ function Chat() {
             <div className="flex h-full w-full flex-col items-center justify-center">
               <LoadingAnimation />
               <p className="pb-16 text-lg">
-                배팅이 종료되어 채팅이 비활성화 되었습니다
+                베팅이 종료되어 채팅이 비활성화 되었습니다
               </p>
             </div>
           )}
