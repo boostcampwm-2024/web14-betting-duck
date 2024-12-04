@@ -1,7 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { BettingPage } from "@/features/betting-page";
-import { loadBetRoomData } from "@/shared/lib/loader/useBetRoomLoader";
-import { queryClient } from "@/shared/lib/auth/authQuery";
 import {
   responseBetRoomInfo,
   responseUserInfoSchema,
@@ -33,16 +31,26 @@ export const Route = createFileRoute("/betting_/$roomId/vote/voting")({
       });
     }
   },
-  loader: async ({ params, abortController }): Promise<RouteLoaderData> => {
+  loader: async ({ params }): Promise<RouteLoaderData> => {
     const { roomId } = params;
 
-    const { bettingRoomInfo, userInfo } = await loadBetRoomData({
-      roomId,
-      signal: abortController.signal,
-      queryClient,
-    });
+    const betRoomResponse = await fetch(`/api/betrooms/${roomId}`);
+    if (!betRoomResponse.ok) {
+      throw new Error("배팅 방 정보를 불러오는데 실패했습니다.");
+    }
+    const bettingRoomInfo = await betRoomResponse.json();
 
-    return { roomId, bettingRoomInfo, userInfo };
+    const userInfoResponse = await fetch("/api/users/userInfo");
+    if (!userInfoResponse.ok) {
+      throw new Error("사용자 정보를 불러오는데 실패했습니다.");
+    }
+    const userInfo = await userInfoResponse.json();
+
+    return {
+      roomId,
+      bettingRoomInfo: bettingRoomInfo.data,
+      userInfo: userInfo.data,
+    };
   },
   onLeave: async ({ params }) => {
     const { roomId } = params;

@@ -4,9 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/login")({
   component: Component,
-  errorComponent: ({ error, reset }) => (
-    <GlobalErrorComponent error={error} reset={reset} />
-  ),
+  errorComponent: ({ error }) => <GlobalErrorComponent error={error} to="/" />,
 });
 
 function Component() {

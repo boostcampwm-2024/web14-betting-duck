@@ -9,11 +9,12 @@ export const Route = createFileRoute("/betting/")({
   component: RouteComponent,
   beforeLoad: async () => {
     const response = await fetch("/api/users/token");
-    if (!response.ok)
+    if (!response.ok) {
       throw redirect({
         to: "/require-login",
         search: { from: encodeURIComponent(ROUTES.BETTING) },
       });
+    }
   },
   errorComponent: ({ error }) => (
     <ErrorComponent error={error}>
@@ -32,34 +33,56 @@ function RouteComponent() {
       navigate({ to: "/require-roomId" });
       return;
     }
-    (async () => {
-      const response = await fetch(`/api/betrooms/${roomId}`);
-      if (!response.ok) throw new Error("방 정보를 가져오는데 실패했습니다.");
-      const { data } = await response.json();
-      const result = responseBetRoomInfo.safeParse(data);
-      if (!result.success)
-        throw new Error("방 정보를 파싱하는데 실패했습니다.");
 
-      const { channel } = result.data;
-      if (channel.isAdmin) {
-        return navigate({ to: `/betting/${roomId}/vote/admin` });
-      }
-      
-      if (channel.status === "active") {
-        return navigate({
-          to: `/betting/${roomId}/vote/voting`,
-        });
-      }
-      if (channel.status === "waiting") {
-        return navigate({
-          to: `/betting/${roomId}/waiting`,
-        });
-      }
+    const checkRoomStatus = async () => {
+      try {
+        const response = await fetch(`/api/betrooms/${roomId}`);
+        if (!response.ok) {
+          navigate({ to: "/require-roomId" });
+          return;
+        }
 
-      navigate({ to: "/require-roomId" });
-    })();
+        const { data } = await response.json();
+        console.log(data);
+        const result = responseBetRoomInfo.safeParse(data);
+        if (!result.success) {
+          navigate({ to: "/require-roomId" });
+          return;
+        }
+
+        const { channel } = result.data;
+        console.log("1111111", channel);
+
+        // 상태에 따른 리다이렉트 처리
+        const redirectMap = {
+          finished: `/my-page`,
+          waiting: `/betting/${roomId}/waiting`,
+          active: `/betting/${roomId}/vote/voting`,
+          timeover: `/my-page`,
+        };
+
+        if (channel.isAdmin && channel.status === "active") {
+          navigate({ to: `/betting/${roomId}/vote/admin` });
+          return;
+        }
+
+        const redirectPath = redirectMap[channel.status];
+        if (redirectPath) {
+          navigate({ to: redirectPath });
+          return;
+        }
+
+        navigate({ to: "/require-roomId" });
+      } catch {
+        // 네트워크 에러 등의 경우 기본 경로로 리다이렉트
+        navigate({ to: "/require-roomId" });
+      }
+    };
+
+    checkRoomStatus();
   }, [roomId, navigate]);
 
+  // 로딩 중 표시
   return <div className="bg-layout-main h-full w-full" />;
 }
 

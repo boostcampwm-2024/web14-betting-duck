@@ -2,6 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { DecideBettingResult } from "@/features/decide-betting-result";
 import { validateAccess } from "@/shared/lib/validateAccess";
 import { getBettingRoomInfo } from "@/features/betting-page/api/getBettingRoomInfo";
+import { GlobalErrorComponent } from "@/shared/components/Error/GlobalError";
 
 export const Route = createFileRoute("/betting_/$roomId/vote/decide")({
   component: DecideBettingResult,
@@ -23,5 +24,8 @@ export const Route = createFileRoute("/betting_/$roomId/vote/decide")({
     }
 
     return { roomId, bettingRoomInfo };
+  },
+  errorComponent: ({ error }) => {
+    return <GlobalErrorComponent error={error} to="/" />;
   },
 });
