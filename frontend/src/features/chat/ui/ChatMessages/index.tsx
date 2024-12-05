@@ -52,7 +52,6 @@ function ChatMessages({ nickname }: { nickname: string }) {
         console.error(message.error.errors);
         return;
       }
-      console.log("message", message.data);
       const newMessage = {
         message: message.data.message,
         sender: message.data.sender,
