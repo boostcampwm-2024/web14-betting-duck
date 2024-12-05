@@ -5,9 +5,10 @@ import { useAuthStore } from "../../model/store";
 import { Warning } from "./Warning";
 import { useNavigate } from "@tanstack/react-router";
 import { useUserContext } from "@/shared/hooks/useUserContext";
-import { useUpdateUserStatus } from "@/shared/hooks/useAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { authQueries } from "@/shared/lib/auth/authQuery";
+import { z } from "zod";
+import { AuthStatusTypeSchema } from "@/shared/lib/auth/guard";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -16,7 +17,6 @@ function LoginForm() {
   const navigate = useNavigate();
   const { setUserInfo } = useUserContext();
   const { error, handleLogin } = useAuthStore();
-  const { updateAuthStatus } = useUpdateUserStatus();
   const queryClient = useQueryClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,12 +30,19 @@ function LoginForm() {
         isAuthenticated: true,
       });
 
-      updateAuthStatus(true, {
-        role: "user",
-        nickname: data.nickname,
-        duck: 0,
-        message: "OK",
-      });
+      queryClient.setQueryData(
+        authQueries.queryKey,
+        (prev: z.infer<typeof AuthStatusTypeSchema>) => ({
+          ...prev,
+          userInfo: {
+            role: "guest",
+            nickname: data.nickname,
+            duck: 0,
+            message: "OK",
+            realDuck: prev.userInfo.realDuck,
+          },
+        }),
+      );
       await queryClient.invalidateQueries({ queryKey: authQueries.queryKey });
       navigate({
         to: "/my-page",
