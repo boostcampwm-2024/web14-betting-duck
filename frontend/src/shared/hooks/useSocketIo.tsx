@@ -116,10 +116,13 @@ export function useSocketIO(options: SocketOptions) {
 
   React.useEffect(() => {
     let isSubscribed = true;
+    const abortController = new AbortController();
 
     const connectSocket = async () => {
       try {
-        const response = await fetch("/api/users/token");
+        const response = await fetch("/api/users/token", {
+          signal: abortController.signal,
+        });
         const json = await response.json();
         const { accessToken } = json.data;
 
@@ -128,7 +131,7 @@ export function useSocketIO(options: SocketOptions) {
         }
 
         if (isSubscribed) {
-          initializeSocket(accessToken);
+          await initializeSocket(accessToken);
         }
       } catch (error) {
         console.error("Socket connection failed:", error);
@@ -146,6 +149,8 @@ export function useSocketIO(options: SocketOptions) {
 
     return () => {
       isSubscribed = false;
+      abortController.abort();
+
       if (socketRef.current) {
         cleanupSocket(socketRef.current);
         socketRef.current = undefined;

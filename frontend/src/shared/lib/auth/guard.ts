@@ -68,6 +68,7 @@ const defaultUserInfo: UserInfoType = {
   role: "user",
   nickname: "",
   duck: 0,
+  realDuck: 0,
 };
 
 export const AuthStatusTypeSchema = z.object({
