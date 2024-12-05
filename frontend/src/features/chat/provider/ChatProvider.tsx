@@ -22,6 +22,7 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
     nickname: "",
     role: "user",
     duck: 0,
+    realDuck: 0,
   });
 
   React.useEffect(() => {

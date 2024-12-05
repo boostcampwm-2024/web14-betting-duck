@@ -1,9 +1,10 @@
-import { useUpdateUserStatus } from "@/shared/hooks/useAuth";
 import { useUserContext } from "@/shared/hooks/useUserContext";
 import { LogoutIcon } from "@/shared/icons/Logout";
 import { authQueries } from "@/shared/lib/auth/authQuery";
+import { AuthStatusTypeSchema } from "@/shared/lib/auth/guard";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { z } from "zod";
 
 function logout() {
   // 모든 가능한 조합으로 쿠키 삭제 시도
@@ -36,7 +37,6 @@ function LogoutButton() {
   const navigate = useNavigate();
   const { setUserInfo } = useUserContext();
   const queryClient = useQueryClient();
-  const { updateAuthStatus } = useUpdateUserStatus();
 
   return (
     <nav className="flex select-none flex-col items-center gap-6">
@@ -50,12 +50,19 @@ function LogoutButton() {
           logout();
           setUserInfo({ isAuthenticated: false, nickname: "", role: "guest" });
 
-          updateAuthStatus(false, {
-            role: "guest",
-            nickname: "",
-            duck: 0,
-            message: "OK",
-          });
+          queryClient.setQueryData(
+            authQueries.queryKey,
+            (prev: z.infer<typeof AuthStatusTypeSchema>) => ({
+              ...prev,
+              userInfo: {
+                role: "guest",
+                nickname: "",
+                duck: 0,
+                message: "OK",
+                realDuck: prev.userInfo.realDuck,
+              },
+            }),
+          );
 
           await queryClient.invalidateQueries({
             queryKey: authQueries.queryKey,
