@@ -60,7 +60,6 @@ const EditFormStatusForm = React.memo(({ info }: { info: WaitingRoomInfo }) => {
       );
 
       toggleOpen();
-      console.log(result.data);
     } catch (error) {
       console.error(error);
     }
