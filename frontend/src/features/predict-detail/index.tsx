@@ -39,9 +39,7 @@ function PredictDetail() {
 
   if (!betResults || !personalBetResult) return navigate({ to: "/my-page" });
 
-  const myoption = personalBetResult.selectedOption;
-  console.log(myoption);
-  console.log(betResults.winning_option);
+  const myoption: "option1" | "option2" = personalBetResult.selectedOption;
   const myresult = myoption === betResults.winning_option ? "win" : "lose";
 
   const getWinningOptionName = () =>
@@ -102,43 +100,45 @@ function PredictDetail() {
       />
 
       {/* PredictDetail Own */}
-      <div className="w-full px-8">
-        <div className="bg-secondary flex flex-col gap-4 rounded-lg px-8 py-4 shadow-inner">
-          <div className="flex flex-row items-center gap-2 text-lg font-extrabold">
-            <h2>베팅 결과</h2>
-          </div>
-          <div className="flex w-full items-center justify-between font-extrabold">
-            <div className="flex items-center justify-center gap-2">
-              {renderWinningIcon()} 베팅 금액
+      {authData.userInfo.role !== "admin" && (
+        <div className="w-full px-8">
+          <div className="bg-secondary flex flex-col gap-4 rounded-lg px-8 py-4 shadow-inner">
+            <div className="flex flex-row items-center gap-2 text-lg font-extrabold">
+              <h2>베팅 결과</h2>
             </div>
-            <p>{personalBetResult.betAmount} 코인</p>
-          </div>
-          <div className="flex w-full items-center justify-between font-extrabold">
-            <p>선택 옵션</p>
-            <p
-              className={`${myresult === "win" ? "text-bettingBlue" : "text-bettingPink"}`}
-            >
-              {myoption === "option1"
-                ? channel.options.option1.name
-                : channel.options.option2.name}
-            </p>
-          </div>
-          <div className="flex w-full items-center justify-between font-extrabold">
-            <p>얻은 금액</p>
-            <p>
-              <span
+            <div className="flex w-full items-center justify-between font-extrabold">
+              <div className="flex items-center justify-center gap-2">
+                {renderWinningIcon()} 베팅 금액
+              </div>
+              <p>{personalBetResult.betAmount} 코인</p>
+            </div>
+            <div className="flex w-full items-center justify-between font-extrabold">
+              <p>선택 옵션</p>
+              <p
                 className={`${myresult === "win" ? "text-bettingBlue" : "text-bettingPink"}`}
               >
-                {myresult === "win" ? "+" : "-"}{" "}
-                {Math.round(
-                  personalBetResult.betAmount * personalBettingMultiplier,
-                )}{" "}
-                코인
-              </span>
-            </p>
+                {myoption === "option1"
+                  ? channel.options.option1.name
+                  : channel.options.option2.name}
+              </p>
+            </div>
+            <div className="flex w-full items-center justify-between font-extrabold">
+              <p>얻은 금액</p>
+              <p>
+                <span
+                  className={`${myresult === "win" ? "text-bettingBlue" : "text-bettingPink"}`}
+                >
+                  {myresult === "win" ? "+" : "-"}{" "}
+                  {Math.round(
+                    personalBetResult.betAmount * personalBettingMultiplier,
+                  )}{" "}
+                  코인
+                </span>
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div>
         <div className="flex flex-col items-center justify-center gap-2 px-8">
