@@ -43,6 +43,10 @@ function MyPage() {
   }, [numberOfDucks, ducks.length]);
 
   async function purchaseDuck() {
+    if (currentDuck < 30) {
+      return;
+    }
+
     const response = await fetch("/api/users/purchaseduck");
     if (!response.ok) {
       console.error("Failed to purchase duck");
