@@ -1,9 +1,12 @@
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
-import { useLoaderData, useParams } from "@tanstack/react-router";
+import { responseUserInfoSchema } from "@betting-duck/shared";
+import { useParams } from "@tanstack/react-router";
 import React from "react";
+import { z } from "zod";
 
 interface ChatContextType {
   socket: ReturnType<typeof useSocketIO>;
+  userInfo: z.infer<typeof responseUserInfoSchema>;
 }
 
 const ChatContext = React.createContext<ChatContextType | null>(null);
@@ -12,9 +15,29 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
   const { roomId } = useParams({
     from: "/betting_/$roomId/vote",
   });
-  const { userInfo } = useLoaderData({
-    from: "/betting_/$roomId/vote",
+  const [userInfo, setUerInfo] = React.useState<
+    z.infer<typeof responseUserInfoSchema>
+  >({
+    message: "OK",
+    nickname: "",
+    role: "user",
+    duck: 0,
   });
+
+  React.useEffect(() => {
+    (async () => {
+      const userInfoResponse = await fetch("/api/users/userInfo");
+      if (!userInfoResponse.ok) {
+        throw new Error("사용자 정보를 불러오는데 실패했습니다.");
+      }
+      const data = await userInfoResponse.json();
+      const userInfo = responseUserInfoSchema.safeParse(data);
+      if (userInfo.success) {
+        setUerInfo(userInfo.data);
+      }
+    })();
+  }, []);
+
   const joinRoomRef = React.useRef(false);
   const socket = useSocketIO({
     url: "/api/chat",
@@ -43,7 +66,9 @@ function ChatProvider({ children }: { children: React.ReactNode }) {
   }, [joinRoomRef, socket, userInfo.nickname, roomId]);
 
   return (
-    <ChatContext.Provider value={{ socket }}>{children}</ChatContext.Provider>
+    <ChatContext.Provider value={{ socket, userInfo }}>
+      {children}
+    </ChatContext.Provider>
   );
 }
 

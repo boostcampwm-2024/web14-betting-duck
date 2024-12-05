@@ -1,25 +1,23 @@
 import { DuckCoinIcon } from "@/shared/icons";
-import { Route } from "@/routes/betting_.$roomId.vote.voting";
 import React from "react";
-import { z } from "zod";
-import { userBettingStatusSchema } from "../model/schema";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { authQueries } from "@/shared/lib/auth/authQuery";
+import { BettingRoomInfo } from "@/shared/types";
 
 function BettingFooter({
-  userBettingStatus,
+  bettingRoomInfo,
 }: {
-  userBettingStatus: z.infer<typeof userBettingStatusSchema>;
+  bettingRoomInfo: BettingRoomInfo;
 }) {
-  const { userInfo } = Route.useLoaderData();
-  const { duck } = userInfo;
-
-  const currentAmount = React.useMemo(
-    () => userBettingStatus.betAmount ?? 0,
-    [userBettingStatus.betAmount],
-  );
+  const { data: authData } = useSuspenseQuery({
+    queryKey: authQueries.queryKey,
+    queryFn: authQueries.queryFn,
+  });
+  const duckCoin = authData.userInfo.duck;
 
   const remainingAmount = React.useMemo(
-    () => duck - currentAmount,
-    [duck, currentAmount],
+    () => duckCoin - bettingRoomInfo.placeBetAmount,
+    [duckCoin, bettingRoomInfo.placeBetAmount],
   );
 
   return (
@@ -28,7 +26,7 @@ function BettingFooter({
         베팅 금액:{" "}
         <span className="flex items-center gap-2 font-extrabold">
           <DuckCoinIcon width={26} height={26} />
-          {currentAmount}
+          {bettingRoomInfo.placeBetAmount}
         </span>
       </div>
       <div className="flex items-center gap-2">

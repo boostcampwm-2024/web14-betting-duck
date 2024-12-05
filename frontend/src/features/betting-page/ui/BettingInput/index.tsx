@@ -2,10 +2,10 @@ import { DuckIcon } from "@/shared/icons";
 import { cn } from "@/shared/misc";
 import React from "react";
 import { z } from "zod";
-import { useBettingContext } from "../../hook/useBettingContext";
-import { Route } from "@/routes/betting_.$roomId.vote";
 import { placeBetting } from "../../utils/placeBetting";
-import { useLoaderData } from "@tanstack/react-router";
+import { BettingRoomInfo } from "@/shared/types";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { authQueries } from "@/shared/lib/auth/authQuery";
 
 const numberSchema = z.coerce.number().int().positive();
 
@@ -30,20 +30,27 @@ function getVisibleText(
 
 function BettingInput({
   uses,
-  refreshBettingAmount,
+  bettingRoomInfo,
 }: {
   uses: "winning" | "losing";
-  refreshBettingAmount: (roomId: string) => Promise<void>;
+  bettingRoomInfo: BettingRoomInfo;
 }) {
-  const { duckCoin } = Route.useLoaderData();
-  const { bettingRoomInfo } = useLoaderData({
-    from: "/betting_/$roomId/vote/voting",
+  const { data: authData } = useSuspenseQuery({
+    queryKey: authQueries.queryKey,
+    queryFn: authQueries.queryFn,
   });
-  const { bettingPool } = useBettingContext();
-  const [value, setValue] = React.useState("");
+  const duckCoin = authData.userInfo.duck;
+  const { isPlaceBet, placeBetAmount } = bettingRoomInfo;
+  console.log("isPlaceBet", isPlaceBet);
+  console.log("placeBetAmount", placeBetAmount);
+
+  const [value, setValue] = React.useState(
+    isPlaceBet ? placeBetAmount.toString() : "",
+  );
   const [isText, setIsText] = React.useState(false);
   const [isLongText, setIsLongText] = React.useState(false);
   const [isOverDuckCoin, setIsOverDuckCoin] = React.useState(false);
+  const queryClient = useQueryClient();
   const bgColor =
     uses === "winning"
       ? "bg-bettingBlue-behind text-bettingBlue"
@@ -100,7 +107,7 @@ function BettingInput({
           inputMode="numeric"
         />
         <button
-          disabled={isText || bettingPool.isPlaceBet}
+          disabled={isText || isPlaceBet}
           onClick={() => {
             const selectedOption = uses === "winning" ? "option1" : "option2";
             const bettingAmount = parseInt(value);
@@ -109,8 +116,8 @@ function BettingInput({
               selectedOption,
               bettingAmount: bettingAmount,
               roomId: bettingRoomInfo.channel.id,
-              isPlaceBet: bettingPool.isPlaceBet || false,
-              refreshBettingAmount,
+              queryClient,
+              bettingRoomInfo,
             });
           }}
           type="button"

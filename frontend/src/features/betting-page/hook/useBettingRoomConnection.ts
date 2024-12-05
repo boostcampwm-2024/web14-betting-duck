@@ -1,9 +1,11 @@
 import React from "react";
 import { z } from "zod";
-import { responseBetRoomInfo } from "@betting-duck/shared";
+import {
+  betResultResponseSchema,
+  responseBetRoomInfo,
+} from "@betting-duck/shared";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { useNavigate } from "@tanstack/react-router";
-import { getBetResults } from "@/features/predict-detail/model/api";
 
 function useBettingConnection(
   socket: ReturnType<typeof useSocketIO>,
@@ -60,7 +62,26 @@ function useBettingConnection(
     async (data: unknown) => {
       console.log("베팅이 종료되었습니다", data);
       try {
-        await getBetResults(bettingRoomInfo.channel.id);
+        const bettingResultResponse = await fetch(
+          `/api/betresults/${bettingRoomInfo.channel.id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+        if (!bettingResultResponse.ok) {
+          throw new Error("배팅 결과를 가져오는데 실패했습니다.");
+        }
+        const data = await bettingResultResponse.json();
+        const bettingResult = betResultResponseSchema.safeParse(data);
+        if (!bettingResult.success) {
+          return navigate({
+            to: "/my-page",
+            replace: true,
+          });
+        }
       } catch (error) {
         console.error("종료된 베팅 게임이 존재하지 않습니다.", error);
         return navigate({

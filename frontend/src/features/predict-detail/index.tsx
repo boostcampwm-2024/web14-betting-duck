@@ -3,20 +3,35 @@ import { UserFooter } from "./ui/UserFooter";
 import { GuestFooter } from "./ui/GuestFooter";
 import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 import { useUserContext } from "@/shared/hooks/useUserContext";
-import { useLoaderData } from "@tanstack/react-router";
+import { useLoaderData, useParams } from "@tanstack/react-router";
 import { BettingStatistics } from "./ui/Bettingstatistics";
 import { AdminBettingResult } from "./ui/AdminBettingResult";
 import { BettingResult } from "./ui/UserBettingResult";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
+import { getBettingRoomInfo } from "../betting-page/api/getBettingRoomInfo";
+import { responseBetRoomInfo } from "@betting-duck/shared";
 
 function PredictDetail() {
   useLayoutShift();
-  const { bettingRoomInfo } = useLoaderData({
-    from: "/betting_/$roomId/vote",
-  });
-  const { channel } = bettingRoomInfo;
-  const { betResults, personalBetResult } = useLoaderData({
+  const { roomId } = useParams({
     from: "/betting_/$roomId/vote/resultDetail",
   });
+  const { data } = useSuspenseQuery({
+    queryKey: bettingRoomQueryKey(roomId),
+    queryFn: () => getBettingRoomInfo(roomId),
+  });
+  const parsedData = responseBetRoomInfo.safeParse(data);
+  if (!parsedData.success) {
+    throw new Error("방 정보를 불러오는데 실패했습니다.");
+  }
+  const { channel } = parsedData.data;
+  const betResultLoaderData = useLoaderData({
+    from: "/betting_/$roomId/vote/resultDetail",
+  });
+  const { personalBetResult } = betResultLoaderData;
+  const betResults = betResultLoaderData.betResults;
+
   const { userInfo } = useUserContext();
   const myoption = personalBetResult.selectedOption;
   const myresult =
@@ -61,8 +76,8 @@ function PredictDetail() {
           winningOption={betResults.winning_option}
           winner={
             betResults.winning_option === "option1"
-              ? bettingRoomInfo.channel.options.option1.name
-              : bettingRoomInfo.channel.options.option2.name
+              ? channel.options.option1.name
+              : channel.options.option2.name
           }
           winnerCount={
             betResults.winning_option === "option1"
@@ -74,7 +89,7 @@ function PredictDetail() {
         <BettingResult
           renderWinningIcon={renderWinningIcon}
           winningOption={betResults.winning_option}
-          options={bettingRoomInfo.channel.options}
+          options={channel.options}
           earnedAmount={
             betResults.winning_option === "option1"
               ? betResults.option_1_total_participants

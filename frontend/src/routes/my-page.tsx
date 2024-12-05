@@ -21,6 +21,7 @@ export const Route = createFileRoute("/my-page")({
     }
   },
   component: MyPage,
+  shouldReload: () => true,
   errorComponent: ({ error }) => {
     return (
       <ErrorComponent error={error} feature="마이 페이지" to="/login">

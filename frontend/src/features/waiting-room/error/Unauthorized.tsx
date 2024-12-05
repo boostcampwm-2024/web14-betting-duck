@@ -7,7 +7,7 @@ function Unauthorized({
 }: {
   children: React.ReactNode;
   returnToken: string | null;
-  error: Error;
+  error?: Error;
 }) {
   const navigate = useNavigate();
   return (
@@ -20,7 +20,7 @@ function Unauthorized({
         }}
       >
         <div className="flex flex-col items-center">
-          <span>{error.message}</span>
+          <span>{error ? error.message : ""}</span>
           <h1 className="text-xl font-extrabold">로그인 후 이용 해주세요!</h1>
         </div>
         <div className="text-layout-main pt-16">

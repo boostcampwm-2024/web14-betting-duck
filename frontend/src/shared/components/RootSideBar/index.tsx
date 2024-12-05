@@ -7,10 +7,10 @@ import {
 } from "@/shared/icons";
 import { NavItem } from "./item";
 import styles from "./style.module.css";
-import { useLocation, useRouteContext } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { AuthStatusTypeSchema } from "@/shared/lib/auth/guard";
+import { useLocation } from "@tanstack/react-router";
 import { LogoutButton } from "@/features/login-page/ui/components/Logout";
+import { useQuery } from "@tanstack/react-query";
+import { authQueries } from "@/shared/lib/auth/authQuery";
 
 type NavItemType = {
   icon: () => JSX.Element;
@@ -58,15 +58,11 @@ function NavItems({ items }: { items: NavItemType[] }) {
 
 function RootSideBar() {
   const location = useLocation();
-  const context = useRouteContext({
-    from: "__root__",
+  const userInfoQuery = useQuery({
+    queryKey: authQueries.queryKey,
+    queryFn: authQueries.queryFn,
   });
-  const data = useQueryClient(context.queryClient).getQueryData(["auth"]);
-  let isAuthenticated = false;
-  const parsedResult = AuthStatusTypeSchema.safeParse(data);
-  if (parsedResult.success) {
-    isAuthenticated = parsedResult.data.isAuthenticated;
-  }
+  const queryData = userInfoQuery.data;
 
   React.useEffect(() => {
     changeNavigatorPosition(location.href);
@@ -79,7 +75,11 @@ function RootSideBar() {
     >
       <div className={styles.navigator} />
       <NavItems items={navItems.top} />
-      {isAuthenticated ? <LogoutButton /> : <NavItems items={navItems.login} />}
+      {queryData?.isAuthenticated ? (
+        <LogoutButton />
+      ) : (
+        <NavItems items={navItems.login} />
+      )}
     </aside>
   );
 }

@@ -6,8 +6,16 @@ import { routeTree } from "./routeTree.gen";
 import { Auth } from "@/shared/lib/auth/auth";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { GlobalErrorComponent } from "./shared/components/Error/GlobalError";
-import { QueryClient } from "@tanstack/react-query";
-import { queryClient } from "@/shared/lib/auth/authQuery";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 type RouterContext = {
   auth: Auth;
@@ -36,9 +44,11 @@ const theme = createTheme();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider theme={theme}>
-      <RouterProvider router={router} />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <RouterProvider router={router} />
+      </ThemeProvider>
+    </QueryClientProvider>
   </StrictMode>,
 );
 

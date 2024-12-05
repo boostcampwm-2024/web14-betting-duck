@@ -1,9 +1,9 @@
 import React from "react";
 import { ChartTitle } from "./ui/ChatTitle";
 import { PredictButton } from "./ui/PredictButton";
-import { useLoaderData } from "@tanstack/react-router";
 import { channelSchema } from "@betting-duck/shared";
 import { z } from "zod";
+import { BettingRoomInfo } from "@/shared/types";
 
 function bettingRoomTypeGuard(
   data: unknown,
@@ -11,10 +11,7 @@ function bettingRoomTypeGuard(
   return channelSchema.safeParse(data).success;
 }
 
-function ChatHeader() {
-  const { bettingRoomInfo } = useLoaderData({
-    from: "/betting_/$roomId/vote",
-  });
+function ChatHeader({ bettingRoomInfo }: { bettingRoomInfo: BettingRoomInfo }) {
   const { channel } = bettingRoomInfo;
   if (!bettingRoomTypeGuard(channel)) {
     throw new Error("bettingRoomInfo가 channelSchema에 맞지 않습니다.");

@@ -4,44 +4,37 @@ import {
   ErrorComponent,
 } from "@tanstack/react-router";
 import { Chat } from "@/features/chat";
-import { BettingProvider } from "@/features/betting-page/provider/BettingProvider";
 import { cn } from "@/shared/misc";
-import {
-  responseBetRoomInfo,
-  responseUserInfoSchema,
-} from "@betting-duck/shared";
-import { z } from "zod";
 import { AccessError } from "@/features/waiting-room/error/AccessError";
 import { Unauthorized } from "@/features/waiting-room/error/Unauthorized";
 import { Forbidden } from "@/features/waiting-room/error/Forbidden";
-import { loadBetRoomData } from "@/shared/lib/loader/useBetRoomLoader";
-import { queryClient } from "@/shared/lib/auth/authQuery";
 import { Suspense } from "react";
 import { LoadingAnimation } from "@/shared/components/Loading";
-
-type BetRoomResponse = z.infer<typeof responseBetRoomInfo>;
+import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
+import { getBettingRoomInfo } from "@/features/betting-page/api/getBettingRoomInfo";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 interface RouteLoaderData {
   roomId: string;
-  bettingRoomInfo: BetRoomResponse;
-  duckCoin: number;
-  userInfo: z.infer<typeof responseUserInfoSchema>;
 }
 
-let returnToken = "";
+const returnToken = "";
 export const Route = createFileRoute("/betting_/$roomId/vote")({
-  loader: async ({ params, abortController }): Promise<RouteLoaderData> => {
+  loader: async ({
+    params,
+    context: { queryClient },
+  }): Promise<RouteLoaderData> => {
     const { roomId } = params;
-    returnToken = roomId;
-
-    const { bettingRoomInfo, userInfo } = await loadBetRoomData({
-      roomId,
-      signal: abortController.signal,
-      queryClient,
+    await queryClient.ensureQueryData({
+      queryKey: bettingRoomQueryKey(roomId),
+      queryFn: () => getBettingRoomInfo(roomId),
     });
 
-    return { roomId, bettingRoomInfo, duckCoin: userInfo.duck, userInfo };
+    return {
+      roomId,
+    };
   },
+  shouldReload: () => true,
   component: RouteComponent,
   errorComponent: ({ error }) => {
     if (error instanceof AccessError) {
@@ -63,27 +56,31 @@ export const Route = createFileRoute("/betting_/$roomId/vote")({
 });
 
 function RouteComponent() {
+  const { roomId } = Route.useLoaderData();
+  useSuspenseQuery({
+    queryKey: bettingRoomQueryKey(roomId),
+    queryFn: () => getBettingRoomInfo(roomId),
+  });
+
   return (
-    <BettingProvider>
-      <div className="flex">
-        <Chat />
-        <div
-          className={cn(
-            "betting-container",
-            "border-secondary flex min-w-0.5 border-l-8",
-          )}
+    <div className="flex">
+      <Chat />
+      <div
+        className={cn(
+          "betting-container",
+          "border-secondary flex min-w-0.5 border-l-8",
+        )}
+      >
+        <Suspense
+          fallback={
+            <div className="flex h-full w-full items-center justify-center">
+              <LoadingAnimation />
+            </div>
+          }
         >
-          <Suspense
-            fallback={
-              <div className="flex h-full w-full items-center justify-center">
-                <LoadingAnimation />
-              </div>
-            }
-          >
-            <Outlet />
-          </Suspense>
-        </div>
+          <Outlet />
+        </Suspense>
       </div>
-    </BettingProvider>
+    </div>
   );
 }

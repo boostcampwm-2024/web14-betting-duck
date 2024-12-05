@@ -11,12 +11,14 @@ interface UserInfo {
   nickname?: string;
   role?: "user" | "guest" | "admin" | "member";
   roomId?: string;
+  isAuthenticated?: boolean;
 }
 
 const defaultUserInfo: UserInfo = {
   nickname: "",
   role: "guest",
   roomId: undefined,
+  isAuthenticated: false,
 };
 
 const UserContext = React.createContext<UserContextType | null>(null);
@@ -71,7 +73,7 @@ function UserProvider({ children }: { children: React.ReactNode }) {
       }
       const { data } = await response.json();
       const { role, nickname } = data as UserInfo;
-      await updateUserInfo({ role, nickname });
+      await updateUserInfo({ role, nickname, isAuthenticated: true });
     } catch (error) {
       updateUserInfo(defaultUserInfo);
       console.error("Failed to refresh user info:", error);

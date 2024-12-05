@@ -1,7 +1,7 @@
 import { PredictDetail } from "@/features/predict-detail";
-import { getBetResults } from "@/features/predict-detail/model/api";
 import { GlobalErrorComponent } from "@/shared/components/Error/GlobalError";
-import { createFileRoute } from "@tanstack/react-router";
+import { betResultResponseSchema } from "@betting-duck/shared";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 
 const PersonalBetResultResponseSchema = z.object({
@@ -14,20 +14,46 @@ export const Route = createFileRoute("/betting_/$roomId/vote/resultDetail")({
   loader: async ({ params }) => {
     const { roomId } = params;
 
-    const betResults = await getBetResults(roomId);
+    const bettingResultResponse = await fetch(`/api/betresults/${roomId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    if (!bettingResultResponse.ok) {
+      throw new Error("배팅 결과를 가져오는데 실패했습니다.");
+    }
+    const { data } = await bettingResultResponse.json();
+    const bettingResult = betResultResponseSchema.safeParse(data);
+    if (!bettingResult.success) {
+      throw redirect({
+        to: "/my-page",
+        replace: true,
+      });
+    }
+
     const personalBetResultResponse = await fetch(`/api/bets/${roomId}`);
     if (!personalBetResultResponse.ok) {
-      throw new Error("베팅 결과를 불러오는데 실패했습니다.");
+      throw redirect({
+        to: "/my-page",
+        replace: true,
+      });
     }
     const personalBetResult = await personalBetResultResponse.json();
     const parsedPersonalBetResult = PersonalBetResultResponseSchema.safeParse(
       personalBetResult.data,
     );
     if (!parsedPersonalBetResult.success) {
-      throw new Error("베팅 결과를 파싱하는데 실패했습니다.");
+      throw redirect({
+        to: "/my-page",
+        replace: true,
+      });
     }
 
-    return { betResults, personalBetResult: parsedPersonalBetResult.data };
+    return {
+      betResults: bettingResult.data,
+      personalBetResult: parsedPersonalBetResult.data,
+    };
   },
   errorComponent: ({ error }) => {
     return <GlobalErrorComponent error={error} to="/" />;

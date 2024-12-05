@@ -3,7 +3,6 @@ import { responseBetRoomInfo } from "@betting-duck/shared";
 import { z } from "zod";
 import { type BettingPool } from "@/shared/utils/bettingOdds";
 import { getBettingRoomInfo } from "../api/getBettingRoomInfo";
-import { Route } from "@/routes/betting_.$roomId.vote";
 import { useSessionStorage } from "@/shared/hooks/useSessionStorage";
 import { STORAGE_KEY } from "../model/var";
 
@@ -62,10 +61,9 @@ function bettingRoomInfoTypeGuard(
 
 function BettingProvider({ children }: { children: React.ReactNode }) {
   // 초기화 상태 관리
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized] = useState(false);
   const [isStorageLoaded, setIsStorageLoaded] = useState(false);
   const { setSessionItem, getSessionItem } = useSessionStorage();
-  const loaderData = Route.useLoaderData();
 
   // 상태 관리
   const [currentBettingRoomInfo, setCurrentBettingRoomInfo] = useState<
@@ -92,14 +90,6 @@ function BettingProvider({ children }: { children: React.ReactNode }) {
 
     initializeFromStorage();
   }, [getSessionItem]);
-
-  // 로더 데이터 초기화
-  useEffect(() => {
-    if (bettingRoomInfoTypeGuard(loaderData.bettingRoomInfo)) {
-      setCurrentBettingRoomInfo(loaderData.bettingRoomInfo);
-      setIsInitialized(true);
-    }
-  }, [loaderData]);
 
   // 베팅 풀 업데이트 함수
   const updateBettingPool = React.useCallback(

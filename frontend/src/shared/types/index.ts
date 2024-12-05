@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { responseUserInfoSchema } from "@betting-duck/shared";
+import {
+  responseBetRoomInfo,
+  responseUserInfoSchema,
+} from "@betting-duck/shared";
 
 type UserInfo = z.infer<typeof responseUserInfoSchema>;
 
@@ -7,4 +10,15 @@ type RootLoaderData = {
   userInfo: UserInfo;
 };
 
-export type { UserInfo, RootLoaderData };
+const BettingRoomInfoSchema = responseBetRoomInfo.extend({
+  isPlaceBet: z.boolean(),
+  placeBetAmount: z.number(),
+});
+type BettingRoomInfo = z.infer<typeof BettingRoomInfoSchema>;
+
+export {
+  type UserInfo,
+  type RootLoaderData,
+  type BettingRoomInfo,
+  BettingRoomInfoSchema,
+};

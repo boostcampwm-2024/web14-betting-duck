@@ -4,15 +4,28 @@ import { BettingSharedLink } from "@/shared/components/BettingSharedLink/Betting
 import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import React from "react";
-import { useLoaderData, useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { usePreventLeave } from "@/shared/hooks/usePreventLeave";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
+import { getBettingRoomInfo } from "./api/getBettingRoomInfo";
+import { BettingRoomInfoSchema } from "@/shared/types";
 
 function BettingPage() {
   useLayoutShift();
-  const { bettingRoomInfo } = useLoaderData({
-    from: "/betting_/$roomId/vote",
+  const { roomId } = useParams({
+    from: "/betting_/$roomId/vote/voting",
   });
-  const { channel } = bettingRoomInfo;
+
+  const { data } = useSuspenseQuery({
+    queryKey: bettingRoomQueryKey(roomId),
+    queryFn: () => getBettingRoomInfo(roomId),
+  });
+  const parsedData = BettingRoomInfoSchema.safeParse(data);
+  if (!parsedData.success) {
+    throw new Error("방 정보를 불러오는데 실패했습니다.");
+  }
+  const { channel } = parsedData.data;
 
   const joinRoomRef = React.useRef(false);
   const fetchBetRoomInfoRef = React.useRef(false);
@@ -49,26 +62,24 @@ function BettingPage() {
       });
     }
 
-    if (
-      bettingRoomInfo.channel.status === "active" &&
-      !fetchBetRoomInfoRef.current
-    ) {
+    if (channel.status === "active" && !fetchBetRoomInfoRef.current) {
       console.log(33);
       fetchBetRoomInfoRef.current = true;
       socket.emit("fetchBetRoomInfo", {
         roomId: channel.id,
       });
     }
-  }, [channel.id, bettingRoomInfo.channel.status, socket]);
+  }, [channel.id, channel.status, socket]);
 
   const handleFinished = React.useCallback(
     (data: unknown) => {
       console.log("베팅이 종료되었습니다", data);
       navigate({
-        to: `/betting/${bettingRoomInfo.channel.id}/vote/resultDetail`,
+        to: "/betting/$roomId/vote/resultDetail",
+        params: { roomId: channel.id },
       });
     },
-    [navigate, bettingRoomInfo.channel.id],
+    [navigate, channel.id],
   );
 
   const handleCancelWaitingRoom = React.useCallback(
@@ -93,8 +104,8 @@ function BettingPage() {
 
   return (
     <div className="flex w-[100cqw] flex-col">
-      <BettingTimer socket={socket} />
-      <BettingContainer socket={socket} />
+      <BettingTimer socket={socket} bettingRoomInfo={parsedData.data} />
+      <BettingContainer socket={socket} bettingRoomInfo={parsedData.data} />
       <BettingSharedLink />
     </div>
   );

@@ -2,12 +2,20 @@ import React from "react";
 import { useWaitingContext } from "../../hooks/use-waiting-context";
 import { useNavigate } from "@tanstack/react-router";
 import { useUserContext } from "@/shared/hooks/useUserContext";
+import { z } from "zod";
+import { responseBetRoomInfo } from "@betting-duck/shared";
 
-function MemberFooter() {
-  const { socket, roomId } = useWaitingContext();
+function MemberFooter({
+  bettingRoomInfo,
+}: {
+  bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
+}) {
+  const { socket } = useWaitingContext();
   const [isBettingStarted, setIsBettingStarted] = React.useState(false);
   const userContext = useUserContext();
   const navigate = useNavigate();
+  const { channel } = bettingRoomInfo;
+  const roomId = channel.id;
 
   React.useEffect(() => {
     (async () => {
@@ -31,7 +39,7 @@ function MemberFooter() {
 
   React.useEffect(() => {
     socket.on("cancelWaitingRoom", () => {
-      navigate({ to: "/my-page" });
+      window.location.href = "/my-page";
     });
 
     return () => {
@@ -42,12 +50,28 @@ function MemberFooter() {
   function leaveRoom() {
     socket.emit("leave-room", { roomId });
     userContext.setUserInfo({ role: "user", roomId: undefined });
-    navigate({ to: "/my-page" });
+    navigate({
+      to: "/my-page",
+      params: { roomId },
+      replace: true,
+    });
   }
 
-  function participateVote() {
-    userContext.setUserInfo({ roomId });
-    navigate({ to: "/betting/$roomId/vote/voting", params: { roomId } });
+  async function participateVote() {
+    try {
+      const response = await fetch(`/api/betrooms/${roomId}`);
+      if (!response.ok) throw new Error("방 정보를 가져오는데 실패했습니다.");
+      const json = await response.json();
+      const { channel } = json.data;
+
+      if (channel.status === "active") {
+        window.location.href = `/betting/${roomId}/vote/voting`;
+      } else {
+        console.error("베팅이 아직 시작되지 않았습니다.");
+      }
+    } catch (error) {
+      console.error("Error during navigation:", error);
+    }
   }
 
   return (

@@ -1,6 +1,6 @@
 import { BettingStatsDisplay } from "@/shared/components/BettingStatsDisplay/BettingStatsDisplay";
-import { useLoaderData, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate, useParams, useRouter } from "@tanstack/react-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useSocketIO } from "@/shared/hooks/useSocketIo";
 import { BettingTimer } from "@/shared/components/BettingTimer/BettingTimer";
 import { BettingSharedLink } from "@/shared/components/BettingSharedLink/BettingSharedLink";
@@ -9,16 +9,29 @@ import { endBetRoom, refund } from "./model/api";
 import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
 import { bettingRoomSchema } from "../betting-page/model/schema";
 import { DuckCoinIcon } from "@/shared/icons";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
+import { getBettingRoomInfo } from "../betting-page/api/getBettingRoomInfo";
+import { responseBetRoomInfo } from "@betting-duck/shared";
 
 function BettingPageAdmin() {
   useLayoutShift();
-  const { bettingRoomInfo } = useLoaderData({
-    from: "/betting_/$roomId/vote/admin",
+  const router = useRouter();
+  const { roomId } = useParams({
+    from: "/betting_/$roomId/vote",
   });
-  const { channel } = bettingRoomInfo;
-  const [status, setStatus] = useState(
-    bettingRoomInfo.channel.status || "active",
-  );
+
+  const { data } = useSuspenseQuery({
+    queryKey: bettingRoomQueryKey(roomId),
+    queryFn: () => getBettingRoomInfo(roomId),
+  });
+  const parsedData = responseBetRoomInfo.safeParse(data);
+  if (!parsedData.success) {
+    throw new Error("방 정보를 불러오는데 실패했습니다.");
+  }
+  const { channel } = parsedData.data;
+
+  const [status, setStatus] = useState(channel.status || "active");
   const [bettingInfo, setBettingInfo] = useState({
     option1: { participants: 0, currentBets: 0 },
     option2: { participants: 0, currentBets: 0 },
@@ -31,7 +44,6 @@ function BettingPageAdmin() {
   >(null);
 
   // Room Information
-  const roomId = channel.id;
   const option1 = channel.options.option1;
   const option2 = channel.options.option2;
   const defaultBetAmount = channel.settings.defaultBetAmount;
@@ -53,6 +65,19 @@ function BettingPageAdmin() {
     },
   });
 
+  React.useEffect(() => {
+    async function refreshData() {
+      await router.invalidate();
+      // 현재 라우트로 다시 이동하여 데이터를 새로 로드
+      await router.navigate({
+        to: window.location.pathname,
+        replace: true,
+      });
+    }
+
+    refreshData();
+  }, [router]);
+
   const handleSocketConnection = useCallback(() => {
     // 방 참여가 아직 안 된 경우
     if (!joinRoomRef.current) {
@@ -66,17 +91,14 @@ function BettingPageAdmin() {
     }
 
     // 방이 활성화 상태이고 정보를 아직 가져오지 않은 경우
-    if (
-      bettingRoomInfo.channel.status === "active" &&
-      !fetchBetRoomInfoRef.current
-    ) {
+    if (channel.status === "active" && !fetchBetRoomInfoRef.current) {
       console.log(33);
       fetchBetRoomInfoRef.current = true;
       socket.emit("fetchBetRoomInfo", {
         roomId: channel.id,
       });
     }
-  }, [channel.id, bettingRoomInfo.channel.status, socket]);
+  }, [channel.id, channel.status, socket]);
 
   const handleTimeOver = useCallback(() => {
     setStatus((prev) => {
@@ -260,7 +282,7 @@ function BettingPageAdmin() {
   return (
     <div className="bg-layout-main flex h-full w-full flex-col justify-between">
       <div className="flex flex-col gap-5">
-        <BettingTimer socket={socket} />
+        <BettingTimer socket={socket} bettingRoomInfo={parsedData.data} />
         <div className="flex flex-col gap-6 p-5">
           <div className="bg-secondary mb-4 rounded-lg p-3 text-center shadow-inner">
             <h1 className="text-default-disabled text-md mb-1 font-bold">
