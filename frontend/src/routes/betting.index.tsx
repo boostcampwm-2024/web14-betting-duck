@@ -41,7 +41,6 @@ function RouteComponent() {
         }
 
         const { data } = await response.json();
-        console.log(data);
         const result = responseBetRoomInfo.safeParse(data);
         if (!result.success) {
           navigate({ to: "/require-bettingRoomId" });
@@ -49,7 +48,6 @@ function RouteComponent() {
         }
 
         const { channel } = result.data;
-        console.log("1111111", channel);
 
         // 상태에 따른 리다이렉트 처리
         const redirectMap = {
