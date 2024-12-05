@@ -42,8 +42,6 @@ function Input({
   });
   const duckCoin = authData.userInfo.duck;
   const { isPlaceBet, placeBetAmount } = bettingRoomInfo;
-  console.log("isPlaceBet", isPlaceBet);
-  console.log("placeBetAmount", placeBetAmount);
 
   const [value, setValue] = React.useState(
     isPlaceBet ? placeBetAmount.toString() : "",

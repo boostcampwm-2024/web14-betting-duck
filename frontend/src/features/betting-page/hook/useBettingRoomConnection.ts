@@ -19,7 +19,6 @@ function useBettingConnection(
   React.useEffect(() => {
     if (!socket.isConnected || hasJoined.current) return;
 
-    console.log("joinRoom");
     socket.emit("joinRoom", {
       channel: {
         roomId: bettingRoomInfo.channel.id,
@@ -46,7 +45,6 @@ function useBettingConnection(
     )
       return;
 
-    console.log("fetchBetRoomInfo");
     socket.emit("fetchBetRoomInfo", {
       roomId: bettingRoomInfo.channel.id,
     });

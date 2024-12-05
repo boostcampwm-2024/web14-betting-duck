@@ -50,7 +50,6 @@ function TotalBettingDisplay({
         participants: channel.option2.participants,
       },
     });
-    console.log("summary", summary);
     setBettingSummary(summary);
   }, []); // 의존성 없음
 
