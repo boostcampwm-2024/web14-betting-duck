@@ -13,6 +13,7 @@ import { LoadingAnimation } from "@/shared/components/Loading";
 import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
 import { getBettingRoomInfo } from "@/features/betting-page/api/getBettingRoomInfo";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { BettingProvider } from "@/features/betting-page/provider/BettingProvider";
 
 interface RouteLoaderData {
   roomId: string;
@@ -71,15 +72,17 @@ function RouteComponent() {
           "border-secondary flex min-w-0.5 border-l-8",
         )}
       >
-        <Suspense
-          fallback={
-            <div className="flex h-full w-full items-center justify-center">
-              <LoadingAnimation />
-            </div>
-          }
-        >
-          <Outlet />
-        </Suspense>
+        <BettingProvider>
+          <Suspense
+            fallback={
+              <div className="flex h-full w-full items-center justify-center">
+                <LoadingAnimation />
+              </div>
+            }
+          >
+            <Outlet />
+          </Suspense>
+        </BettingProvider>
       </div>
     </div>
   );

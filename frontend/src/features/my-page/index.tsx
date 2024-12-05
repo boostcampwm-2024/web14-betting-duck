@@ -5,54 +5,47 @@ import { FallingDuck } from "./ui/FallingDuck";
 import React from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { authQueries } from "@/shared/lib/auth/authQuery";
+import { AnimatedDuckCount } from "./ui/AnimatedDuckCount";
 
 function MyPage() {
   const { data: authData } = useSuspenseQuery({
     queryKey: authQueries.queryKey,
     queryFn: authQueries.queryFn,
   });
-  console.log(authData.userInfo.duck);
 
   const navigate = useNavigate();
-  // const [duck, setDuck] = React.useState(0);
+  const [currentDuck, setCurrentDuck] = React.useState(authData.userInfo.duck);
   const [ducks, setDucks] = React.useState([FallingDuck]);
 
-  function addDuck() {
+  async function purchaseDuck() {
+    // const response = await fetch("/api/users/purchaseduck");
+    // if (!response.ok) {
+    //   console.error("Failed to purchase duck");
+    //   return;
+    // }
+    // const json = await response.json();
+    // console.log(json);
+
     setDucks([...ducks, FallingDuck]);
+    setCurrentDuck(currentDuck - 30);
   }
 
-  // React.useEffect(() => {
-  //   (async () => {
-  //     const userInfoResponse = await fetch("/api/users/userInfo");
-  //     if (!userInfoResponse.ok) {
-  //       throw new Error("사용자 정보를 불러오는데 실패했습니다");
-  //     }
-  //     const userInfo = await userInfoResponse.json();
-  //     setDuck(userInfo.data.duck);
-  //   })();
-  // }, []);
-
   return (
-    <div className="w-ful bg-layout-main flex flex-col items-center justify-between gap-2">
+    <div className="w-ful bg-layout-main relative flex flex-col items-center justify-between gap-2">
       <div className="flex h-full w-full flex-col items-center justify-evenly">
-        <div className="flex flex-col items-center justify-center pb-6">
+        <div className="z-20 flex flex-col items-center justify-center pb-6">
           <h1 className="text-2xl font-extrabold">마이 페이지</h1>
           <p className="text-lg">오리를 구매해서 페이지를 꾸며보세요</p>
         </div>
-        <div className="flex w-full items-center justify-center gap-4">
-          <DuckCoinIcon width={32} height={32} />
-          <span className="text-2xl font-bold">
-            {authData.userInfo.duck ?? 0}
-          </span>
-        </div>
+        <AnimatedDuckCount value={currentDuck} DuckCoinIcon={DuckCoinIcon} />
         <React.Suspense fallback={null}>
-          <div className="min-h-[17cqh] w-full max-w-[460px] px-5">
+          <div className="absolute left-0 top-0 z-10 h-full max-h-[600px] w-full max-w-[460px] px-5">
             <Pond ducks={ducks} />
           </div>
         </React.Suspense>
-        <div className="flex gap-8">
+        <div className="z-20 flex gap-8">
           <button
-            onClick={() => addDuck()}
+            onClick={async () => purchaseDuck()}
             className="bg-secondary text-default border-default-hover flex items-center gap-4 rounded-xl border-2 px-6 py-3 text-xl font-bold"
           >
             <DuckCoinIcon width={32} height={33} />

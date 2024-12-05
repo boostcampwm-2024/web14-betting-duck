@@ -1,8 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { responseBetRoomInfo } from "@betting-duck/shared";
-import { z } from "zod";
+import React from "react";
 import { type BettingPool } from "@/shared/utils/bettingOdds";
-import { getBettingRoomInfo } from "../api/getBettingRoomInfo";
 import { useSessionStorage } from "@/shared/hooks/useSessionStorage";
 import { STORAGE_KEY } from "../model/var";
 
@@ -23,10 +20,7 @@ const DEFAULT_BETTING_POOL: ContextBettingPool = {
 };
 
 interface BettingContextType {
-  bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
-  bettingPool: ContextBettingPool;
   updateBettingPool: (partialPool: PartialBettingPool) => Promise<void>;
-  updateBettingRoomInfo: () => Promise<void>;
 }
 
 type PartialBettingPool = Partial<{
@@ -44,120 +38,52 @@ interface ContextBettingPool extends BettingPool {
   isBettingEnd: boolean;
   selectedOption: keyof BettingPool;
 }
-
-// Context 생성 시 기본값 제공
 const BettingContext = React.createContext<BettingContextType>({
-  bettingRoomInfo: {} as z.infer<typeof responseBetRoomInfo>,
-  bettingPool: DEFAULT_BETTING_POOL,
   updateBettingPool: async () => {},
-  updateBettingRoomInfo: async () => {},
 });
 
-function bettingRoomInfoTypeGuard(
-  info: unknown,
-): info is z.infer<typeof responseBetRoomInfo> {
-  return responseBetRoomInfo.safeParse(info).success;
-}
-
 function BettingProvider({ children }: { children: React.ReactNode }) {
-  // 초기화 상태 관리
-  const [isInitialized] = useState(false);
-  const [isStorageLoaded, setIsStorageLoaded] = useState(false);
-  const { setSessionItem, getSessionItem } = useSessionStorage();
-
-  // 상태 관리
-  const [currentBettingRoomInfo, setCurrentBettingRoomInfo] = useState<
-    z.infer<typeof responseBetRoomInfo>
-  >({} as z.infer<typeof responseBetRoomInfo>);
-  const [bettingPool, setBettingPool] =
-    useState<ContextBettingPool>(DEFAULT_BETTING_POOL);
-
-  // 세션 스토리지 초기화
-  useEffect(() => {
-    const initializeFromStorage = async () => {
-      try {
-        const savedState = await getSessionItem(STORAGE_KEY);
-        if (savedState) {
-          const parsedState = JSON.parse(savedState) as ContextBettingPool;
-          setBettingPool(parsedState);
-        }
-      } catch (error) {
-        console.error("세션 스토리지 초기화 실패:", error);
-      } finally {
-        setIsStorageLoaded(true);
-      }
-    };
-
-    initializeFromStorage();
-  }, [getSessionItem]);
+  const { setSessionItem } = useSessionStorage();
 
   // 베팅 풀 업데이트 함수
   const updateBettingPool = React.useCallback(
     async (partialPool: PartialBettingPool) => {
       try {
-        setBettingPool((prevPool) => {
-          const newPool = {
-            option1: { ...prevPool.option1, ...(partialPool.option1 || {}) },
-            option2: { ...prevPool.option2, ...(partialPool.option2 || {}) },
-            isPlaceBet: partialPool.isPlaceBet ?? prevPool.isPlaceBet,
-            placeBetAmount:
-              partialPool.placeBetAmount ?? prevPool.placeBetAmount,
-            isBettingEnd: partialPool.isBettingEnd ?? prevPool.isBettingEnd,
-            selectedOption:
-              partialPool.selectedOption ?? prevPool.selectedOption,
-          };
+        const newPool = {
+          option1: {
+            ...DEFAULT_BETTING_POOL.option1,
+            ...(partialPool.option1 || {}),
+          },
+          option2: {
+            ...DEFAULT_BETTING_POOL.option2,
+            ...(partialPool.option2 || {}),
+          },
+          isPlaceBet: partialPool.isPlaceBet ?? DEFAULT_BETTING_POOL.isPlaceBet,
+          placeBetAmount:
+            partialPool.placeBetAmount ?? DEFAULT_BETTING_POOL.placeBetAmount,
+          isBettingEnd:
+            partialPool.isBettingEnd ?? DEFAULT_BETTING_POOL.isBettingEnd,
+          selectedOption:
+            partialPool.selectedOption ?? DEFAULT_BETTING_POOL.selectedOption,
+        };
 
-          // 세션 스토리지 업데이트를 비동기로 처리
-          setSessionItem(STORAGE_KEY, JSON.stringify(newPool)).catch(
-            console.error,
-          );
-
-          return newPool;
-        });
+        // 먼저 세션 스토리지를 업데이트
+        await setSessionItem(STORAGE_KEY, JSON.stringify(newPool));
       } catch (error) {
         console.error("베팅 풀 업데이트 실패:", error);
+        throw error; // 에러를 상위로 전파하여 처리할 수 있도록 함
       }
     },
-    [setSessionItem], // bettingPool 의존성 제거
+    [setSessionItem],
   );
-
-  // 베팅룸 정보 업데이트 함수
-  const updateBettingRoomInfo = React.useCallback(async () => {
-    try {
-      const updatedBettingRoomInfo = await getBettingRoomInfo(
-        currentBettingRoomInfo.channel.id,
-      );
-
-      if (!bettingRoomInfoTypeGuard(updatedBettingRoomInfo)) {
-        throw new Error("Invalid betting room info received");
-      }
-
-      setCurrentBettingRoomInfo(updatedBettingRoomInfo);
-    } catch (error) {
-      console.error("베팅룸 정보 업데이트 실패:", error);
-    }
-  }, [currentBettingRoomInfo.channel?.id]);
 
   // Context 값 메모이제이션
   const value = React.useMemo(
     () => ({
-      bettingRoomInfo: currentBettingRoomInfo,
-      bettingPool,
       updateBettingPool,
-      updateBettingRoomInfo,
     }),
-    [
-      currentBettingRoomInfo,
-      bettingPool,
-      updateBettingPool,
-      updateBettingRoomInfo,
-    ],
+    [updateBettingPool],
   );
-
-  // 초기화가 완료될 때까지 렌더링 지연
-  if (!isInitialized || !isStorageLoaded) {
-    return null; // 또는 로딩 컴포넌트
-  }
 
   return (
     <BettingContext.Provider value={value}>{children}</BettingContext.Provider>

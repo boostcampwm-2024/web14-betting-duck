@@ -18,6 +18,7 @@ function CancleVottingButton() {
       setUserInfo({ role: "user", roomId: undefined });
       navigate({ to: "/my-page" });
     } catch (error) {
+      navigate({ to: "/my-page" });
       console.error(error);
     }
   }

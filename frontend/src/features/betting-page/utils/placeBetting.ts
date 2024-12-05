@@ -1,7 +1,17 @@
 import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
 import { BettingRoomInfo, BettingRoomInfoSchema } from "@/shared/types";
+import { BettingPool } from "@/shared/utils/bettingOdds";
 import { responseUserInfoSchema } from "@betting-duck/shared";
 import { QueryClient } from "@tanstack/react-query";
+
+type PartialBettingPool = Partial<{
+  option1: Partial<BettingPool["option1"]>;
+  option2: Partial<BettingPool["option2"]>;
+  isPlaceBet: boolean;
+  placeBetAmount: number;
+  isBettingEnd: boolean;
+  selectedOption: keyof BettingPool;
+}>;
 
 interface PlaceBettingParams {
   selectedOption: "option1" | "option2";
@@ -9,6 +19,7 @@ interface PlaceBettingParams {
   bettingAmount: number;
   bettingRoomInfo: BettingRoomInfo;
   queryClient: QueryClient;
+  updateBettingPool: (partialPool: PartialBettingPool) => Promise<void>;
 }
 
 async function getUserInfo() {
@@ -33,6 +44,7 @@ async function placeBetting({
   bettingAmount,
   bettingRoomInfo,
   queryClient,
+  updateBettingPool,
 }: PlaceBettingParams) {
   const { duck } = await getUserInfo();
   const { isPlaceBet } = bettingRoomInfo;
@@ -65,8 +77,6 @@ async function placeBetting({
   if (!response.ok) {
     throw new Error("베팅에 실패했습니다.");
   }
-  console.log(response);
-
   queryClient.setQueryData(bettingRoomQueryKey(roomId), (prevData: unknown) => {
     const parsedData = BettingRoomInfoSchema.safeParse(prevData);
     if (!parsedData.success) {
@@ -77,6 +87,11 @@ async function placeBetting({
       isPlaceBet: true,
       placeBetAmount: bettingAmount,
     };
+  });
+  await updateBettingPool({
+    isPlaceBet: true,
+    placeBetAmount: bettingAmount,
+    selectedOption,
   });
 }
 

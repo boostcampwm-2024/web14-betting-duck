@@ -7,13 +7,15 @@ import { ParticipateButton } from "./ParticipateButton";
 
 function AdminFooter({
   bettingRoomInfo,
+  setSnackbarOpen,
 }: {
   bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
+  setSnackbarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   return (
     <React.Fragment>
       <CancleVottingButton />
-      <ParticipateButton bettingRoomInfo={bettingRoomInfo} />
+      <ParticipateButton setSnackbarOpen={setSnackbarOpen} />
       <StartVotingButton bettingRoomInfo={bettingRoomInfo} />
     </React.Fragment>
   );

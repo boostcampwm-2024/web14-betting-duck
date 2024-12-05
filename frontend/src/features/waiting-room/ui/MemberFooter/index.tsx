@@ -6,9 +6,11 @@ import { z } from "zod";
 import { responseBetRoomInfo } from "@betting-duck/shared";
 
 function MemberFooter({
+  setSnackbarOpen,
   bettingRoomInfo,
 }: {
   bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
+  setSnackbarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { socket } = useWaitingContext();
   const [isBettingStarted, setIsBettingStarted] = React.useState(false);
@@ -67,6 +69,7 @@ function MemberFooter({
       if (channel.status === "active") {
         window.location.href = `/betting/${roomId}/vote/voting`;
       } else {
+        setSnackbarOpen(true);
         console.error("베팅이 아직 시작되지 않았습니다.");
       }
     } catch (error) {
