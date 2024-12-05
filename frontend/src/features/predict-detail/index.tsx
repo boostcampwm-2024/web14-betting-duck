@@ -2,15 +2,15 @@ import { DuckCoinIcon, TrophyIcon } from "@/shared/icons";
 import { UserFooter } from "./ui/UserFooter";
 import { GuestFooter } from "./ui/GuestFooter";
 import { useLayoutShift } from "@/shared/hooks/useLayoutShift";
-import { useUserContext } from "@/shared/hooks/useUserContext";
-import { useLoaderData, useParams } from "@tanstack/react-router";
+import { useLoaderData, useNavigate, useParams } from "@tanstack/react-router";
 import { BettingStatistics } from "./ui/Bettingstatistics";
 import { AdminBettingResult } from "./ui/AdminBettingResult";
-import { BettingResult } from "./ui/UserBettingResult";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { bettingRoomQueryKey } from "@/shared/lib/bettingRoomInfo";
 import { getBettingRoomInfo } from "../betting-page/api/getBettingRoomInfo";
 import { responseBetRoomInfo } from "@betting-duck/shared";
+import { authQueries } from "@/shared/lib/auth/authQuery";
+import { getBettingSummary } from "@/shared/utils/bettingOdds";
 
 function PredictDetail() {
   useLayoutShift();
@@ -25,22 +25,38 @@ function PredictDetail() {
   if (!parsedData.success) {
     throw new Error("방 정보를 불러오는데 실패했습니다.");
   }
+  const { data: authData } = useSuspenseQuery({
+    queryKey: authQueries.queryKey,
+    queryFn: authQueries.queryFn,
+  });
   const { channel } = parsedData.data;
   const betResultLoaderData = useLoaderData({
     from: "/betting_/$roomId/vote/resultDetail",
   });
   const { personalBetResult } = betResultLoaderData;
   const betResults = betResultLoaderData.betResults;
+  const navigate = useNavigate();
 
-  const { userInfo } = useUserContext();
+  if (!betResults || !personalBetResult) return navigate({ to: "/my-page" });
+
   const myoption = personalBetResult.selectedOption;
-  const myresult =
-    myoption === "option1" && betResults.winning_option === "option1"
-      ? "win"
-      : "lose";
+  console.log(myoption);
+  console.log(betResults.winning_option);
+  const myresult = myoption === betResults.winning_option ? "win" : "lose";
 
   const getWinningOptionName = () =>
     channel.options[betResults.winning_option].name;
+  const summary = getBettingSummary({
+    option1: {
+      participants: betResults.option_1_total_participants,
+      totalAmount: betResults.option_1_total_bet,
+    },
+    option2: {
+      participants: betResults.option_2_total_participants,
+      totalAmount: betResults.option_2_total_bet,
+    },
+  });
+  const personalBettingMultiplier = summary[myoption].multiplier;
 
   const renderWinningIcon = () => (
     <DuckCoinIcon
@@ -71,32 +87,19 @@ function PredictDetail() {
       <BettingStatistics betResults={betResults} channel={channel} />
 
       {/* PredictDetail Result */}
-      {userInfo.role === "admin" ? (
-        <AdminBettingResult
-          winningOption={betResults.winning_option}
-          winner={
-            betResults.winning_option === "option1"
-              ? channel.options.option1.name
-              : channel.options.option2.name
-          }
-          winnerCount={
-            betResults.winning_option === "option1"
-              ? betResults.option_1_total_participants
-              : betResults.option_2_total_participants
-          }
-        />
-      ) : (
-        <BettingResult
-          renderWinningIcon={renderWinningIcon}
-          winningOption={betResults.winning_option}
-          options={channel.options}
-          earnedAmount={
-            betResults.winning_option === "option1"
-              ? betResults.option_1_total_participants
-              : betResults.option_2_total_participants
-          }
-        />
-      )}
+      <AdminBettingResult
+        winningOption={betResults.winning_option}
+        winner={
+          betResults.winning_option === "option1"
+            ? channel.options.option1.name
+            : channel.options.option2.name
+        }
+        winnerCount={
+          betResults.winning_option === "option1"
+            ? betResults.option_1_total_participants
+            : betResults.option_2_total_participants
+        }
+      />
 
       {/* PredictDetail Own */}
       <div className="w-full px-8">
@@ -126,7 +129,10 @@ function PredictDetail() {
               <span
                 className={`${myresult === "win" ? "text-bettingBlue" : "text-bettingPink"}`}
               >
-                {myresult === "win" ? "+" : "-"} {personalBetResult.betAmount}{" "}
+                {myresult === "win" ? "+" : "-"}{" "}
+                {Math.round(
+                  personalBetResult.betAmount * personalBettingMultiplier,
+                )}{" "}
                 코인
               </span>
             </p>
@@ -136,7 +142,11 @@ function PredictDetail() {
 
       <div>
         <div className="flex flex-col items-center justify-center gap-2 px-8">
-          {userInfo.role === "guest" ? <GuestFooter /> : <UserFooter />}
+          {authData.userInfo.role === "guest" ? (
+            <GuestFooter />
+          ) : (
+            <UserFooter />
+          )}
         </div>
         <div className="bg-layout-main h-[60px] w-[100cqw]" />
       </div>
