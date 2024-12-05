@@ -3,31 +3,65 @@ import { useNavigate } from "@tanstack/react-router";
 import { Pond } from "./ui/Pond";
 import { FallingDuck } from "./ui/FallingDuck";
 import React from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { authQueries } from "@/shared/lib/auth/authQuery";
 import { AnimatedDuckCount } from "./ui/AnimatedDuckCount";
+import { z } from "zod";
+import { AuthStatusTypeSchema } from "@/shared/lib/auth/guard";
 
 function MyPage() {
   const { data: authData } = useSuspenseQuery({
     queryKey: authQueries.queryKey,
     queryFn: authQueries.queryFn,
   });
+  const queryClient = useQueryClient();
 
   const navigate = useNavigate();
   const [currentDuck, setCurrentDuck] = React.useState(authData.userInfo.duck);
+  const [numberOfDucks, setNumberOfDucks] = React.useState(
+    authData.userInfo.realDuck,
+  );
   const [ducks, setDucks] = React.useState([FallingDuck]);
 
-  async function purchaseDuck() {
-    // const response = await fetch("/api/users/purchaseduck");
-    // if (!response.ok) {
-    //   console.error("Failed to purchase duck");
-    //   return;
-    // }
-    // const json = await response.json();
-    // console.log(json);
+  React.useEffect(() => {
+    const remainingDucks = numberOfDucks - ducks.length;
+    if (remainingDucks <= 0) return;
 
+    const addDuck = (count: number) => {
+      if (count >= remainingDucks) return;
+      const timer = setTimeout(() => {
+        setDucks((prevDucks) => [...prevDucks, FallingDuck]);
+        addDuck(count + 1); // 다음 오리 추가
+      }, 200);
+      return () => clearTimeout(timer);
+    };
+
+    const initialTimer = setTimeout(() => {
+      addDuck(0);
+    }, 2000);
+    return () => clearTimeout(initialTimer);
+  }, [numberOfDucks, ducks.length]);
+
+  async function purchaseDuck() {
+    const response = await fetch("/api/users/purchaseduck");
+    if (!response.ok) {
+      console.error("Failed to purchase duck");
+      return;
+    }
+    await queryClient.setQueryData(
+      authQueries.queryKey,
+      (old: z.infer<typeof AuthStatusTypeSchema>) => ({
+        ...old,
+        userInfo: {
+          ...old.userInfo,
+          duck: currentDuck - 30,
+          realDuck: numberOfDucks + 1,
+        },
+      }),
+    );
     setDucks([...ducks, FallingDuck]);
     setCurrentDuck(currentDuck - 30);
+    setNumberOfDucks(numberOfDucks + 1);
   }
 
   return (
@@ -45,7 +79,7 @@ function MyPage() {
         </React.Suspense>
         <div className="z-20 flex gap-8">
           <button
-            onClick={async () => purchaseDuck()}
+            onClick={async () => await purchaseDuck()}
             className="bg-secondary text-default border-default-hover flex items-center gap-4 rounded-xl border-2 px-6 py-3 text-xl font-bold"
           >
             <DuckCoinIcon width={32} height={33} />
