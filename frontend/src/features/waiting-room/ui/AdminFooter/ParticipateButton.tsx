@@ -1,25 +1,27 @@
 import { useWaitingContext } from "../../hooks/use-waiting-context";
-import { responseBetRoomInfo } from "@betting-duck/shared";
-import { z } from "zod";
 import React from "react";
+import { useParams } from "@tanstack/react-router";
 
 function ParticipateButton({
-  bettingRoomInfo,
+  setSnackbarOpen,
 }: {
-  bettingRoomInfo: z.infer<typeof responseBetRoomInfo>;
+  setSnackbarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const [isBettingStarted, setIsBettingStarted] = React.useState(false);
-  const { channel } = bettingRoomInfo;
-  const roomId = channel.id;
+  const { roomId } = useParams({
+    from: "/betting_/$roomId/waiting",
+  });
   const { socket } = useWaitingContext();
+  const [isBettingStarted, setIsBettingStarted] = React.useState(false);
 
   React.useEffect(() => {
-    socket.on("startBetting", () => setIsBettingStarted(true));
+    socket.on("startBetting", () => {
+      setIsBettingStarted(true);
+    });
 
     return () => {
       socket.off("startBetting");
     };
-  }, [socket]);
+  }, [socket, roomId]);
 
   async function participateVote() {
     try {
@@ -34,6 +36,7 @@ function ParticipateButton({
         console.error("베팅이 아직 시작되지 않았습니다.");
       }
     } catch (error) {
+      setSnackbarOpen(true);
       console.error("Error during navigation:", error);
     }
   }
