@@ -6,6 +6,7 @@ import { placeBetting } from "../../utils/placeBetting";
 import { BettingRoomInfo } from "@/shared/types";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { authQueries } from "@/shared/lib/auth/authQuery";
+import { useBettingContext } from "../../hook/useBettingContext";
 
 const numberSchema = z.coerce.number().int().positive();
 
@@ -28,7 +29,7 @@ function getVisibleText(
   return `opacity-${isText == true || isLongText == true || isOverDuckCoin == true ? 1 : 0} ${isText == true || isLongText == true || isOverDuckCoin == true ? "visible" : "invisible"}`;
 }
 
-function BettingInput({
+function Input({
   uses,
   bettingRoomInfo,
 }: {
@@ -61,6 +62,7 @@ function BettingInput({
     uses === "winning"
       ? "bg-bettingBlue disabled:bg-blue-950"
       : "bg-bettingPink disabled:bg-pink-950";
+  const { updateBettingPool } = useBettingContext();
 
   const updateState = (newValue: string, newIsText: boolean) => {
     setValue(newValue);
@@ -118,6 +120,7 @@ function BettingInput({
               roomId: bettingRoomInfo.channel.id,
               queryClient,
               bettingRoomInfo,
+              updateBettingPool,
             });
           }}
           type="button"
@@ -140,5 +143,7 @@ function BettingInput({
     </div>
   );
 }
+
+const BettingInput = React.memo(Input);
 
 export { BettingInput };
