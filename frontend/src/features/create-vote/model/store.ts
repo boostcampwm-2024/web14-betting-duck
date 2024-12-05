@@ -41,6 +41,7 @@ function usePredictionStore(queryClient: QueryClient) {
           };
         },
       );
+      await queryClient.invalidateQueries({ queryKey: authQueries.queryKey });
 
       navigate({
         to: `/betting/${result.data.roomId}/waiting`,
