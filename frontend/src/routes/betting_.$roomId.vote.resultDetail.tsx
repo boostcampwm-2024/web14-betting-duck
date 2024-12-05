@@ -17,59 +17,81 @@ export const Route = createFileRoute("/betting_/$roomId/vote/resultDetail")({
   loader: async ({ params }) => {
     const { roomId } = params;
 
+    // 배팅 결과 가져오기
     const bettingResultResponse = await fetch(`/api/betresults/${roomId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
       },
     });
+
     if (!bettingResultResponse.ok) {
-      throw new Error("배팅 결과를 가져오는데 실패했습니다.");
+      throw redirect({
+        to: "/my-page",
+        replace: true,
+      });
     }
 
     const { data } = await bettingResultResponse.json();
     const bettingResult = betResultResponseSchema.safeParse(data);
 
+    if (!bettingResult.success) {
+      throw redirect({
+        to: "/my-page",
+        replace: true,
+      });
+    }
+
+    // 개인 배팅 결과 처리
     try {
-      const personalBetResultResponse = await fetch(`/api/bets/${roomId}`);
-      const personalBetResult = await personalBetResultResponse.json();
-      const parsedPersonalBetResult = PersonalBetResultResponseSchema.safeParse(
-        personalBetResult.data,
-      );
-      if (!parsedPersonalBetResult.success) {
-        throw redirect({
-          to: "/my-page",
-          replace: true,
-        });
-      }
-
-      return {
-        betResults: bettingResult.data,
-        personalBetResult: parsedPersonalBetResult.data,
-      };
-    } catch {
+      // 먼저 세션 스토리지 확인
       const session = await getSessionItem(STORAGE_KEY);
-      const personalBetResult = JSON.parse(session);
-      if (
-        !personalBetResult ||
-        !personalBetResult.placeBetAmount ||
-        !personalBetResult.selectedOption
-      ) {
-        throw redirect({
-          to: "/my-page",
-          replace: true,
-        });
+      let personalBetResult;
+
+      if (session) {
+        const sessionData = JSON.parse(session);
+        if (sessionData.placeBetAmount && sessionData.selectedOption) {
+          personalBetResult = {
+            betAmount: sessionData.placeBetAmount,
+            selectedOption: sessionData.selectedOption,
+          };
+        }
       }
 
-      const parsedPersonalBetResult = PersonalBetResultResponseSchema.safeParse(
-        {
-          betAmount: personalBetResult.placeBetAmount,
-          selectedOption: personalBetResult.selectedOption,
-        },
-      );
+      // 세션에 데이터가 없는 경우에만 API 호출 시도
+      if (!personalBetResult) {
+        try {
+          const personalBetResultResponse = await fetch(`/api/bets/${roomId}`);
+          if (personalBetResultResponse.ok) {
+            const data = await personalBetResultResponse.json();
+            const parsedResult = PersonalBetResultResponseSchema.safeParse(
+              data.data,
+            );
+            if (parsedResult.success) {
+              personalBetResult = parsedResult.data;
+            }
+          }
+        } catch {
+          // API 호출 실패는 무시
+        }
+      }
+
+      // personalBetResult가 없는 경우 빈 객체 반환
       return {
         betResults: bettingResult.data,
-        personalBetResult: parsedPersonalBetResult.data,
+        personalBetResult: personalBetResult || {
+          betAmount: 0,
+          selectedOption: "option1",
+        },
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        betResults: bettingResult.data,
+        personalBetResult: {
+          betAmount: 0,
+          selectedOption: "option1",
+        },
       };
     }
   },

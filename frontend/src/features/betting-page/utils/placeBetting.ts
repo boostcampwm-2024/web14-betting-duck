@@ -58,7 +58,6 @@ async function placeBetting({
     throw new Error("소유한 덕코인보다 더 많은 금액을 베팅할 수 없습니다.");
   }
 
-  console.log(bettingAmount, selectedOption, roomId);
   const response = await fetch("/api/bets", {
     method: "POST",
     headers: {

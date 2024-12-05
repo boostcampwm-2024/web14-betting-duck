@@ -20,6 +20,15 @@ const safeDecode = (str: string): string => {
     return "";
   }
 };
+const safeEncode = (str: string): string => {
+  try {
+    // UTF-8 문자열을 Base64로 안전하게 인코딩
+    return btoa(encodeURIComponent(str));
+  } catch (e) {
+    console.error("Encoding error:", e);
+    return "";
+  }
+};
 
 function useSessionStorage() {
   // UTF-8 문자열을 Base64로 안전하게 인코딩하는 함수
@@ -102,4 +111,18 @@ const getSessionItem = async (key: string) => {
   }
 };
 
-export { useSessionStorage, getSessionItem };
+const setSessionItem = async (key: string, value: string) => {
+  try {
+    const data = {
+      value,
+      timestamp: new Date().getTime(),
+      checksum: await generateChecksum(value),
+    };
+    const encodedData = safeEncode(JSON.stringify(data));
+    sessionStorage.setItem(key, encodedData);
+  } catch (error) {
+    console.error("Error setting session item:", error);
+  }
+};
+
+export { useSessionStorage, getSessionItem, setSessionItem };

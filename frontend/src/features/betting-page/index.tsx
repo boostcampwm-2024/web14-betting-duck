@@ -53,7 +53,6 @@ function BettingPage() {
 
   const handleSocketConnection = React.useCallback(() => {
     if (!joinRoomRef.current) {
-      console.log(22);
       joinRoomRef.current = true;
       socket.emit("joinRoom", {
         channel: {
@@ -63,7 +62,6 @@ function BettingPage() {
     }
 
     if (channel.status === "active" && !fetchBetRoomInfoRef.current) {
-      console.log(33);
       fetchBetRoomInfoRef.current = true;
       socket.emit("fetchBetRoomInfo", {
         roomId: channel.id,

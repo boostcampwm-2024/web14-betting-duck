@@ -39,9 +39,7 @@ function PredictDetail() {
 
   if (!betResults || !personalBetResult) return navigate({ to: "/my-page" });
 
-  const myoption = personalBetResult.selectedOption;
-  console.log(myoption);
-  console.log(betResults.winning_option);
+  const myoption: "option1" | "option2" = personalBetResult.selectedOption;
   const myresult = myoption === betResults.winning_option ? "win" : "lose";
 
   const getWinningOptionName = () =>
@@ -69,6 +67,7 @@ function PredictDetail() {
       height={24}
     />
   );
+  console.log(authData.userInfo.role);
 
   return (
     <div className="bg-layout-main flex h-full w-full flex-col items-center justify-between gap-4">
@@ -101,7 +100,6 @@ function PredictDetail() {
         }
       />
 
-      {/* PredictDetail Own */}
       <div className="w-full px-8">
         <div className="bg-secondary flex flex-col gap-4 rounded-lg px-8 py-4 shadow-inner">
           <div className="flex flex-row items-center gap-2 text-lg font-extrabold">
