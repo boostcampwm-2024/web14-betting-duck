@@ -81,7 +81,6 @@ function BettingPageAdmin() {
   const handleSocketConnection = useCallback(() => {
     // 방 참여가 아직 안 된 경우
     if (!joinRoomRef.current) {
-      console.log(22);
       joinRoomRef.current = true;
       socket.emit("joinRoom", {
         channel: {
@@ -92,7 +91,6 @@ function BettingPageAdmin() {
 
     // 방이 활성화 상태이고 정보를 아직 가져오지 않은 경우
     if (channel.status === "active" && !fetchBetRoomInfoRef.current) {
-      console.log(33);
       fetchBetRoomInfoRef.current = true;
       socket.emit("fetchBetRoomInfo", {
         roomId: channel.id,
@@ -111,7 +109,6 @@ function BettingPageAdmin() {
 
   useEffect(() => {
     if (!socket) return;
-    console.log("timeover");
     socket.on("timeover", handleTimeOver);
 
     return () => {
@@ -207,9 +204,6 @@ function BettingPageAdmin() {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      const responseData = await response.json();
-      console.log("Bet successfully posted:", responseData);
     } catch (error) {
       console.error("Failed to post bet:", error);
     }
@@ -267,8 +261,7 @@ function BettingPageAdmin() {
 
     try {
       const roomId = channel.id;
-      const result = await endBetRoom(roomId, winnerOption);
-      console.log(result);
+      await endBetRoom(roomId, winnerOption);
       navigate({ to: `/betting/${roomId}/vote/resultDetail` });
     } catch (error) {
       if (error instanceof Error) {
