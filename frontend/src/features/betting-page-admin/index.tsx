@@ -286,7 +286,7 @@ function BettingPageAdmin() {
         <div className="flex flex-col gap-6 p-5">
           <div className="bg-secondary mb-4 rounded-lg p-3 text-center shadow-inner">
             <h1 className="text-default-disabled text-md mb-1 font-bold">
-              배팅 주제
+              베팅 주제
             </h1>
             <h1 className="text-primary mb-1 pt-2 text-4xl font-extrabold">
               {channel.title}

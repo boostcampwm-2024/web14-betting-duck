@@ -19,6 +19,7 @@ export const Route = createFileRoute("/betting_/$roomId/vote/admin")({
       });
     }
   },
+
   shouldReload: () => true,
   onLeave: async ({ params }) => {
     const { roomId } = params;

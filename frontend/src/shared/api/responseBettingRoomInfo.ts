@@ -11,14 +11,14 @@ async function responseBettingRoomInfo(roomId: string) {
   try {
     const response = await fetch(`/api/betrooms/${roomId}`);
     if (!response.ok) {
-      throw new Error("배팅 방 정보를 불러오는데 실패했습니다.");
+      throw new Error("베팅 방 정보를 불러오는데 실패했습니다.");
     }
 
     const { data } = await response.json();
     const result = responseBetRoomInfo.safeParse(data);
     if (!result.success) {
       console.error(result.error.errors);
-      throw new Error("배팅 방 정보를 파싱하는데 실패했습니다.");
+      throw new Error("베팅 방 정보를 파싱하는데 실패했습니다.");
     }
     return result.data;
   } catch (error) {
@@ -33,7 +33,7 @@ const betRoomQueries = (roomId: string): BetRoomInfo => ({
       const [, , roomId] = queryKey;
       const parsedRoomId = StringSchema.safeParse(roomId);
       if (!parsedRoomId.success) {
-        throw new Error("배팅 방 정보를 불러오는데 실패");
+        throw new Error("베팅 방 정보를 불러오는데 실패");
       }
       return await responseBettingRoomInfo(parsedRoomId.data);
     },

@@ -18,7 +18,7 @@ function BettingStatistics({
   return (
     <div className="bg-secondary w-[90cqw] rounded-lg px-8 py-4 shadow-inner">
       <div className="flex flex-row items-center gap-2 text-lg font-extrabold">
-        <h2>배팅 통계</h2>
+        <h2>베팅 통계</h2>
       </div>
       <div>
         <div className="flex justify-between font-extrabold">

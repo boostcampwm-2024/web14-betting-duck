@@ -33,22 +33,22 @@ function BettingPage() {
   const socket = useSocketIO({
     url: "/api/betting",
     onConnect: () => {
-      console.log("배팅 페이지에 소켓에 연결이 되었습니다.");
+      console.log("베팅 페이지에 소켓에 연결이 되었습니다.");
       handleSocketConnection();
     },
     onDisconnect: (reason) => {
-      console.log("배팅 페이지에 소켓 연결이 끊겼습니다.", reason);
+      console.log("베팅 페이지에 소켓 연결이 끊겼습니다.", reason);
       joinRoomRef.current = false;
       fetchBetRoomInfoRef.current = false;
     },
     onError: (error) => {
-      console.error("배팅 페이지에 소켓 에러가 발생했습니다.", error);
+      console.error("베팅 페이지에 소켓 에러가 발생했습니다.", error);
     },
   });
 
   usePreventLeave(
     true,
-    "배팅 페이지에서 벗어나면 배팅이 취소됩니다. 정말로 나가시겠습니까?",
+    "베팅 페이지에서 벗어나면 베팅이 취소됩니다. 정말로 나가시겠습니까?",
   );
 
   const handleSocketConnection = React.useCallback(() => {
@@ -73,7 +73,7 @@ function BettingPage() {
 
   const handleFinished = React.useCallback(
     (data: unknown) => {
-      console.log("배팅이 종료되었습니다", data);
+      console.log("베팅이 종료되었습니다", data);
       navigate({
         to: "/betting/$roomId/vote/resultDetail",
         params: { roomId: channel.id },
@@ -84,7 +84,7 @@ function BettingPage() {
 
   const handleCancelWaitingRoom = React.useCallback(
     (data: unknown) => {
-      console.log("배팅이 취소되었습니다", data);
+      console.log("베팅이 취소되었습니다", data);
       navigate({
         to: "/my-page",
       });

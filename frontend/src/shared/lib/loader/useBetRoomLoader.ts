@@ -31,7 +31,7 @@ function loaderTypeGuard(
   userInfoData: unknown,
 ): { bettingRoomInfo: BetRoomInfo; userInfo: UserInfo } {
   if (!isBetRoomInfo(betRoomInfoData)) {
-    throw new Error("배팅 방 정보를 파싱하는데 실패했습니다.");
+    throw new Error("베팅 방 정보를 파싱하는데 실패했습니다.");
   }
 
   if (!isUserInfo(userInfoData)) {

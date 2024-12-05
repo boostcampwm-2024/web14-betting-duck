@@ -20,13 +20,13 @@ export const BettingResult: React.FC<BettingResultProps> = ({
     <div className="bg-secondary w-[90cqw] rounded-lg px-8 py-4 shadow-inner">
       <div>
         <h2 className="flex flex-row items-center gap-2 text-lg font-extrabold">
-          배팅 결과
+          베팅 결과
         </h2>
       </div>
       <div className="flex flex-col gap-2 pt-4">
         <div className="flex justify-between">
           <div className="flex flex-row items-center gap-2">
-            {renderWinningIcon()} 배팅 금액
+            {renderWinningIcon()} 베팅 금액
           </div>
           <span className="text-default font-extrabold">300 포인트</span>
         </div>
