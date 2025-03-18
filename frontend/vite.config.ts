@@ -3,6 +3,9 @@ import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { visualizer } from "rollup-plugin-visualizer";
+import { compression } from "vite-plugin-compression2";
+import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -18,7 +21,21 @@ export default defineConfig(({ mode }) => {
       },
     },
     assetsInclude: ["**/*.glb", "**/*.hdr"],
-    plugins: [react(), TanStackRouterVite(), tsconfigPaths()],
+    plugins: [
+      react(),
+      TanStackRouterVite(),
+      tsconfigPaths(),
+      visualizer(),
+      compression(),
+      ViteImageOptimizer({
+        png: {
+          quality: 70,
+        },
+        avif: {
+          quality: 70,
+        },
+      }),
+    ],
     server: {
       port: 3000,
       proxy: {
@@ -55,9 +72,16 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       target: "esnext",
-      sourcemap: true,
-      modulePreload: {
-        polyfill: true,
+      minify: "terser",
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+        },
+        mangle: true,
+        format: {
+          comments: false,
+        },
       },
       chunkSizeWarningLimit: 1000,
       assetsDir: "assets",
@@ -89,14 +113,17 @@ export default defineConfig(({ mode }) => {
           manualChunks(id) {
             if (id.includes("node_modules")) {
               if (id.includes("@tanstack")) return "vendor-tanstack";
-              if (id.includes("react")) return "vendor-react";
+              if (id.includes("@react-three/cannon"))
+                return "vendor-react-three-cannon";
+              if (id.includes("@react-three/drei"))
+                return "vendor-react-three-drei";
+              if (id.includes("@react-three/fiber"))
+                return "vendor-react-three-fiber";
+              if (id.includes("three")) return "vendor-three";
               if (id.includes("@socket")) return "vendor-socket";
-              return "vendor";
-            }
+              if (id.includes("react")) return "vendor-react";
 
-            if (id.includes("/features/")) {
-              const feature = id.split("/features/")[1].split("/")[0];
-              return `feature-${feature}`;
+              return "vendor";
             }
           },
         },
@@ -105,7 +132,7 @@ export default defineConfig(({ mode }) => {
     },
     optimizeDeps: {
       include: ["react", "react-dom"],
-      exclude: ["@tanstack/router"],
+      exclude: ["@tanstack/router", "three"],
     },
   };
 });

@@ -1,6 +1,6 @@
 import { cn } from "@/shared/misc";
 import React, { useState } from "react";
-import mainLogo from "@/assets/images/main-logo.png";
+import mainLogo from "@/assets/images/main-logo.avif";
 import {
   GuestLoginForm,
   LoginForm,

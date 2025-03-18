@@ -1,26 +1,17 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { ErrorComponent } from "@/shared/components/Error";
 import { MyPage } from "@/features/my-page";
 import { ErrorMyPage } from "@/features/my-page/error";
-import { ROUTES } from "@/shared/config/route";
+import { ProtectedRoute } from "@/shared/components/ProtectedRoute";
 
 export const Route = createFileRoute("/my-page")({
-  beforeLoad: async () => {
-    const tokenResponse = await fetch("/api/users/token", {
-      headers: {
-        "Cache-Control": "stale-while-revalidate",
-        Pragma: "no-cache",
-      },
-      credentials: "include",
-    });
-    if (!tokenResponse.ok) {
-      throw redirect({
-        to: "/require-login",
-        search: { from: encodeURIComponent(ROUTES.MYPAGE) },
-      });
-    }
+  component: () => {
+    return (
+      <ProtectedRoute>
+        <MyPage />
+      </ProtectedRoute>
+    );
   },
-  component: MyPage,
   shouldReload: () => true,
   errorComponent: ({ error }) => {
     return (

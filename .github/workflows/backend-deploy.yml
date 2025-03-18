@@ -15,23 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # NestJS 빌드 과정
-
-      # - name: Set up Node.js
-      #   uses: actions/setup-node@v2
-      #   with:
-      #     node-version-file: ".nvmrc"
-
-      # - name: Install pnpm
-      #   run: npm install -g pnpm
-
-      # - name: Install dependencies
-      #   run: pnpm install
-      #   working-directory: ${{ vars.BACK_SERVICE_PATH }}
-
-      # - name: Build the project
-      #   run: pnpm run build
-
       - name: Setup SSH
         run: |
           echo "${{ secrets.SSH_PEM_KEY }}" >> /tmp/deploy_key.pem && \
@@ -43,9 +26,9 @@ jobs:
         run: |
           ssh -i /tmp/deploy_key.pem -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << EOF
             echo "Connected to the server"
-            cd /app/web14-betting-duck
+            cd /root/refactor-web14-betting-duck
             git pull origin dev
-            cd /app/web14-betting-duck/backend
+            cd /root/refactor-web14-betting-duck/backend
             docker restart betting_duck_app
           EOF
 

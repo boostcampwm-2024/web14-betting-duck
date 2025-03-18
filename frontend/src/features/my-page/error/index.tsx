@@ -1,5 +1,3 @@
-import { Image } from "@/shared/components/Image";
-import pondImage from "@/assets/images/pond.png";
 import { DuckCoinIcon } from "@/shared/icons";
 
 function ErrorMyPage() {
@@ -13,9 +11,7 @@ function ErrorMyPage() {
         <DuckCoinIcon width={32} height={32} />
         <span className="text-2xl font-bold">{0}</span>
       </div>
-      <div className="w-full px-5">
-        <Image src={pondImage} alt="Pond" />
-      </div>
+      <div className="w-full px-5"></div>
       <div className="flex gap-8">
         <button className="bg-secondary text-default border-default-hover flex items-center gap-4 rounded-xl border-2 px-6 py-3 text-xl font-bold">
           <DuckCoinIcon width={32} height={33} />

@@ -1,4 +1,5 @@
 import { responseBetRoomInfo } from "@betting-duck/shared";
+import { summaryResponseSchema } from "@betting-duck/shared/schemas/bet/socket/response";
 import { EnsureQueryDataOptions } from "@tanstack/react-query";
 import { z } from "zod";
 
@@ -26,6 +27,25 @@ async function responseBettingRoomInfo(roomId: string) {
   }
 }
 
+async function responseSummaryBettingRoomInfo(roomId: string) {
+  try {
+    const response = await fetch(`/api/betrooms/${roomId}/summary`);
+    if (!response.ok) {
+      throw new Error("베팅 방 요약 정보를 불러오는데 실패했습니다.");
+    }
+
+    const { data } = await response.json();
+    const result = summaryResponseSchema.safeParse(data);
+    if (!result.success) {
+      console.error(result.error.errors);
+      throw new Error("베팅 방 요약 정보를 파싱하는데 실패했습니다.");
+    }
+    return result.data;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 const betRoomQueries = (roomId: string): BetRoomInfo => ({
   roomInfo: {
     queryKey: ["betRoom", "info", roomId],
@@ -40,4 +60,8 @@ const betRoomQueries = (roomId: string): BetRoomInfo => ({
   },
 });
 
-export { responseBettingRoomInfo, betRoomQueries };
+export {
+  responseBettingRoomInfo,
+  betRoomQueries,
+  responseSummaryBettingRoomInfo,
+};

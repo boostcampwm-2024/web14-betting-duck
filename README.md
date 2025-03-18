@@ -10,7 +10,7 @@
   <br>
   <br>
   
-| [Site](http://175.45.205.245/) | [Figma](https://www.figma.com/design/G7rC9PmXC2tigM6xk6TgRS/boostcamp_web14_betting_duck?node-id=0-1&node-type=canvas&t=aVWRko6PzR7bRG9M-0) | [Wiki](https://github.com/boostcampwm-2024/web14-betting-duck/wiki) |
+| [Site](http://223.130.142.216/) | [Figma](https://www.figma.com/design/G7rC9PmXC2tigM6xk6TgRS/boostcamp_web14_betting_duck?node-id=0-1&node-type=canvas&t=aVWRko6PzR7bRG9M-0) | [Wiki](https://github.com/boostcampwm-2024/web14-betting-duck/wiki) |
 |--------------------------------|----------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------|
 
 </div>

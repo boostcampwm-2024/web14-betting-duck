@@ -192,6 +192,31 @@ export class BetRoomService {
     return updateResult;
   }
 
+  async findBetRoomSummaryById(userId: number | string, betRoomId: string) {
+    const betRoom = await this.betRoomRepository.findOneById(betRoomId);
+    if (!betRoom) {
+      throw new NotFoundException(
+        `해당하는 베팅방이 존재하지 않습니다. Id: ${betRoomId}`,
+      );
+    }
+    return {
+      title: betRoom.title,
+      options: {
+        option1: {
+          name: betRoom.option1,
+        },
+        option2: {
+          name: betRoom.option2,
+        },
+      },
+      status: betRoom.status,
+      settings: {
+        defaultBetAmount: betRoom.defaultBetAmount,
+        duration: betRoom.timer,
+      },
+    };
+  }
+
   async findBetRoomById(userId: number | string, betRoomId: string) {
     const betRoom = await this.betRoomRepository.findOneById(betRoomId);
     if (!betRoom) {

@@ -5,12 +5,52 @@ import { CreateVoteError } from "@/features/create-vote/ui/error/CreateVoteError
 import { getSessionItem } from "@/shared/hooks/useSessionStorage";
 import { getBettingRoomInfo } from "@/features/betting-page/api/getBettingRoomInfo";
 import { ROUTES } from "@/shared/config/route";
-import { authQueries } from "@/shared/lib/auth/authQuery";
-import { AuthStatusTypeSchema } from "@/shared/lib/auth/guard";
+import { ProtectedRoute } from "@/shared/components/ProtectedRoute";
+
+type RoomInfo = Awaited<ReturnType<typeof getBettingRoomInfo>>;
+
+function redirectWaitingRoom(roomInfo: RoomInfo, roomId: string) {
+  if (roomInfo?.channel.status === "waiting") {
+    return redirect({
+      to: "/betting/$roomId/waiting",
+      params: { roomId },
+    });
+  }
+}
+
+function redirectVoting(roomInfo: RoomInfo, roomId: string) {
+  if (roomInfo?.channel.status === "active") {
+    return redirect({
+      to: "/betting/$roomId/vote/voting",
+      params: { roomId },
+    });
+  }
+}
+
+function redirectGuest(role: string) {
+  if (role === "guest") {
+    return redirect({
+      to: "/require-login",
+      search: { from: encodeURIComponent(ROUTES.GUEST_CREATE_VOTE) },
+    });
+  }
+}
+
+function redirectFinished(roomInfo: RoomInfo, roomId: string) {
+  if (
+    roomInfo?.channel.status === "finished" ||
+    roomInfo?.channel.status === "timeover"
+  ) {
+    return redirect({
+      to: "/betting/$roomId/vote/resultDetail",
+      params: { roomId },
+    });
+  }
+}
 
 export const Route = createFileRoute("/create-vote")({
   component: RouteComponent,
-  beforeLoad: async ({ context: { queryClient } }) => {
+  beforeLoad: async () => {
     let roomId;
     try {
       const sessionUserInfo = await getSessionItem("userInfo");
@@ -18,60 +58,17 @@ export const Route = createFileRoute("/create-vote")({
       roomId = parsedInfo?.roomId;
       const roomInfo = await getBettingRoomInfo(roomId);
       if (!roomId) {
-        return; // roomId가 없으면 조기 반환
+        return;
       }
 
       if (!roomInfo) {
-        return; // roomInfo가 없으면 조기 반환
+        return;
       }
 
-      // 상태에 따른 리다이렉트 처리
-      if (roomInfo.channel.status === "waiting") {
-        return redirect({
-          to: "/betting/$roomId/waiting",
-          params: { roomId },
-        });
-      }
-
-      if (roomInfo.channel.status === "active") {
-        return redirect({
-          to: "/betting/$roomId/vote/voting",
-          params: { roomId },
-        });
-      }
-
-      if (parsedInfo.role === "guest") {
-        return redirect({
-          to: "/require-login",
-          search: { from: encodeURIComponent(ROUTES.GUEST_CREATE_VOTE) },
-        });
-      }
-
-      if (
-        roomInfo.channel.status === "finished" ||
-        roomInfo.channel.status === "timeover"
-      ) {
-        return redirect({
-          to: "/betting/$roomId/vote/resultDetail",
-          params: { roomId },
-        });
-      }
-
-      await queryClient.ensureQueryData(authQueries);
-      const queryClientData = await queryClient.getQueryData(
-        authQueries.queryKey,
-      );
-      const parsedQueryClientData =
-        AuthStatusTypeSchema.safeParse(queryClientData);
-      if (
-        parsedQueryClientData.success &&
-        parsedQueryClientData.data.userInfo.role === "guest"
-      ) {
-        return redirect({
-          to: "/require-login",
-          search: { from: encodeURIComponent(ROUTES.GUEST_CREATE_VOTE) },
-        });
-      }
+      redirectWaitingRoom(roomInfo, roomId);
+      redirectVoting(roomInfo, roomId);
+      redirectGuest(parsedInfo.role);
+      redirectFinished(roomInfo, roomId);
     } catch (error) {
       if (error instanceof Error && error.name === "RedirectError") {
         throw error;
@@ -87,5 +84,9 @@ export const Route = createFileRoute("/create-vote")({
 });
 
 function RouteComponent() {
-  return <CreateVotePage />;
+  return (
+    <ProtectedRoute>
+      <CreateVotePage />;
+    </ProtectedRoute>
+  );
 }

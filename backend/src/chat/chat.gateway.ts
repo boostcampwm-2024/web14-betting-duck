@@ -27,10 +27,6 @@ import { AuthenticatedGuard } from "src/utils/guards/ws-authenticated.guard";
     origin: "*",
     credentials: true,
   },
-  // serverOptions: {
-  //   key: fs.readFileSync("src/privkey.pem"),
-  //   cert: fs.readFileSync("src/fullchain.pem"),
-  // },
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()

@@ -1,19 +1,12 @@
 import React from "react";
 import { WaitingError } from "@/features/waiting-room/ui/WaitingError";
 import { useUserContext } from "@/shared/hooks/useUserContext";
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { responseBetRoomInfo } from "@betting-duck/shared";
+import { ProtectedRoute } from "@/shared/components/ProtectedRoute";
 
 export const Route = createFileRoute("/betting/")({
   component: RouteComponent,
-  beforeLoad: async () => {
-    const response = await fetch("/api/users/token");
-    if (!response.ok) {
-      throw redirect({
-        to: "/require-bettingRoomId",
-      });
-    }
-  },
   errorComponent: ({ error }) => (
     <ErrorComponent error={error}>
       <WaitingError />
@@ -49,7 +42,6 @@ function RouteComponent() {
 
         const { channel } = result.data;
 
-        // 상태에 따른 리다이렉트 처리
         const redirectMap = {
           finished: "/require-bettingRoomId",
           waiting: `/betting/${roomId}/waiting`,
@@ -79,7 +71,11 @@ function RouteComponent() {
   }, [roomId, navigate]);
 
   // 로딩 중 표시
-  return <div className="bg-layout-main h-full w-full" />;
+  return (
+    <ProtectedRoute>
+      <div className="bg-layout-main h-full w-full" />
+    </ProtectedRoute>
+  );
 }
 
 function ErrorComponent({

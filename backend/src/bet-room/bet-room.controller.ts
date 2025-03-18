@@ -158,8 +158,38 @@ export class BetRoomController {
   }
 
   @UseGuards(JwtGuestAuthGuard)
-  @Get("/:betRoomId")
+  @Get("/:betRoomId/summary")
   async getBetRoom(
+    @Param("betRoomId") betRoomId: string,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
+    try {
+      const userId = req["user"].id;
+      const betRoomData = await this.betRoomService.findBetRoomSummaryById(
+        userId,
+        betRoomId,
+      );
+      return res.status(HttpStatus.OK).json({
+        status: HttpStatus.OK,
+        data: {
+          channel: betRoomData,
+          message: "OK",
+        },
+      });
+    } catch (error) {
+      return res.status(error.status || HttpStatus.INTERNAL_SERVER_ERROR).json({
+        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        data: {
+          message: error.message || "Internal Server Error",
+        },
+      });
+    }
+  }
+
+  @UseGuards(JwtGuestAuthGuard)
+  @Get("/:betRoomId")
+  async getBetRoomDetails(
     @Param("betRoomId") betRoomId: string,
     @Req() req: Request,
     @Res() res: Response,

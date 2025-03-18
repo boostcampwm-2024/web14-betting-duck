@@ -1,4 +1,4 @@
-import waitingUserImage from "@assets/images/waiting-user.png";
+import waitingUserImage from "@assets/images/waiting-user.avif";
 import React from "react";
 import { useWaitingContext } from "../hooks/use-waiting-context";
 import { z } from "zod";
