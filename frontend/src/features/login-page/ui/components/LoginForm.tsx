@@ -9,7 +9,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { authQueries } from "@/shared/lib/auth/authQuery";
 import { z } from "zod";
 import { AuthStatusTypeSchema } from "@/shared/lib/auth/guard";
-import { useAuthState } from "@/shared/hooks/useAuthState";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -19,7 +18,6 @@ function LoginForm() {
   const { setUserInfo } = useUserContext();
   const { error, handleLogin } = useAuthStore();
   const queryClient = useQueryClient();
-  const { setAuthState } = useAuthState();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,12 +44,6 @@ function LoginForm() {
         }),
       );
       await queryClient.invalidateQueries({ queryKey: authQueries.queryKey });
-      setAuthState((prev) => ({
-        ...prev,
-        isAuthenticated: true,
-        nickname: data.nickname,
-      }));
-
       navigate({
         to: "/my-page",
         search: {
