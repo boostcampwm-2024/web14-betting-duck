@@ -1,11 +1,12 @@
 import "./index.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
+import { Auth } from "@/shared/lib/auth/auth";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { GlobalErrorComponent } from "./shared/components/Error/GlobalError";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { GlobalRouter } from "./app/provider/RouterProvider";
-import { RecoilRoot } from "recoil";
-import { AuthProvider } from "./app/provider/AuthProvider/AuthProvider";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,18 +17,39 @@ const queryClient = new QueryClient({
   },
 });
 
+type RouterContext = {
+  auth: Auth;
+  queryClient: QueryClient;
+};
+
+const router = createRouter({
+  routeTree,
+  context: {
+    auth: {} as Auth,
+    queryClient,
+  } as RouterContext,
+  defaultPreload: "intent",
+  defaultErrorComponent: ({ error }) => (
+    <GlobalErrorComponent error={error} to={"/"} />
+  ),
+});
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
+}
+
 const theme = createTheme();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RecoilRoot>
-        <AuthProvider>
-          <ThemeProvider theme={theme}>
-            <GlobalRouter queryClient={queryClient} />
-          </ThemeProvider>
-        </AuthProvider>
-      </RecoilRoot>
+      <ThemeProvider theme={theme}>
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </QueryClientProvider>
   </StrictMode>,
 );
+
+export { type RouterContext };

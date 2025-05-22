@@ -1,10 +1,4 @@
 packages:
-  - frontend
-  - backend
-  - shared
-onlyBuiltDependencies:
-  - '@nestjs/core'
-  - '@scarf/scarf'
-  - esbuild
-  - msw
-  - sharp
+  - "frontend"
+  - "backend"
+  - "shared"
